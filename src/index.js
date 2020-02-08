@@ -1,3 +1,5 @@
+const jointjs = require("jointjs")
+
 class Flowblocks {
     constructor(options) {
         this.options = {}
@@ -6,6 +8,7 @@ class Flowblocks {
 
     tryMe(){
         console.log('TryMe!');
+        console.log(new jointjs.dia.Graph);
     }
 }
 module.exports = new Flowblocks({});
