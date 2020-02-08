@@ -29,8 +29,9 @@ module.exports = {
     // },
     resolve: {
         extensions: [ '.js' ]
-    },
-    externals: [nodeExternals({
-        whitelist: ['paytip-module-tipbox','paytip-module-core', 'paytip-module-wallet', 'paytip-module-integration','paytip-module-integration-inbound','paytip-module-bo']
-    })] // <-- Important
+    }
+    // ,
+    // externals: [nodeExternals({
+    //     whitelist: ['paytip-module-tipbox','paytip-module-core', 'paytip-module-wallet', 'paytip-module-integration','paytip-module-integration-inbound','paytip-module-bo']
+    // })] // <-- Important
 };
