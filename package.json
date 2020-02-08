@@ -27,6 +27,7 @@
   "bugs": {
     "url": "https://github.com/alkeicam/flowblocks/issues"
   },
+  "unpkg": "dist/flowblocks.js",
   "homepage": "https://github.com/alkeicam/flowblocks#readme",
   "devDependencies": {
     "chai": "^3.5.0",
