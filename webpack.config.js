@@ -12,7 +12,8 @@ module.exports = {
         // ,
         // libraryTarget: 'this' // <-- Important
         library: 'flowblocks',
-        libraryTarget: 'umd'
+        libraryTarget: 'umd',
+        globalObject: 'this'
     },
     //target: 'node', // <-- Important
     // module: {
