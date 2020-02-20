@@ -50,7 +50,7 @@ class Block {
                 },
 
                 '.fb-status-rect': {                  
-                    'fill': 'rgb(57, 230, 0)'                    
+                    'fill': 'rgb(209, 226, 208)'                    
 
                 },
                 '.fb-status-text' : {        
@@ -121,7 +121,7 @@ class Block {
                 var fields = [
                     // start with name
                     {
-                        width: attrs.rect.width,
+                        width: size.width,
                         icon: this.get('icon'), 
                         name: this.get('name'),
                         statusMessage: this.get('statusMsg')
