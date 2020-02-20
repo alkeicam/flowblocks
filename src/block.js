@@ -107,7 +107,7 @@ class Block {
             initialize: function() {
                 this.on('change:name change:icon change:status change:statusMsg', function() {
                     this.updateMyModel();
-                    this.trigger('flowblock-update');
+                    this.trigger('flowblocks-block-update');
                 }, this);
         
                 //this.updateRectangles();
