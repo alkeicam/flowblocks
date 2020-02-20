@@ -130,9 +130,7 @@ class Block {
 
                 var offsetY = 0;
 
-                fields.forEach(function(field) {
-                    var 
-                    
+                fields.forEach(function(field) {                                         
                     var partHeight = 1*20 + 20;
                     // name of element
                     attrs['.fb-label-rect'].height = partHeight;

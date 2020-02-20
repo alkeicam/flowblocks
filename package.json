@@ -44,7 +44,7 @@
     "webpack-node-externals": "1.7.x"
   },
   "nyc": {
-    "check-coverage": true,
+    "check-coverage": false,
     "branches": 50,
     "lines": 50,
     "functions": 50,
