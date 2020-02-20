@@ -20,7 +20,7 @@ class Block {
             statusMsg: 'OK',
             // now presentation fields
             attrs: {
-                rect: { 'width': 200,
+                rect: { 'ref-width': '100%',
                     'fill': 'rgb(211, 55, 255)'
                 },                
                 body: {
@@ -41,15 +41,15 @@ class Block {
 
                 },
 
-                '.fb-icon-rect' : {
-                    'fill': 'rgb(100, 55, 255)'
+                '.fb-icon-rect' : {                    
+                    'fill': 'rgb(219, 233, 251)'
                     
                 } ,
                 '.fb-icon-image': {
                     'ref': '.fb-icon-rect'
                 },
 
-                '.fb-status-rect': {                    
+                '.fb-status-rect': {                  
                     'fill': 'rgb(57, 230, 0)'                    
 
                 },
@@ -63,8 +63,8 @@ class Block {
                     'y-alignment': 'middle'               
                 } ,
 
-                '.fb-label-rect': {                    
-                    'fill': 'rgb(57, 230, 0)'                    
+                '.fb-label-rect': { 
+                    'fill': 'rgb(255, 230, 206)'                    
                 },
                 '.fb-label-text' : {   
                     'ref': '.fb-label-rect',
