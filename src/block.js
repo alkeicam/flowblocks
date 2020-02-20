@@ -1,4 +1,4 @@
-const joint = require("jointjs")
+const jointjs = require("jointjs")
 
 class Block {
     constructor(options) {
@@ -10,9 +10,9 @@ class Block {
     }
 
     _initialize(){   
-        joint.shapes.flowblocks = {};
+        jointjs.shapes.flowblocks = {};
 
-        this.Model = joint.shapes.devs.Model.define('flowblocks.Block',{
+        this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block',{
             // now model fields
             name: '',
             icon: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png', // icon href
@@ -112,7 +112,7 @@ class Block {
         
                 //this.updateRectangles();
                 this.updateMyModel()
-                joint.shapes.devs.Model.prototype.initialize.apply(this, arguments);
+                jointjs.shapes.devs.Model.prototype.initialize.apply(this, arguments);
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
             updateMyModel: function(){
@@ -162,7 +162,7 @@ class Block {
         })
 
         
-        joint.shapes.flowblocks.BlockView = joint.dia.ElementView.extend({
+        jointjs.shapes.flowblocks.BlockView = jointjs.dia.ElementView.extend({
 
             initialize: function() {
     
@@ -174,7 +174,7 @@ class Block {
                 });
             }
         });
-        this.View = joint.shapes.flowblocks.BlockView;
+        this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
     create(){
