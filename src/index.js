@@ -15,6 +15,7 @@ class Flowblocks {
     addElement(label, where, kind){
         var newBlock = block.create();
         //console.log(block.create());
+        return newBlock;
     }
 
 
