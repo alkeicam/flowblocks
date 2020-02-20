@@ -1,0 +1,56 @@
+<svg width="400px" height="400px" xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink">
+<style>
+    rect {
+        width: 80px;
+        height: 80px;
+        fill: rgb(211, 55, 255);        
+    }  
+    image {
+        width: 20px;
+        height: 20px;         
+    }  
+    .body {
+        height: 80px;
+    } 
+    .status-ok {
+        height: 20px;        
+        fill: rgb(57, 230, 0); 
+    } 
+    .status-err {
+        height: 20px;        
+        fill: rgb(204, 41, 0); 
+    } 
+
+    .icon {
+        fill: rgb(100, 55, 255);
+        height: 40px;
+    }  
+
+    .label {        
+        font-size: 0.75rem;
+        text-anchor: start;        
+        fill: black;                
+    } 
+    .status-label {        
+        font-size: 0.5rem;
+        text-anchor: start;        
+        fill: black;                
+    }  
+    .fb-label-rect {
+        height: 20px;        
+        fill: rgb(104, 41, 0); 
+    }
+  </style>
+  <g class="parent" transform="translate(50,50)">
+    <g class="rotatable">        
+            <rect class="body" x="0" y="0"/>                                
+            <rect class="fb-label-rect" x="0" y="0"/>                                
+            <rect class="icon" x="0" y="20"/>                                
+            <image y="30" x="30" href="https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png" />                              
+            <text class="label" x="5" y="15">Element 1</text>
+            <rect class="status-err" x="0" y="60"/>          
+            <text class="status-label" x="5" y="75">Element 2</text>                      
+    </g>
+</g>    
+</svg>
+
