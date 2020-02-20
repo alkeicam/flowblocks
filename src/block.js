@@ -121,8 +121,8 @@ class Block {
                 var fields = [
                     // start with name
                     {
-                        width: size.width,
-                        height: size.height,
+                        width: this.size.width,
+                        height: this.size.height,
                         icon: this.get('icon'), 
                         name: this.get('name'),
                         statusMessage: this.get('statusMsg')
