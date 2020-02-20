@@ -34,7 +34,7 @@ class Block {
                     cursor: 'pointer'
                 },   
 
-                '.status-err ': {
+                '.status-err': {
                     'refHeight': '25%',
                     'fill': 'rgb(204, 41, 0)',
                     'refY': '75%'
@@ -49,7 +49,7 @@ class Block {
                     'ref': '.fb-icon-rect'
                 },
 
-                '.fb-status-rect ': {                    
+                '.fb-status-rect': {                    
                     'fill': 'rgb(57, 230, 0)'                    
 
                 },
