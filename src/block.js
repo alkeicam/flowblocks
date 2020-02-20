@@ -122,6 +122,7 @@ class Block {
                     // start with name
                     {
                         width: size.width,
+                        height: size.height,
                         icon: this.get('icon'), 
                         name: this.get('name'),
                         statusMessage: this.get('statusMsg')
@@ -131,7 +132,7 @@ class Block {
                 var offsetY = 0;
 
                 fields.forEach(function(field) {                                         
-                    var partHeight = 1*20 + 20;
+                    var partHeight = 0.2*field.height;
                     // name of element
                     attrs['.fb-label-rect'].height = partHeight;
                     attrs['.fb-label-rect'].transform = 'translate(0,' + offsetY + ')';
@@ -141,17 +142,19 @@ class Block {
                     offsetY += partHeight;
                     // icon of element
                     
+                    partHeight = 0.6*field.height;
                     attrs['.fb-icon-rect'].height = partHeight;
                     attrs['.fb-icon-rect'].transform = 'translate(0,' + offsetY + ')';
 
-                    attrs['.fb-icon-image'].height = 20;
+                    attrs['.fb-icon-image'].height = 0.8*partHeight;
                     attrs['.fb-icon-image'].transform = 'translate('+field.width/4+',' + offsetY + ')';
                     attrs['.fb-icon-image'].href = field.icon;
-
-                    partHeight = 40; // icon section height
+                    
                     offsetY += partHeight;
                     // status section 
-                    attrs['.fb-status-rect'].height = 40;
+                    partHeight = 0.2*field.height;
+
+                    attrs['.fb-status-rect'].height = partHeight;
                     attrs['.fb-status-rect'].transform = 'translate(0,' + offsetY + ')';
                     attrs['.fb-status-text'].text = field.statusMessage;                                                            
                 });
