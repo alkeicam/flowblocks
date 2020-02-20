@@ -166,7 +166,7 @@ class Block {
 
             initialize: function() {
     
-                ElementView.prototype.initialize.apply(this, arguments);
+                jointjs.dia.ElementView.prototype.initialize.apply(this, arguments);
     
                 this.listenTo(this.model, 'flowblocks-block-update', function() {
                     this.update();
