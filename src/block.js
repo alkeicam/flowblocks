@@ -55,8 +55,8 @@ class Block {
                 },
                 '.fb-status-text' : {        
                     'ref': '.fb-status-rect',
-                    'ref-x': 1,
-                    'ref-y': 1,    
+                    'ref-x': 10,
+                    'ref-y': 5,    
                     'font-size': '0.5rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
@@ -68,8 +68,8 @@ class Block {
                 },
                 '.fb-label-text' : {   
                     'ref': '.fb-label-rect',
-                    'ref-x': 1,
-                    'ref-y': 1,    
+                    'ref-x': 10,
+                    'ref-y': 5,    
                     'font-size': '0.75rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
