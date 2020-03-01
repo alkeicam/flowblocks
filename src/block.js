@@ -15,7 +15,8 @@ class Block {
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block',{
             // now model fields
             name: '',
-            icon: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png', // icon href
+            //icon: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png', // icon href
+            icon: './resources/img/svg/agave.svg',
             status: 'OK', // OK, ERROR,
             statusMsg: 'OK',
             // now presentation fields
@@ -56,7 +57,7 @@ class Block {
                 '.fb-status-text' : {        
                     'ref': '.fb-status-rect',
                     'ref-x': 10,
-                    'ref-y': 5,    
+                    'ref-y': 10,    
                     'font-size': '0.5rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
@@ -69,7 +70,7 @@ class Block {
                 '.fb-label-text' : {   
                     'ref': '.fb-label-rect',
                     'ref-x': 10,
-                    'ref-y': 5,    
+                    'ref-y': 10,    
                     'font-size': '0.75rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
@@ -96,7 +97,7 @@ class Block {
                 '<g class="rotatable">',
                 '<rect class="body"/>',
                 '<rect class="fb-icon-rect"/>',
-                '<image class="fb-icon-image" href="https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png" />',
+                '<image class="fb-icon-image" href="//resources/img/svg/agave.svg" />',
                 '<rect class="fb-label-rect"/>',
                 '<text class="fb-label-text">Element 1</text>',
                 '<rect class="fb-status-rect"/>',
@@ -105,17 +106,22 @@ class Block {
             ].join(''),   
             
             initialize: function() {
-                this.on('change:name change:icon change:status change:statusMsg', function() {
-                    this.updateMyModel();
+                this.on('change:name change:icon change:status change:statusMsg change:size', function() {
+                    this._updateMyModel();
                     this.trigger('flowblocks-block-update');
                 }, this);
         
+                this.on('all',function(eName, thing){
+                    console.log(eName, thing);
+                })
+
                 //this.updateRectangles();
-                this.updateMyModel()
+                this._updateMyModel()
                 jointjs.shapes.devs.Model.prototype.initialize.apply(this, arguments);
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
-            updateMyModel: function(){
+            
+            _updateMyModel: function(){
                 var attrs = this.get('attrs');
 
                 var fields = [
@@ -146,8 +152,15 @@ class Block {
                     attrs['.fb-icon-rect'].height = partHeight;
                     attrs['.fb-icon-rect'].transform = 'translate(0,' + offsetY + ')';
 
-                    attrs['.fb-icon-image'].height = 0.8*partHeight;
-                    attrs['.fb-icon-image'].transform = 'translate('+field.width/4+',' + offsetY + ')';
+                    // | height
+                    // || 
+                    // ||
+                    // |
+                    var iconHeight = 0.5*partHeight;
+                    var iconX = field.width/2-iconHeight/2;
+                    var iconY = offsetY+partHeight/2-iconHeight/2;
+                    attrs['.fb-icon-image'].height = iconHeight;
+                    attrs['.fb-icon-image'].transform = 'translate('+iconX+',' + iconY + ')';
                     attrs['.fb-icon-image'].href = field.icon;
                     
                     offsetY += partHeight;
@@ -180,11 +193,28 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    create(){
+    createBlankElement(template, statusDefinition){
+        var factories = {
+            PassThrough: this.createPassThroughElement,
+            Start: this.createStartElement
+        }        
+        if(factories[template]){
+            return factories[template].call(this, '', statusDefinition);
+        }else{
+            throw new Error('Unsuported template: '+template);
+        }        
+    }
+
+    /**
+     * Element with a single input and a single output
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createPassThroughElement(name, statusDefinition){
         var options = {
-            position: { x: 50, y: 50 },
+            position: { x: 40, y: 20 },
             size: { width: 90, height: 90 },
-            inPorts: ['in1','in2'],
+            inPorts: ['in'],
             outPorts: ['out'],
             ports: {
                 groups: {
@@ -196,6 +226,35 @@ class Block {
                             }
                         }
                     },
+                    'out': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#E74C3C'
+                            }
+                        }
+                    }
+                }
+            },
+            attrs: {
+                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
+                rect: { fill: '#2ECC71' }
+            }
+        }
+        var newBlock = new this.Model(options);        
+        return newBlock;
+    }
+    /**
+     * Starting element
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createStartElement(name, statusDefinition){
+        var options = {
+            position: { x: 40, y: 20 },
+            size: { width: 90, height: 90 },            
+            outPorts: ['out'],
+            ports: {
+                groups: {                    
                     'out': {
                         attrs: {
                             '.port-body': {

@@ -1,0 +1,11 @@
+@startuml
+class StatusDefinition {
+  {field} A field (despite parentheses)  
+}
+enum TimeUnit {
+  DAYS
+  HOURS
+  MINUTES
+}
+
+@enduml
