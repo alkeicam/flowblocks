@@ -56,8 +56,8 @@ class Block {
                 },
                 '.fb-status-text' : {        
                     'ref': '.fb-status-rect',
-                    'ref-x': 10,
-                    'ref-y': 10,    
+                    // 'ref-x': 10,
+                    // 'ref-y': 10,    
                     'font-size': '0.5rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
@@ -167,9 +167,15 @@ class Block {
                     // status section 
                     partHeight = 0.2*field.height;
 
+                    var fontSize = 0.8*partHeight;
+                    var fontY = offsetY+partHeight/2;
+                    var fontX = 0.1*field.width;
                     attrs['.fb-status-rect'].height = partHeight;
                     attrs['.fb-status-rect'].transform = 'translate(0,' + offsetY + ')';
-                    attrs['.fb-status-text'].text = field.statusMessage;                                                            
+                    attrs['.fb-status-text']['font-size'] = fontSize;  
+                    attrs['.fb-status-text'].transform = 'translate('+fontX+',' + fontY + ')';     
+
+                    
                 });
             }
         },{
