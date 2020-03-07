@@ -97,11 +97,11 @@ class Block {
                 '<g class="rotatable">',
                 '<rect class="body"/>',
                 '<rect class="fb-icon-rect"/>',
-                '<image class="fb-icon-image" href="//resources/img/svg/agave.svg" />',
+                '<image class="fb-icon-image" href="./resources/img/svg/agave.svg" />',
                 '<rect class="fb-label-rect"/>',
-                '<text class="fb-label-text">Element 1</text>',
+                '<text class="fb-label-text">Label</text>',
                 '<rect class="fb-status-rect"/>',
-                '<text class="fb-status-text">Element 2</text>',
+                '<text class="fb-status-text"></text>',
                 '</g>'
             ].join(''),   
             
@@ -122,7 +122,7 @@ class Block {
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
 
-            _recalculateRectWithLabel: function(classSelectorPrefix, height, fontSize, baseSize, positionY){        
+            _recalculateRectWithLabel: function(classSelectorPrefix, label, height, fontSize, baseSize, positionY){        
                 var attrs = this.get('attrs');
                 // section height
                 var partHeight = height * baseSize.height;
@@ -133,8 +133,9 @@ class Block {
                 attrs[classSelectorPrefix+'-rect'].height = partHeight;
                 attrs[classSelectorPrefix+'-rect'].transform = 'translate(0,' + positionY + ')';
                 attrs[classSelectorPrefix+'-text']['font-size'] = partFontSize;
-                attrs[classSelectorPrefix+'-text'].transform = 'translate(' + fontX + ',' + fontY + ')';
-        
+                attrs[classSelectorPrefix+'-text'].transform = 'translate(' + fontX + ',' + fontY + ')';                
+                this.attr(classSelectorPrefix+'-text/text',label);                
+                
                 return partHeight;
             },
             
@@ -155,11 +156,13 @@ class Block {
                     }
                 ]
 
+                console.log(fields);
+
                 var offsetY = 0;
 
                 fields.forEach(function(field) {    
                     
-                    offsetY += self._recalculateRectWithLabel('.fb-label', 0.2, 0.6, field, offsetY);                                     
+                    offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);                                     
                     // var partHeight = 0.2*field.height;
                     // // name of element
                     // attrs['.fb-label-rect'].height = partHeight;
@@ -197,7 +200,7 @@ class Block {
                     // attrs['.fb-status-text']['font-size'] = fontSize;  
                     // attrs['.fb-status-text'].transform = 'translate('+fontX+',' + fontY + ')';  
                       
-                    offsetY += self._recalculateRectWithLabel('.fb-status', 0.2, 0.3, field, offsetY);
+                    offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);
 
                     
                 });
