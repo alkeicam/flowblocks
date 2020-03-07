@@ -8,7 +8,7 @@ class Block {
         Object.assign(this.options, options);
         this._initialize();
     }
-
+    
     _initialize(){   
         jointjs.shapes.flowblocks = {};
 
@@ -58,7 +58,7 @@ class Block {
                     'ref': '.fb-status-rect',
                     // 'ref-x': 10,
                     // 'ref-y': 10,    
-                    'font-size': '0.5rem',
+                    // 'font-size': '0.5rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
                     'y-alignment': 'middle'               
@@ -69,9 +69,9 @@ class Block {
                 },
                 '.fb-label-text' : {   
                     'ref': '.fb-label-rect',
-                    'ref-x': 10,
-                    'ref-y': 10,    
-                    'font-size': '0.75rem',
+                    // 'ref-x': 10,
+                    // 'ref-y': 10,    
+                    // 'font-size': '0.75rem',
                     'text-anchor': 'start',        
                     'fill': 'black' ,
                     'y-alignment': 'middle'               
@@ -114,14 +114,34 @@ class Block {
                 this.on('all',function(eName, thing){
                     console.log(eName, thing);
                 })
-
+                
                 //this.updateRectangles();
-                this._updateMyModel()
+                
+                this._updateMyModel();                
                 jointjs.shapes.devs.Model.prototype.initialize.apply(this, arguments);
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
+
+            _recalculateRectWithLabel: function(classSelectorPrefix, height, fontSize, baseSize, positionY){        
+                var attrs = this.get('attrs');
+                // section height
+                var partHeight = height * baseSize.height;
+        
+                var partFontSize = fontSize * partHeight;
+                var fontY = positionY + partHeight / 2;
+                var fontX = 0.1 * baseSize.width;
+                attrs[classSelectorPrefix+'-rect'].height = partHeight;
+                attrs[classSelectorPrefix+'-rect'].transform = 'translate(0,' + positionY + ')';
+                attrs[classSelectorPrefix+'-text']['font-size'] = partFontSize;
+                attrs[classSelectorPrefix+'-text'].transform = 'translate(' + fontX + ',' + fontY + ')';
+        
+                return partHeight;
+            },
             
             _updateMyModel: function(){
+                
+                var self = this;
+                
                 var attrs = this.get('attrs');
 
                 var fields = [
@@ -137,18 +157,20 @@ class Block {
 
                 var offsetY = 0;
 
-                fields.forEach(function(field) {                                         
-                    var partHeight = 0.2*field.height;
-                    // name of element
-                    attrs['.fb-label-rect'].height = partHeight;
-                    attrs['.fb-label-rect'].transform = 'translate(0,' + offsetY + ')';
-
-                    attrs['.fb-label-text'].text = field.name;                                                            
+                fields.forEach(function(field) {    
                     
-                    offsetY += partHeight;
+                    offsetY += self._recalculateRectWithLabel('.fb-label', 0.2, 0.6, field, offsetY);                                     
+                    // var partHeight = 0.2*field.height;
+                    // // name of element
+                    // attrs['.fb-label-rect'].height = partHeight;
+                    // attrs['.fb-label-rect'].transform = 'translate(0,' + offsetY + ')';
+
+                    // attrs['.fb-label-text'].text = field.name;                                                            
+                    
+                    // offsetY += partHeight;
                     // icon of element
                     
-                    partHeight = 0.6*field.height;
+                    var partHeight = 0.6*field.height;
                     attrs['.fb-icon-rect'].height = partHeight;
                     attrs['.fb-icon-rect'].transform = 'translate(0,' + offsetY + ')';
 
@@ -165,15 +187,17 @@ class Block {
                     
                     offsetY += partHeight;
                     // status section 
-                    partHeight = 0.2*field.height;
+                    // partHeight = 0.2*field.height;
 
-                    var fontSize = 0.8*partHeight;
-                    var fontY = offsetY+partHeight/2;
-                    var fontX = 0.1*field.width;
-                    attrs['.fb-status-rect'].height = partHeight;
-                    attrs['.fb-status-rect'].transform = 'translate(0,' + offsetY + ')';
-                    attrs['.fb-status-text']['font-size'] = fontSize;  
-                    attrs['.fb-status-text'].transform = 'translate('+fontX+',' + fontY + ')';     
+                    // var fontSize = 0.8*partHeight;
+                    // var fontY = offsetY+partHeight/2;
+                    // var fontX = 0.1*field.width;
+                    // attrs['.fb-status-rect'].height = partHeight;
+                    // attrs['.fb-status-rect'].transform = 'translate(0,' + offsetY + ')';
+                    // attrs['.fb-status-text']['font-size'] = fontSize;  
+                    // attrs['.fb-status-text'].transform = 'translate('+fontX+',' + fontY + ')';  
+                      
+                    offsetY += self._recalculateRectWithLabel('.fb-status', 0.2, 0.3, field, offsetY);
 
                     
                 });
