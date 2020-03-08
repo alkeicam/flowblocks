@@ -22,11 +22,20 @@ class Flowblocks {
     createFlow(paperId){
         this.flow = Flow.create(paperId); 
     }
-    createElement(typeName, label, position, size, customIconHref){
+    createElement(typeName, label, blockId, position, size, customIconHref){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var element = block.createBlankElement(typeDefinition.template, typeDefinition.statusDefinition);
+            var element = block.createBlankElement(typeDefinition.template, typeDefinition.statusDefinition);            
             element.set('name',label);
+            if(blockId){
+                element.set('blockId', blockId);
+                var duplicateElement = Object.entries(this._elements).find(el=>{
+                    return el[1].get('blockId') == blockId
+                })                
+                if(duplicateElement){
+                    console.error('Duplicate flow Element for id: '+blockId);
+                }
+            }            
             if(position){
                 element.set('position', position);
             }

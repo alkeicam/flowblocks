@@ -57,6 +57,8 @@ class Flow {
             },
 
             validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
+                console.log('Source', cellViewS, magnetS )
+                console.log('Target', cellViewT, magnetT )
                 return magnetS != magnetT;
             }
         });

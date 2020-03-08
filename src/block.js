@@ -18,11 +18,12 @@ class Block {
         jointjs.shapes.flowblocks = {};
 
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block',{
-            // now model fields
+            // now model fields            
             name: '',            
             icon: './resources/img/svg/agave.svg',
             status: 'OK', // OK, ERROR,
             statusMsg: 'OK',
+            blockId: undefined,
 
             // now presentation fields
             attrs: {
@@ -61,9 +62,7 @@ class Block {
                 },
                 '.fb-status-text' : {        
                     'ref': '.fb-status-rect',
-                    // 'ref-x': 10,
-                    // 'ref-y': 10,    
-                    // 'font-size': '0.5rem',
+
                     'text-anchor': 'start',        
                     'fill': 'black' ,
                     'y-alignment': 'middle'               
@@ -74,9 +73,7 @@ class Block {
                 },
                 '.fb-label-text' : {   
                     'ref': '.fb-label-rect',
-                    // 'ref-x': 10,
-                    // 'ref-y': 10,    
-                    // 'font-size': '0.75rem',
+
                     'text-anchor': 'start',        
                     'fill': 'black' ,
                     'y-alignment': 'middle'               
@@ -93,12 +90,6 @@ class Block {
             // proto props - object that contains properties to be assigned on the subtype prototype. 
             // Intended for properties intrinsic to the subtype, not usually modified. Used for specifying shape markup.
             markup: [
-                // '<g class="rotatable">',
-                // '<g class="scalable">',
-                // '<rect class="uml-class-name-rect"/><rect class="uml-class-attrs-rect"/><rect class="uml-class-methods-rect"/>',
-                // '</g>',
-                // '<text class="uml-class-name-text"/><text class="uml-class-attrs-text"/><text class="uml-class-methods-text"/>',
-                // '</g>',
                 '<g class="rotatable">',
                 '<rect class="body"/>',
                 '<rect class="fb-icon-rect"/>',
