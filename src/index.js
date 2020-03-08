@@ -30,9 +30,8 @@ class Flowblocks {
                 element.set('size', size);
             }
             if(customIconHref){
-                if(customIconHref.lastIndexOf('/')==-1){
-                    console.log('./resources/img/svg/'+customIconHref+'.svg')
-                    element.set('icon', './resources/img/svg/'+customIconHref+'.svg');
+                if(customIconHref.lastIndexOf('/')==-1){                    
+                    element.set('icon', '/dist/resources/img/svg/'+customIconHref+'.svg');
                 }else{
                     element.set('icon', customIconHref);
                 }
