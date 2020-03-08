@@ -210,13 +210,94 @@ class Block {
     createBlankElement(template, statusDefinition){
         var factories = {
             PassThrough: this.createPassThroughElement,
-            Start: this.createStartElement
+            Start: this.createStartElement,
+            Split: this.createSplitElement,
+            Join: this.createJoinElement
         }        
         if(factories[template]){
             return factories[template].call(this, '', statusDefinition);
         }else{
             throw new Error('Unsuported template: '+template);
         }        
+    }
+
+
+    /**
+     * Element with a single input and a dual output
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createSplitElement(name, statusDefinition){
+        var options = {
+            position: { x: 40, y: 20 },
+            size: { width: 90, height: 90 },
+            inPorts: ['in'],
+            outPorts: ['out1','out2'],
+            ports: {
+                groups: {
+                    'in': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#16A085',
+                                magnet: 'passive'
+                            }
+                        }
+                    },
+                    'out': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#E74C3C'
+                            }
+                        }
+                    }
+                }
+            },
+            attrs: {
+                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
+                rect: { fill: '#2ECC71' }
+            }
+        }
+        var newBlock = new this.Model(options);        
+        return newBlock;
+    }
+
+    /**
+     * Element with a double input and a single output
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createJoinElement(name, statusDefinition){
+        var options = {
+            position: { x: 40, y: 20 },
+            size: { width: 90, height: 90 },
+            inPorts: ['in1','in2'],
+            outPorts: ['out'],
+            ports: {
+                groups: {
+                    'in': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#16A085',
+                                magnet: 'passive'
+                            }
+                        }
+                    },
+                    'out': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#E74C3C'
+                            }
+                        }
+                    }
+                }
+            },
+            attrs: {
+                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
+                rect: { fill: '#2ECC71' }
+            }
+        }
+        var newBlock = new this.Model(options);        
+        return newBlock;
     }
 
     /**
@@ -257,6 +338,8 @@ class Block {
         var newBlock = new this.Model(options);        
         return newBlock;
     }
+
+
     /**
      * Starting element
      * @param {*} name 
