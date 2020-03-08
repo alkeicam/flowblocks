@@ -3,8 +3,8 @@ var graph = new joint.dia.Graph;
 var paper = new joint.dia.Paper({
 
     el: document.getElementById('paper'),
-    width: 800,
-    height: 400,
+    width: 1200,
+    height: 800,
     gridSize: 1,
     model: graph,
     snapLinks: true,

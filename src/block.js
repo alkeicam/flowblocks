@@ -2,9 +2,14 @@ const jointjs = require("jointjs")
 
 class Block {
     constructor(options) {
-        this.options = {};
+        this.options = {
+            defaultSize: {
+                width: 70, 
+                height: 70 
+            }
+        };
         this.Model = {};
-        this.View = {};
+        this.View = {};        
         Object.assign(this.options, options);
         this._initialize();
     }
@@ -212,7 +217,8 @@ class Block {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
             Split: this.createSplitElement,
-            Join: this.createJoinElement
+            Join: this.createJoinElement,
+            End: this.createSinkElement
         }        
         if(factories[template]){
             return factories[template].call(this, '', statusDefinition);
@@ -230,7 +236,7 @@ class Block {
     createSplitElement(name, statusDefinition){
         var options = {
             position: { x: 40, y: 20 },
-            size: { width: 90, height: 90 },
+            size: this.options.defaultSize,
             inPorts: ['in'],
             outPorts: ['out1','out2'],
             ports: {
@@ -269,7 +275,7 @@ class Block {
     createJoinElement(name, statusDefinition){
         var options = {
             position: { x: 40, y: 20 },
-            size: { width: 90, height: 90 },
+            size: this.options.defaultSize,
             inPorts: ['in1','in2'],
             outPorts: ['out'],
             ports: {
@@ -308,7 +314,7 @@ class Block {
     createPassThroughElement(name, statusDefinition){
         var options = {
             position: { x: 40, y: 20 },
-            size: { width: 90, height: 90 },
+            size: this.options.defaultSize,
             inPorts: ['in'],
             outPorts: ['out'],
             ports: {
@@ -348,7 +354,7 @@ class Block {
     createStartElement(name, statusDefinition){
         var options = {
             position: { x: 40, y: 20 },
-            size: { width: 90, height: 90 },            
+            size: this.options.defaultSize,            
             outPorts: ['out'],
             ports: {
                 groups: {                    
@@ -362,6 +368,36 @@ class Block {
                 }
             },
             attrs: {
+                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
+                rect: { fill: '#2ECC71' }
+            }
+        }
+        var newBlock = new this.Model(options);        
+        return newBlock;
+    }
+
+    /**
+     * Finish (sink) element
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createSinkElement(name, statusDefinition){
+        var options = {
+            position: { x: 40, y: 20 },
+            size: this.options.defaultSize,            
+            inPorts: ['in'],            
+            ports: {
+                groups: {
+                    'in': {
+                        attrs: {
+                            '.port-body': {
+                                fill: '#16A085',
+                                magnet: 'passive'
+                            }
+                        }
+                    },                    
+                }
+            },rs: {
                 '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
                 rect: { fill: '#2ECC71' }
             }
