@@ -31,7 +31,7 @@ class Flowblocks {
             }
             if(customIconHref){
                 if(customIconHref.lastIndexOf('/')==-1){                    
-                    element.set('icon', '/dist/resources/img/svg/'+customIconHref+'.svg');
+                    element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+customIconHref+'.svg');
                 }else{
                     element.set('icon', customIconHref);
                 }
