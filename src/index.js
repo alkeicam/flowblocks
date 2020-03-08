@@ -1,5 +1,6 @@
 const joint = require("jointjs")
 const block = require('./block')
+const Flow = require('./flow')
 
 class Flowblocks {
     constructor(options) {
@@ -7,6 +8,7 @@ class Flowblocks {
         Object.assign(this.options, options);
         this._registeredTypes = {}
         this._elements = {};
+        this.flow = {}
     }
 
     registerType(typeName, statusDefinition, templateName){        
@@ -17,7 +19,9 @@ class Flowblocks {
         }
         return this._registeredTypes[typeName];
     }
-
+    createFlow(paperId){
+        this.flow = Flow.create(paperId); 
+    }
     createElement(typeName, label, position, size, customIconHref){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
@@ -43,5 +47,7 @@ class Flowblocks {
             throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
         }
     }
+
+    
 }
 module.exports = new Flowblocks({});
