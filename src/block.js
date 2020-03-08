@@ -132,7 +132,7 @@ class Block {
                     "element.set('name','my label');",
                     "element.set('position', {x:30, y:10});",
                     "element.set('size', {width:50, height: 50});",
-                    "element.set('icon', '//resources/img/svg/vase.svg');"
+                    "element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/vase.svg');"
                 ];
                 return api;
             },
