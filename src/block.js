@@ -14,11 +14,11 @@ class Block {
 
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block',{
             // now model fields
-            name: '',
-            //icon: 'https://mdn.mozillademos.org/files/6457/mdn_logo_only_color.png', // icon href
+            name: '',            
             icon: './resources/img/svg/agave.svg',
             status: 'OK', // OK, ERROR,
             statusMsg: 'OK',
+
             // now presentation fields
             attrs: {
                 rect: { 'ref-width': '100%',
@@ -97,7 +97,7 @@ class Block {
                 '<g class="rotatable">',
                 '<rect class="body"/>',
                 '<rect class="fb-icon-rect"/>',
-                '<image class="fb-icon-image" href="./resources/img/svg/agave.svg" />',
+                '<image class="fb-icon-image" href="//resources/img/svg/agave.svg" />',
                 '<rect class="fb-label-rect"/>',
                 '<text class="fb-label-text">Label</text>',
                 '<rect class="fb-status-rect"/>',
@@ -120,6 +120,16 @@ class Block {
                 this._updateMyModel();                
                 jointjs.shapes.devs.Model.prototype.initialize.apply(this, arguments);
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
+            },
+
+            api: function(){
+                var api = [
+                    "element.set('name','my label');",
+                    "element.set('position', {x:30, y:10});",
+                    "element.set('size', {width:50, height: 50});",
+                    "element.set('icon', '//resources/img/svg/vase.svg');"
+                ];
+                return api;
             },
 
             _recalculateRectWithLabel: function(classSelectorPrefix, label, elementHeight, fontSize, baseSize, positionY){        

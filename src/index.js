@@ -18,7 +18,7 @@ class Flowblocks {
         return this._registeredTypes[typeName];
     }
 
-    createElement(typeName, label, position, size){
+    createElement(typeName, label, position, size, customIconHref){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
             var element = block.createBlankElement(typeDefinition.template, typeDefinition.statusDefinition);
@@ -28,6 +28,15 @@ class Flowblocks {
             }
             if(size){
                 element.set('size', size);
+            }
+            if(customIconHref){
+                if(customIconHref.lastIndexOf('/')==-1){
+                    console.log('./resources/img/svg/'+customIconHref+'.svg')
+                    element.set('icon', './resources/img/svg/'+customIconHref+'.svg');
+                }else{
+                    element.set('icon', customIconHref);
+                }
+                
             }
             this._elements[element.id] = element;
             return element;
