@@ -111,9 +111,9 @@ class Block {
                     this.trigger('flowblocks-block-update');
                 }, this);
         
-                this.on('all',function(eName, thing){
-                    console.log(eName, thing);
-                })
+                // this.on('all',function(eName, thing){
+                //     console.log(eName, thing);
+                // })
                 
                 //this.updateRectangles();
                 
@@ -122,88 +122,59 @@ class Block {
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
 
-            _recalculateRectWithLabel: function(classSelectorPrefix, label, height, fontSize, baseSize, positionY){        
+            _recalculateRectWithLabel: function(classSelectorPrefix, label, elementHeight, fontSize, baseSize, positionY){        
                 var attrs = this.get('attrs');
                 // section height
-                var partHeight = height * baseSize.height;
-        
+                var partHeight = elementHeight * baseSize.height;
+                
                 var partFontSize = fontSize * partHeight;
                 var fontY = positionY + partHeight / 2;
                 var fontX = 0.1 * baseSize.width;
-                attrs[classSelectorPrefix+'-rect'].height = partHeight;
-                attrs[classSelectorPrefix+'-rect'].transform = 'translate(0,' + positionY + ')';
-                attrs[classSelectorPrefix+'-text']['font-size'] = partFontSize;
-                attrs[classSelectorPrefix+'-text'].transform = 'translate(' + fontX + ',' + fontY + ')';                
+
+                this.attr(classSelectorPrefix+'-rect/height', partHeight);
+                // attrs[classSelectorPrefix+'-rect'].height = partHeight;
+                this.attr(classSelectorPrefix+'-rect/transform', 'translate(0,' + positionY + ')');
+                // attrs[classSelectorPrefix+'-rect'].transform = 'translate(0,' + positionY + ')';
+
+                this.attr(classSelectorPrefix+'-text/font-size', partFontSize);
+                // attrs[classSelectorPrefix+'-text']['font-size'] = partFontSize;
+                this.attr(classSelectorPrefix+'-text/transform', 'translate(' + fontX + ',' + fontY + ')');
+                // attrs[classSelectorPrefix+'-text'].transform = 'translate(' + fontX + ',' + fontY + ')';                
                 this.attr(classSelectorPrefix+'-text/text',label);                
+                             
+                return partHeight;
+            },
+
+            _recalculateRectWithIcon: function(classSelectorPrefix, iconHref, elementHeight, iconSize, baseSize, positionY){                        
+                var partHeight = elementHeight*baseSize.height;
+
+                this.attr(classSelectorPrefix+'-rect/height', partHeight);            
+                this.attr(classSelectorPrefix+'-rect/transform', 'translate(0,' + positionY + ')');
                 
+                var iconHeight = iconSize * partHeight;
+                var iconX = baseSize.width / 2 - iconHeight / 2;
+                var iconY = positionY + partHeight / 2 - iconHeight / 2;
+
+                this.attr(classSelectorPrefix+'-image/height', iconHeight);                
+                this.attr(classSelectorPrefix+'-image/transform', 'translate(' + iconX + ',' + iconY + ')');                
+                this.attr(classSelectorPrefix+'-image/href', iconHref);                                
+                             
                 return partHeight;
             },
             
-            _updateMyModel: function(){
-                
-                var self = this;
-                
-                var attrs = this.get('attrs');
-
-                var fields = [
-                    // start with name
-                    {
+            _updateMyModel: function(){                
+                var self = this;            
+                var offsetY = 0;
+                var field = {
                         width: this.get('size').width,
                         height: this.get('size').height,
                         icon: this.get('icon'), 
                         name: this.get('name'),
                         statusMessage: this.get('statusMsg')
-                    }
-                ]
-
-                console.log(fields);
-
-                var offsetY = 0;
-
-                fields.forEach(function(field) {    
-                    
-                    offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);                                     
-                    // var partHeight = 0.2*field.height;
-                    // // name of element
-                    // attrs['.fb-label-rect'].height = partHeight;
-                    // attrs['.fb-label-rect'].transform = 'translate(0,' + offsetY + ')';
-
-                    // attrs['.fb-label-text'].text = field.name;                                                            
-                    
-                    // offsetY += partHeight;
-                    // icon of element
-                    
-                    var partHeight = 0.6*field.height;
-                    attrs['.fb-icon-rect'].height = partHeight;
-                    attrs['.fb-icon-rect'].transform = 'translate(0,' + offsetY + ')';
-
-                    // | height
-                    // || 
-                    // ||
-                    // |
-                    var iconHeight = 0.5*partHeight;
-                    var iconX = field.width/2-iconHeight/2;
-                    var iconY = offsetY+partHeight/2-iconHeight/2;
-                    attrs['.fb-icon-image'].height = iconHeight;
-                    attrs['.fb-icon-image'].transform = 'translate('+iconX+',' + iconY + ')';
-                    attrs['.fb-icon-image'].href = field.icon;
-                    
-                    offsetY += partHeight;
-                    // status section 
-                    // partHeight = 0.2*field.height;
-
-                    // var fontSize = 0.8*partHeight;
-                    // var fontY = offsetY+partHeight/2;
-                    // var fontX = 0.1*field.width;
-                    // attrs['.fb-status-rect'].height = partHeight;
-                    // attrs['.fb-status-rect'].transform = 'translate(0,' + offsetY + ')';
-                    // attrs['.fb-status-text']['font-size'] = fontSize;  
-                    // attrs['.fb-status-text'].transform = 'translate('+fontX+',' + fontY + ')';  
-                      
-                    offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);
-
-                    
-                });
+                }                
+                offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
+                offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
+                offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                                
             }
         },{
             // static props - object that contains properties to be assigned on the subtype constructor. 
