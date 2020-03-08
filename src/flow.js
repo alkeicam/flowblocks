@@ -11,23 +11,24 @@ class Flow {
     }
 
     _initialize() {
-
+        console.log('INITAILIZED');
     }
 
     create(paperDivId) {
-        this.graph = new joint.dia.Graph;
-        this.paper = new joint.dia.Paper({
+        var self = this;
+        this.graph = new jointjs.dia.Graph;
+        this.paper = new jointjs.dia.Paper({
 
             el: document.getElementById(paperDivId),
             width: 1200,
             height: 800,
             gridSize: 1,
-            model: graph,
+            model: self.graph,
             snapLinks: true,
             linkPinning: false,
             embeddingMode: true,
             clickThreshold: 5,
-            defaultLink: new joint.dia.Link({
+            defaultLink: new jointjs.dia.Link({
                 attrs: {
                     '.marker-target': { d: 'M 10 0 L 0 5 L 10 10 z' },
                     '.connection': { stroke: 'blue' },
@@ -52,7 +53,7 @@ class Flow {
             },
 
             validateEmbedding: function (childView, parentView) {
-                return parentView.model instanceof joint.shapes.devs.Coupled;
+                return parentView.model instanceof jointjs.shapes.devs.Coupled;
             },
 
             validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
@@ -69,6 +70,7 @@ class Flow {
             '</g>',
             '</g>' // <-- missing
         ].join('');
+        return this;
     }
 
 }
