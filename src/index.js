@@ -42,6 +42,7 @@ class Flowblocks {
                 
             }
             this._elements[element.id] = element;
+            this.flow.graph.addCell(element);
             return element;
         }else{
             throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
