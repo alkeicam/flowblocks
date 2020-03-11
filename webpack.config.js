@@ -31,6 +31,7 @@ module.exports = {
         extensions: [ '.js' ]
     },
     externals: {jointjs: "joint"}
+
     // ,
     // externals: [nodeExternals({
     //     whitelist: ['paytip-module-tipbox','paytip-module-core', 'paytip-module-wallet', 'paytip-module-integration','paytip-module-integration-inbound','paytip-module-bo']
