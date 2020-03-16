@@ -160,11 +160,17 @@ class Block {
                     console.log('Connections['+this.get('blockId')+']: ',JSON.stringify(this.get('_portConnections')));
             },
 
-            _recalculateStatus(){
+            _recalculateStatus(){                
+                var freePortsCount = this.freePorts().length;
                 
+                if(freePortsCount>0)
+                    this.set('status','ERROR');
+                else
+                    this.set('status','OK');
+                // console.log(this.get('blockId'),  freePortsCount, this.get('status'));
             },
 
-            _handleDisconnect(block, port, linkId, targetElement, newTargetElement){                
+            _handleDisconnect(block, port, linkId){                
                 
                 var recordToRemove = this.get('_portConnections').find(element=>{
                     return  element.port = port && element.id == block.id && element.linkId == linkId;
