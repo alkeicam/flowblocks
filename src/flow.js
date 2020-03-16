@@ -56,12 +56,12 @@ class Flow {
             },
 
             validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
-                //console.log('Source', cellViewS, magnetS )
+                // console.log('Source', cellViewS, magnetS )
                 var sourceElement = cellViewS.model;
 
-                //console.log('Target', cellViewT, magnetT )
+                // console.log('Target', cellViewT, magnetT )
                 var targetElement = cellViewT.model;
-                return magnetS != magnetT;
+                return magnetS != magnetT && magnetT.getAttribute('port-group')=='in' && cellViewS != cellViewT;
             }
         });
 

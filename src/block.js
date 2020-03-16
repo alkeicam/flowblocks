@@ -29,7 +29,7 @@ class Block {
             // type of element
             _type: undefined,
             // array of ports and elements that are connected to each port
-            _portConnections: undefined,    // {port: , id: connected element id , bId: connected element block id, type: connected element type}
+            _portConnections: [],   // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
 
             // now presentation fields
             attrs: {
@@ -139,6 +139,35 @@ class Block {
                 var portsConnected = this.get('_portsConnected');
                 return portsCount == portsConnected;
             },
+
+            _handleConnectFrom(participant, port){
+                console.log('ConnectFrom', port, participant);
+                // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
+                var item = {
+                    port: port,
+                    id: participant.get('id'),
+                    bId: participant.get('blockId'),
+                    type: participant.get('_type')
+                }                
+                this.get('_portConnections').push(item);
+                console.log('ConnectFrom', this.get('_portConnections'));
+                //this._revalidate();
+            },
+
+            _handleConnectTo(participant, port){
+                console.log('ConnectTo', port, participant);
+                // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
+                var item = {
+                    port: port,
+                    id: participant.get('id'),
+                    bId: participant.get('blockId'),
+                    type: participant.get('_type')
+                }                
+                this.get('_portConnections').push(item);
+                console.log('ConnectTo', this.get('_portConnections'));
+                //this._revalidate();
+            },
+            
 
             // handleConnection(sourceElement, targetElement){
             //     if(sourceElement.id==this.id){

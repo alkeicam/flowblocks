@@ -23,6 +23,9 @@ class Flowblocks {
     createFlow(paperId){
         var self = this;
         this.flow = Flow.create(paperId); 
+        // this.flow.graph.on('change', function(a,b,c,d,e) {
+        //     console.log(a,b,c,d,e);
+        // })
         this.flow.graph.on('change:source change:target', function(link) {
             if (link.get('source').id && link.get('target').id) {
                 //{id: "a89604ba-f176-4616-b37f-547841dd1f9b", port: "in"}
@@ -32,9 +35,12 @@ class Flowblocks {
                 var sourceElement = self._elements[source.id];
                 var targetElement = self._elements[target.id];
                 console.log('Connected', sourceElement, source.port, targetElement, target.port);
+                sourceElement._handleConnectTo(targetElement, target.port);  
+                targetElement._handleConnectFrom(sourceElement, source.port);            
             }
         })
         this.flow.paper.on('link:disconnect', function(link, evt, elementViewDisconnected, magnet, arrowhead) {
+            var disconnectedFrom = elementViewDisconnected.model;
             
             var participants = helper.linkGetParticipants(link.model, self.flow);
             if(participants)
