@@ -77,6 +77,7 @@ class Flowblocks {
 
                 sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
                 targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
+                
 
                 // if (participants)
                 //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
