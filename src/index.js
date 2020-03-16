@@ -27,6 +27,7 @@ class Flowblocks {
         //     console.log(a,b,c,d,e);
         // })
         this.flow.graph.on('change:source change:target', function(link) {
+            
             if (link.get('source').id && link.get('target').id) {
                 //{id: "a89604ba-f176-4616-b37f-547841dd1f9b", port: "in"}
                 var source = link.get('source');
@@ -42,8 +43,8 @@ class Flowblocks {
                 });
                 
                 //console.log('Connected', sourceElement, source.port, targetElement, target.port);
-                sourceElement._handleConnectTo(targetElement, source.port);  
-                targetElement._handleConnectFrom(sourceElement, target.port);            
+                sourceElement._handleConnectTo(targetElement, source.port, target.port, link.id);  
+                targetElement._handleConnectFrom(sourceElement, target.port, source.port, link.id);            
             }
         })
         this.flow.paper.on('link:disconnect', function(link, evt, elementViewDisconnected, magnet, arrowhead) {
@@ -56,22 +57,8 @@ class Flowblocks {
             var targetPort = magnet.getAttribute('port');
             var sourcePort =  participants.sourcePort;
 
-            //sourceElement._handleDisconnect(sourcePort);
-            targetElement._handleDisconnect(targetPort);
-
-            //console.log('Disconnecting', sourcePort, targetPort, sourceElement, targetElement);
-            // if(participants)
-            //     console.log('Disconnected:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);
-
-            // if (link.get('source').id && link.get('target').id) {
-            //     //{id: "a89604ba-f176-4616-b37f-547841dd1f9b", port: "in"}
-            //     var source = link.get('source');
-            //     var target = link.get('target');
-                
-            //     var sourceElement = self._elements[source.id];
-            //     var targetElement = self._elements[target.id];
-            //     console.log('Connected', sourceElement, source.port, targetElement, target.port);
-            // }
+            sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
+            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
         })
         this.flow.graph.on('remove', function(cell) {
             

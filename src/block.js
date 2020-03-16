@@ -150,25 +150,35 @@ class Block {
                 
             },
 
-            _handleDisconnect(port){
+            _handleDisconnect(block, port, linkId){
+                console.log(this.get('blockId'), block, port, linkId);
                 
                 var recordToRemove = this.get('_portConnections').find(element=>{
-                    return element.port == port;
+                    return element.port == port && element.id == block.id && element.linkId == linkId;
                 })
 
-                var arrayWithRemoved = this.get('_portConnections').filter(element=>{
-                    return element.port != port;
+                var idxToRemove = this.get('_portConnections').findIndex(element=>{
+                    return element.port == port && element.id == block.id && element.linkId == linkId;
                 })
-
-                this.set('_portConnections', arrayWithRemoved);
-                console.log('Disconnected',  this.get('blockId'), port, recordToRemove.bId);
-                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
+                console.log(recordToRemove, idxToRemove);
+                // var arrayWithRemoved = this.get('_portConnections').filter(element=>{
+                //     console.log(element, block, port, element.port != port || element.id != block.id);
+                //     return element.port != port || element.id != block.id;
+                // })
                 this._dumpConnections();
+                if(idxToRemove>=0)
+                    this.get('_portConnections').splice(idxToRemove,1);
+                this._dumpConnections();
+
+                //this.set('_portConnections', arrayWithRemoved);
+                console.log('Disconnected',  this.get('blockId'), port, recordToRemove ? recordToRemove.bId: undefined);
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
+                //this._dumpConnections();
                 this._recalculateStatus();
 
             },
 
-            _handleConnectFrom(participant, port){
+            _handleConnectFrom(participant, port, targetPort, linkId){
                 
                 //console.log('ConnectFrom', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
@@ -176,26 +186,46 @@ class Block {
                     port: port,
                     id: participant.get('id'),
                     bId: participant.get('blockId'),
-                    type: participant.get('_type')
+                    type: participant.get('_type'),
+                    targetPort: targetPort,
+                    linkId: linkId
                 }                
 
-                // check if the element is already
-                var matchingElement = this.get('_portConnections').find(element=>{
-                    return element.id == item.id && element.port == item.port;
-                })
-
-                if(!matchingElement){
-                    this.get('_portConnections').push(item);
-                    //console.log('Connect', this.get('blockId'), participant.get('blockId'));
-                }else{
-                    console.log('Already connected', this.get('blockId'), participant.get('blockId'));
-                }
-                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
                 this._dumpConnections();
+
+                // check that there is already a connection for given link id,
+                // if so one must remove that connection prior adding the new one
+                var matchingElementByLink = this.get('_portConnections').find(element=>{
+                    return element.linkId == linkId;
+                })                    
+                var idxToRemove = this.get('_portConnections').findIndex(element=>{
+                    return element.linkId == linkId;
+                })
+                this.get('_portConnections').splice(idxToRemove,1);
+
+                // check if the element is already
+                // var matchingElement = this.get('_portConnections').find(element=>{                    
+                //     return element.id == participant.get('id') && element.port == port && element.targetPort == targetPort;
+                // })
+                // console.log('Matching: ', matchingElement);
+
+                
+                this.get('_portConnections').push(item);
+                
+                this._dumpConnections();
+                console.log('Connect', participant.get('blockId'), this.get('blockId'), port);
+                // if(!matchingElement){
+                //     this.get('_portConnections').push(item);
+                //     console.log('Connect', participant.get('blockId'), this.get('blockId'));
+                // }else{
+                //     //console.log('Already connected', this.get('blockId'), participant.get('blockId'));
+                // }
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
+                // this._dumpConnections();
                 this._recalculateStatus();
             },
 
-            _handleConnectTo(participant, port){
+            _handleConnectTo(participant, port, targetPort, linkId){
                 
                 // console.log('ConnectTo', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
@@ -203,21 +233,36 @@ class Block {
                     port: port,
                     id: participant.get('id'),
                     bId: participant.get('blockId'),
-                    type: participant.get('_type')
+                    type: participant.get('_type'),
+                    targetPort: targetPort,
+                    linkId: linkId
                 }  
+                this._dumpConnections();
                 // check if the element is already
                 var matchingElement = this.get('_portConnections').find(element=>{
-                    return element.id == item.id && element.port == item.port;
+                    
+                    return element.id == participant.get('id') && element.port == port && element.targetPort == targetPort;
                 })
+                console.log('Matching: ', matchingElement);
+
+                var idxToRemove = this.get('_portConnections').findIndex(element=>{
+                    return element.linkId == linkId;
+                })
+                this.get('_portConnections').splice(idxToRemove,1);
+              
                 
-                if(!matchingElement){
-                    this.get('_portConnections').push(item);
-                    //console.log('Connect', participant.get('blockId'), this.get('blockId') );
-                }else{
-                    console.log('Already connected', this.get('blockId'), participant.get('blockId'));
-                }         
-                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));   
+                this.get('_portConnections').push(item);
+                
                 this._dumpConnections();
+                console.log('Connect', this.get('blockId'), participant.get('blockId'), port);
+                // if(!matchingElement){
+                //     this.get('_portConnections').push(item);
+                //     console.log('Connect', this.get('blockId'), participant.get('blockId'));
+                // }else{
+                //     //console.log('Already connected', this.get('blockId'), participant.get('blockId'));
+                // }         
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));   
+                // this._dumpConnections();
                 this._recalculateStatus();  
             },
                     
