@@ -26,27 +26,28 @@ class Flowblocks {
         // this.flow.graph.on('change', function(a,b,c,d,e) {
         //     console.log(a,b,c,d,e);
         // })
-        this.flow.graph.on('change:source change:target', function(link) {
+        this.flow.paper.on('link:connect', function(linkView, evt, elementViewConnected, magnet, arrowhead) {
             
-            if (link.get('source').id && link.get('target').id) {
-                //{id: "a89604ba-f176-4616-b37f-547841dd1f9b", port: "in"}
-                var source = link.get('source');
-                var target = link.get('target');
-                
-                var sourceElement = self._elements.find(element=>{                    
-                    return element.id == source.id
-                });
-                
-                //var targetElement = self._elements[target.id];
-                var targetElement = self._elements.find(element=>{
-                    return element.id == target.id
-                });
-                
-                //console.log('Connected', sourceElement, source.port, targetElement, target.port);
-                sourceElement._handleConnectTo(targetElement, source.port, target.port, link.id);  
-                targetElement._handleConnectFrom(sourceElement, target.port, source.port, link.id);            
-            }
+            var newParticipants = helper.linkGetParticipants(linkView.model, self.flow);
+            
+            var sourceElement = newParticipants.sourceElement;
+            var targetElement = newParticipants.targetElement;
+
+            
+
+            var sourcePort =  newParticipants.sourcePort;
+            var targetPort =  newParticipants.targetPort;
+            
+            
+            var previousTargetElement = elementViewConnected.model
+            var previousTargetPort = magnet.getAttribute('port');    
+
+            // console.log('CONNECTED ', sourceElement, sourcePort, targetElement, targetPort, previousTargetElement, previousTargetPort);
+
+            sourceElement._handleConnectTo(targetElement, sourcePort, targetPort, linkView.model.id);  
+            targetElement._handleConnectFrom(sourceElement, targetPort, sourcePort, linkView.model.id);             
         })
+
         this.flow.paper.on('link:disconnect', function(link, evt, elementViewDisconnected, magnet, arrowhead) {
             
             var participants = helper.linkGetParticipants(link.model, self.flow);
@@ -55,32 +56,19 @@ class Flowblocks {
             var targetElement = elementViewDisconnected.model
 
             var targetPort = magnet.getAttribute('port');
-            var sourcePort =  participants.sourcePort;
-
-            // in case when disconnect is done after connecting with some other element
+            var sourcePort =  participants.sourcePort;            
             var newTargetElement = participants.targetElement;
 
-            console.log(sourceElement, targetElement, newTargetElement);
+            // console.log(sourceElement, targetElement, newTargetElement);
 
-            //sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
-            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id, targetElement, newTargetElement);            
+            sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
+            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
         })
         this.flow.graph.on('remove', function(cell) {
             
             var participants = helper.linkGetParticipants(cell, self.flow);                        
             if(participants)
-                console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);
-            
-            
-            // if (link.get('source').id && link.get('target').id) {
-            //     //{id: "a89604ba-f176-4616-b37f-547841dd1f9b", port: "in"}
-            //     var source = link.get('source');
-            //     var target = link.get('target');
-                
-            //     var sourceElement = self._elements[source.id];
-            //     var targetElement = self._elements[target.id];
-            //     console.log('Connected', sourceElement, source.port, targetElement, target.port);
-            // }
+                console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
         })
     }
     createElement(typeName, label, blockId, position, size, customIconHref){
