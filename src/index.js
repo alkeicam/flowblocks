@@ -66,9 +66,22 @@ class Flowblocks {
         })
         this.flow.graph.on('remove', function(cell) {
             
-            var participants = helper.linkGetParticipants(cell, self.flow);                        
-            if(participants)
-                console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
+            if(cell.isLink()){
+                var participants = helper.linkGetParticipants(cell, self.flow);
+
+                var sourceElement = participants.sourceElement;
+                var targetElement = participants.targetElement;
+
+                var sourcePort = participants.sourcePort;
+                var targetPort = participants.targetPort;
+
+                sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
+                targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
+
+                // if (participants)
+                //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
+            }
+            
         })
     }
     createElement(typeName, label, blockId, position, size, customIconHref){
