@@ -135,10 +135,24 @@ class Block {
                 return api;
             },
 
-            allPortsConnected(){
-                var portsCount = this.getPorts().lenght;
-                var portsConnected = this.get('_portsConnected');
-                return portsCount == portsConnected;
+            freePorts(){
+                var ports = this.getPorts();
+                var usedPorts = this.get('_portConnections');
+
+                // ports that are not used and can be connected
+                var freePorts = [];
+                
+                ports.forEach(element=>{
+                    // find if current port is occupied
+                    var usedPort = usedPorts.find(uPort=>{
+                        return uPort.port == element.id;
+                    })
+                    if(!usedPort){
+                        freePorts.push(element);
+                    }
+                })
+
+                return freePorts;
             },
 
             _dumpConnections(){
@@ -150,7 +164,13 @@ class Block {
                 
             },
 
-            _handleDisconnect(block, port, linkId){
+            _handleDisconnect(block, port, linkId, targetElement, newTargetElement){
+                console.log(block.id, targetElement.id, newTargetElement.id, port, linkId);
+                this._dumpConnections();
+                if(targetElement.id == newTargetElement.id){
+                    console.log('Same');
+                    return;
+                }
                 // console.log(this.get('blockId'), block, port, linkId);
                 
                 var recordToRemove = this.get('_portConnections').find(element=>{
@@ -214,7 +234,7 @@ class Block {
                 this.get('_portConnections').push(item);
                 
                 // this._dumpConnections();
-                console.log('Connect', participant.get('blockId'), this.get('blockId'), port);
+                console.log('Connect', this.get('blockId'), participant.get('blockId'),  port);
                 // if(!matchingElement){
                 //     this.get('_portConnections').push(item);
                 //     console.log('Connect', participant.get('blockId'), this.get('blockId'));

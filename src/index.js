@@ -57,8 +57,13 @@ class Flowblocks {
             var targetPort = magnet.getAttribute('port');
             var sourcePort =  participants.sourcePort;
 
-            sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
-            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
+            // in case when disconnect is done after connecting with some other element
+            var newTargetElement = participants.targetElement;
+
+            console.log(sourceElement, targetElement, newTargetElement);
+
+            //sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
+            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id, targetElement, newTargetElement);            
         })
         this.flow.graph.on('remove', function(cell) {
             
