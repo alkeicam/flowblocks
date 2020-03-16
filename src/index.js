@@ -107,8 +107,7 @@ class Flowblocks {
                 }
                 
             }
-            //this._elements[element.id] = element;
-            console.log(element);
+            //this._elements[element.id] = element;            
             this._elements.push(element);
             this.flow.graph.addCell(element);
             return element;

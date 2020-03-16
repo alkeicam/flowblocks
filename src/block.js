@@ -151,7 +151,7 @@ class Block {
             },
 
             _handleDisconnect(block, port, linkId){
-                console.log(this.get('blockId'), block, port, linkId);
+                // console.log(this.get('blockId'), block, port, linkId);
                 
                 var recordToRemove = this.get('_portConnections').find(element=>{
                     return element.port == port && element.id == block.id && element.linkId == linkId;
@@ -160,15 +160,15 @@ class Block {
                 var idxToRemove = this.get('_portConnections').findIndex(element=>{
                     return element.port == port && element.id == block.id && element.linkId == linkId;
                 })
-                console.log(recordToRemove, idxToRemove);
+                // console.log(recordToRemove, idxToRemove);
                 // var arrayWithRemoved = this.get('_portConnections').filter(element=>{
                 //     console.log(element, block, port, element.port != port || element.id != block.id);
                 //     return element.port != port || element.id != block.id;
                 // })
-                this._dumpConnections();
+                // this._dumpConnections();
                 if(idxToRemove>=0)
                     this.get('_portConnections').splice(idxToRemove,1);
-                this._dumpConnections();
+                // this._dumpConnections();
 
                 //this.set('_portConnections', arrayWithRemoved);
                 console.log('Disconnected',  this.get('blockId'), port, recordToRemove ? recordToRemove.bId: undefined);
@@ -191,7 +191,7 @@ class Block {
                     linkId: linkId
                 }                
 
-                this._dumpConnections();
+                // this._dumpConnections();
 
                 // check that there is already a connection for given link id,
                 // if so one must remove that connection prior adding the new one
@@ -201,7 +201,8 @@ class Block {
                 var idxToRemove = this.get('_portConnections').findIndex(element=>{
                     return element.linkId == linkId;
                 })
-                this.get('_portConnections').splice(idxToRemove,1);
+                if(idxToRemove>=0)
+                    this.get('_portConnections').splice(idxToRemove,1);
 
                 // check if the element is already
                 // var matchingElement = this.get('_portConnections').find(element=>{                    
@@ -212,7 +213,7 @@ class Block {
                 
                 this.get('_portConnections').push(item);
                 
-                this._dumpConnections();
+                // this._dumpConnections();
                 console.log('Connect', participant.get('blockId'), this.get('blockId'), port);
                 // if(!matchingElement){
                 //     this.get('_portConnections').push(item);
@@ -237,23 +238,24 @@ class Block {
                     targetPort: targetPort,
                     linkId: linkId
                 }  
-                this._dumpConnections();
+                // this._dumpConnections();
                 // check if the element is already
                 var matchingElement = this.get('_portConnections').find(element=>{
                     
                     return element.id == participant.get('id') && element.port == port && element.targetPort == targetPort;
                 })
-                console.log('Matching: ', matchingElement);
+                // console.log('Matching: ', matchingElement);
 
                 var idxToRemove = this.get('_portConnections').findIndex(element=>{
                     return element.linkId == linkId;
                 })
-                this.get('_portConnections').splice(idxToRemove,1);
+                if(idxToRemove>=0)
+                    this.get('_portConnections').splice(idxToRemove,1);
               
                 
                 this.get('_portConnections').push(item);
                 
-                this._dumpConnections();
+                // this._dumpConnections();
                 console.log('Connect', this.get('blockId'), participant.get('blockId'), port);
                 // if(!matchingElement){
                 //     this.get('_portConnections').push(item);
