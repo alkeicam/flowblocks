@@ -24,6 +24,7 @@ class Block {
             status: 'OK', // OK, ERROR,
             statusMsg: 'OK',
             blockId: undefined,
+            debug: true, // debug mode when blockId is presented
             // stores number of ports of this element that are already connected
             _portsConnected: 0,
             // type of element
@@ -140,8 +141,36 @@ class Block {
                 return portsCount == portsConnected;
             },
 
+            _dumpConnections(){
+                if(this.get('debug'))
+                    console.log('Connections['+this.get('blockId')+']: ',JSON.stringify(this.get('_portConnections')));
+            },
+
+            _recalculateStatus(){
+                
+            },
+
+            _handleDisconnect(port){
+                
+                var recordToRemove = this.get('_portConnections').find(element=>{
+                    return element.port == port;
+                })
+
+                var arrayWithRemoved = this.get('_portConnections').filter(element=>{
+                    return element.port != port;
+                })
+
+                this.set('_portConnections', arrayWithRemoved);
+                console.log('Disconnected',  this.get('blockId'), port, recordToRemove.bId);
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
+                this._dumpConnections();
+                this._recalculateStatus();
+
+            },
+
             _handleConnectFrom(participant, port){
-                console.log('ConnectFrom', port, participant);
+                
+                //console.log('ConnectFrom', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
                 var item = {
                     port: port,
@@ -149,47 +178,49 @@ class Block {
                     bId: participant.get('blockId'),
                     type: participant.get('_type')
                 }                
-                this.get('_portConnections').push(item);
-                console.log('ConnectFrom', this.get('_portConnections'));
-                //this._revalidate();
+
+                // check if the element is already
+                var matchingElement = this.get('_portConnections').find(element=>{
+                    return element.id == item.id && element.port == item.port;
+                })
+
+                if(!matchingElement){
+                    this.get('_portConnections').push(item);
+                    //console.log('Connect', this.get('blockId'), participant.get('blockId'));
+                }else{
+                    console.log('Already connected', this.get('blockId'), participant.get('blockId'));
+                }
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));     
+                this._dumpConnections();
+                this._recalculateStatus();
             },
 
             _handleConnectTo(participant, port){
-                console.log('ConnectTo', port, participant);
+                
+                // console.log('ConnectTo', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
                 var item = {
                     port: port,
                     id: participant.get('id'),
                     bId: participant.get('blockId'),
                     type: participant.get('_type')
-                }                
-                this.get('_portConnections').push(item);
-                console.log('ConnectTo', this.get('_portConnections'));
-                //this._revalidate();
-            },
-            
-
-            // handleConnection(sourceElement, targetElement){
-            //     if(sourceElement.id==this.id){
-
-            //     }else{
-
-            //     }
-            //     var currentlyConnected = this.get('_portsConnected');
-            //     this.set('_portsConnected', currentlyConnected++);
-
+                }  
+                // check if the element is already
+                var matchingElement = this.get('_portConnections').find(element=>{
+                    return element.id == item.id && element.port == item.port;
+                })
                 
-            //     var ports = this.getPorts();
-            //     var outPorts = ports.filter(port=>{
-            //         return port.group == 'out';
-            //     })
-            //     for(var i=0; i<ports.length; i++){
-            //         var port = ports[i];
-
-            //     }
-            // }
-            
-
+                if(!matchingElement){
+                    this.get('_portConnections').push(item);
+                    //console.log('Connect', participant.get('blockId'), this.get('blockId') );
+                }else{
+                    console.log('Already connected', this.get('blockId'), participant.get('blockId'));
+                }         
+                //console.log('ConnectionsList of ', this.get('blockId'), this.get('_portConnections'));   
+                this._dumpConnections();
+                this._recalculateStatus();  
+            },
+                    
             _recalculateRectWithLabel: function(classSelectorPrefix, label, elementHeight, fontSize, baseSize, positionY){        
                 var attrs = this.get('attrs');
                 // section height
@@ -237,7 +268,7 @@ class Block {
                         width: this.get('size').width,
                         height: this.get('size').height,
                         icon: this.get('icon'), 
-                        name: this.get('name'),
+                        name: this.get('debug') ? this.get('name')+'['+this.get('blockId')+']' : this.get('name'),
                         statusMessage: this.get('statusMsg')
                 }                
                 offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
