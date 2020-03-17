@@ -173,11 +173,11 @@ class Block {
             _handleDisconnect(block, port, linkId){                
                 
                 var recordToRemove = this.get('_portConnections').find(element=>{
-                    return  element.port = port && element.id == block.id && element.linkId == linkId;
+                    return  element.port == port && element.id == block.id && element.linkId == linkId;
                 })
 
                 var idxToRemove = this.get('_portConnections').findIndex(element=>{
-                    return  element.port = port && element.id == block.id && element.linkId == linkId;
+                    return  element.port == port && element.id == block.id && element.linkId == linkId;
                 })
                 if(idxToRemove>=0)
                     this.get('_portConnections').splice(idxToRemove,1);
@@ -187,6 +187,7 @@ class Block {
             },
 
             _handleConnectFrom(participant, port, targetPort, linkId){
+
                 
                 //console.log('ConnectFrom', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
@@ -204,6 +205,7 @@ class Block {
             },
 
             _handleConnectTo(participant, port, targetPort, linkId){
+
                 
                 // console.log('ConnectTo', port, participant);
                 // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }

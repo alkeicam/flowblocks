@@ -1,4 +1,5 @@
 const jointjs = require("jointjs")
+const helper = require('./helper')
 
 class Flow {
     constructor(options) {
@@ -74,11 +75,77 @@ class Flow {
             '</g>',
             '</g>' // <-- missing
         ].join('');
+
+        this._bindConnectionEvents();
         
         return this;
 
 
         
+    }
+
+    _bindConnectionEvents(){
+        var self = this;
+
+        this.paper.on('link:connect', function(linkView, evt, elementViewConnected, magnet, arrowhead) {
+            
+            var newParticipants = helper.linkGetParticipants(linkView.model, self);
+            
+            var sourceElement = newParticipants.sourceElement;
+            var targetElement = newParticipants.targetElement;
+
+            
+
+            var sourcePort =  newParticipants.sourcePort;
+            var targetPort =  newParticipants.targetPort;
+            
+            
+            var previousTargetElement = elementViewConnected.model
+            var previousTargetPort = magnet.getAttribute('port');    
+
+            // console.log('CONNECTED ', sourceElement, sourcePort, targetElement, targetPort, previousTargetElement, previousTargetPort);
+
+            sourceElement._handleConnectTo(targetElement, sourcePort, targetPort, linkView.model.id);  
+            targetElement._handleConnectFrom(sourceElement, targetPort, sourcePort, linkView.model.id);             
+        })
+
+        this.paper.on('link:disconnect', function(link, evt, elementViewDisconnected, magnet, arrowhead) {
+            
+            var participants = helper.linkGetParticipants(link.model, self);
+            
+            var sourceElement = participants.sourceElement;
+            var targetElement = elementViewDisconnected.model
+
+            // var targetPort = magnet.getAttribute('port');
+            var targetPort = participants.targetPort;
+            var sourcePort =  participants.sourcePort;            
+            var newTargetElement = participants.targetElement;
+
+            // console.log(sourceElement, targetElement, newTargetElement);
+
+            sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
+            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
+        })
+        this.graph.on('remove', function(cell) {
+            
+            if(cell.isLink()){
+                var participants = helper.linkGetParticipants(cell, self);
+
+                var sourceElement = participants.sourceElement;
+                var targetElement = participants.targetElement;
+
+                var sourcePort = participants.sourcePort;
+                var targetPort = participants.targetPort;
+
+                sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
+                targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
+                
+
+                // if (participants)
+                //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
+            }
+            
+        })
     }
 
 }
