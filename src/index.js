@@ -74,6 +74,16 @@ class Flowblocks {
         })
     }
 
+    enablePanAndZoom(panAndZoom){
+        // must have svg-pan-zoom library loaded on page
+        if(!panAndZoom) return;
+        try{
+            this.flow.enablePanAndZoom(panAndZoom);
+        }catch(error){
+            console.error(error);
+        }
+    }
+
     
 }
 module.exports = new Flowblocks({});

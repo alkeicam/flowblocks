@@ -1,4 +1,4 @@
-    const jointjs = require("jointjs")
+const jointjs = require("jointjs")
 const helper = require('./helper')
 
 class Flow {
@@ -89,14 +89,9 @@ class Flow {
             '</g>' // <-- missing
         ].join('');
 
-        this._bindConnectionEvents();
-        
+        this._bindConnectionEvents();                
         return this;
-
-
-        
     }
-
     _bindConnectionEvents(){
         var self = this;
 
@@ -160,6 +155,23 @@ class Flow {
             }
             
         })
+    }
+    enablePanAndZoom(panAndZoom){
+        var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'),{
+            fit: false,
+            panEnabled: false
+        });
+
+        //Enable pan when a blank area is click (held) on
+        this.paper.on('blank:pointerdown', function (evt, x, y) {
+            pzController.enablePan();
+            //console.log(x + ' ' + y);
+        });
+
+        //Disable pan when the mouse button is released
+        this.paper.on('cell:pointerup blank:pointerup', function(cellView, event) {
+            pzController.disablePan();
+        });
     }
 
     validate(){
