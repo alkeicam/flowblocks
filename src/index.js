@@ -28,6 +28,11 @@ class Flowblocks {
         // })
         
     }
+    getElement(blockId){
+        return this._elements.find(element=>{
+            return element.get('blockId') == blockId;
+        })
+    }
     createElement(typeName, label, blockId, position, size, customIconHref){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
