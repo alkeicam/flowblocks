@@ -12,11 +12,12 @@ class Flowblocks {
         this.flow = {}
     }
 
-    registerType(typeName, statusDefinition, templateName){        
+    registerType(typeName, statusDefinition, templateName, defaultStyle){        
         this._registeredTypes[typeName] = {
             name: typeName,
             statusDefinition: statusDefinition,
-            template: templateName
+            template: templateName,
+            style: defaultStyle
         }
         return this._registeredTypes[typeName];
     }
@@ -33,10 +34,10 @@ class Flowblocks {
             return element.get('blockId') == blockId;
         })
     }
-    createElement(typeName, label, blockId, position, size, customIconHref){
+    createElement(typeName, label, blockId, position, size, customIconHref, style){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var element = block.createBlankElement(typeDefinition.template, typeDefinition.statusDefinition);            
+            var element = block.createBlankElement(typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);            
             element.set('name',label);
             element.set('_type', typeDefinition.name);
             if(blockId){
@@ -53,7 +54,7 @@ class Flowblocks {
             }
             if(size){
                 element.set('size', size);
-            }
+            }            
             if(customIconHref){
                 if(customIconHref.lastIndexOf('/')==-1){                    
                     element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+customIconHref+'.svg');

@@ -42,6 +42,14 @@ class Block {
                     portInColor: '#16A085',
                     portOutColor: '#E74C3C'
                 },
+                'cream' : {
+                    icon: undefined,
+                    bodyColor: '#FAE8FF',
+                    titleBarColor: '#E1C2ED',
+                    statusBarColor: '#E1C2ED',
+                    portInColor: '#936DED',
+                    portOutColor: '#F2EAD7'
+                }
                 
             },
             // stores number of ports of this element that are already connected
@@ -222,7 +230,8 @@ class Block {
             },
 
             _handleDisconnect(block, port, linkId) {
-
+                if(block==undefined)
+                    return;
                 var recordToRemove = this.get('_portConnections').find(element => {
                     return element.port == port && element.id == block.id && element.linkId == linkId;
                 })
@@ -352,7 +361,7 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlankElement(template, statusDefinition) {
+    createBlankElement(template, statusDefinition, style) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -361,7 +370,8 @@ class Block {
             End: this.createSinkElement
         }
         if (factories[template]) {
-            return factories[template].call(this, '', statusDefinition);
+            var block = factories[template].call(this, '', statusDefinition, style);
+            return block;
         } else {
             throw new Error('Unsuported template: ' + template);
         }
@@ -373,7 +383,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createSplitElement(name, statusDefinition) {
+    createSplitElement(name, statusDefinition, style) {
         var options = {
             position: { x: 40, y: 20 },
             size: this.options.defaultSize,
@@ -404,6 +414,8 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
+        if(style)
+            newBlock.style(style);
         return newBlock;
     }
 
@@ -412,7 +424,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createJoinElement(name, statusDefinition) {
+    createJoinElement(name, statusDefinition, style) {
         var options = {
             position: { x: 40, y: 20 },
             size: this.options.defaultSize,
@@ -443,6 +455,8 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
+        if(style)
+            newBlock.style(style);
         return newBlock;
     }
 
@@ -451,7 +465,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createPassThroughElement(name, statusDefinition) {
+    createPassThroughElement(name, statusDefinition, style) {
         var options = {
             position: { x: 40, y: 20 },
             size: this.options.defaultSize,
@@ -482,6 +496,8 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
+        if(style)
+            newBlock.style(style);
         return newBlock;
     }
 
@@ -491,7 +507,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createStartElement(name, statusDefinition) {
+    createStartElement(name, statusDefinition, style) {
         var options = {
             position: { x: 40, y: 20 },
             size: this.options.defaultSize,
@@ -513,6 +529,8 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
+        if(style)
+            newBlock.style(style);
         return newBlock;
     }
 
@@ -521,7 +539,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createSinkElement(name, statusDefinition) {
+    createSinkElement(name, statusDefinition, style) {
         var options = {
             position: { x: 40, y: 20 },
             size: this.options.defaultSize,
@@ -543,6 +561,8 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
+        if(style)
+            newBlock.style(style);
         return newBlock;
     }
 }

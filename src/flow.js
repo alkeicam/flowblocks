@@ -1,4 +1,4 @@
-const jointjs = require("jointjs")
+    const jointjs = require("jointjs")
 const helper = require('./helper')
 
 class Flow {
@@ -122,9 +122,10 @@ class Flow {
             var newTargetElement = participants.targetElement;
 
             // console.log(sourceElement, targetElement, newTargetElement);
-
-            sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
-            targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
+            if(targetElement!=undefined && sourceElement!= undefined){
+                sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
+                targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
+            }            
         })
         this.graph.on('remove', function(cell) {
             
@@ -136,10 +137,10 @@ class Flow {
 
                 var sourcePort = participants.sourcePort;
                 var targetPort = participants.targetPort;
-
-                sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
-                targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
-                
+                if(targetElement!=undefined && sourceElement!= undefined){
+                    sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
+                    targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
+                }
 
                 // if (participants)
                 //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
