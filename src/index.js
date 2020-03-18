@@ -58,10 +58,8 @@ class Flowblocks {
                     newBlock.set('icon', customIconHref);
                 }
                 
-            }
-            //this._elements[element.id] = element;            
-            this.flow._blocks.push(newBlock);
-            this.flow.graph.addCell(newBlock);
+            }     
+            this.flow.addBlock(newBlock);
             return newBlock;
         }else{
             throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');

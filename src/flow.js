@@ -12,7 +12,7 @@ class Flow {
         this._initialize();
     }
 
-    _initialize() {        
+    _initialize() {
     }
 
     create(paperDivId) {
@@ -63,19 +63,19 @@ class Flow {
 
                 // console.log('Target', cellViewT, magnetT )
                 var targetElement = cellViewT.model;
-                return magnetS != magnetT && magnetT.getAttribute('port-group')=='in' && cellViewS != cellViewT;
+                return magnetS != magnetT && magnetT.getAttribute('port-group') == 'in' && cellViewS != cellViewT;
             },
             validateMagnet: function (cellView, magnet, evt) {
-                
+
                 // by default passive magnets cant create connections
-                if(magnet.getAttribute('magnet') == 'passive'){
+                if (magnet.getAttribute('magnet') == 'passive') {
                     return false;
                 }
                 // check if there is a free output port
                 var sourceElement = cellView.model;
                 var freePorts = sourceElement.freePorts('out')
 
-                return freePorts.length > 0;                
+                return freePorts.length > 0;
             }
         });
 
@@ -89,55 +89,66 @@ class Flow {
             '</g>' // <-- missing
         ].join('');
 
-        this._bindConnectionEvents();                
+        this._bindConnectionEvents();
+        this._bindToolsEvents();
         return this;
     }
-    _bindConnectionEvents(){
+
+    _bindToolsEvents() {
+        this.paper.on('element:mouseenter', function (view) {
+            view.showTools();
+        });
+
+        this.paper.on('element:mouseleave', function (view) {
+            view.hideTools();
+        });
+    }
+    _bindConnectionEvents() {
         var self = this;
 
-        this.paper.on('link:connect', function(linkView, evt, elementViewConnected, magnet, arrowhead) {
-            
+        this.paper.on('link:connect', function (linkView, evt, elementViewConnected, magnet, arrowhead) {
+
             var newParticipants = helper.linkGetParticipants(linkView.model, self);
-            
+
             var sourceElement = newParticipants.sourceElement;
             var targetElement = newParticipants.targetElement;
 
-            
 
-            var sourcePort =  newParticipants.sourcePort;
-            var targetPort =  newParticipants.targetPort;
-            
-            
+
+            var sourcePort = newParticipants.sourcePort;
+            var targetPort = newParticipants.targetPort;
+
+
             var previousTargetElement = elementViewConnected.model
-            var previousTargetPort = magnet.getAttribute('port');    
+            var previousTargetPort = magnet.getAttribute('port');
 
             // console.log('CONNECTED ', sourceElement, sourcePort, targetElement, targetPort, previousTargetElement, previousTargetPort);
 
-            sourceElement._handleConnectTo(targetElement, sourcePort, targetPort, linkView.model.id);  
-            targetElement._handleConnectFrom(sourceElement, targetPort, sourcePort, linkView.model.id);             
+            sourceElement._handleConnectTo(targetElement, sourcePort, targetPort, linkView.model.id);
+            targetElement._handleConnectFrom(sourceElement, targetPort, sourcePort, linkView.model.id);
         })
 
-        this.paper.on('link:disconnect', function(link, evt, elementViewDisconnected, magnet, arrowhead) {
-            
+        this.paper.on('link:disconnect', function (link, evt, elementViewDisconnected, magnet, arrowhead) {
+
             var participants = helper.linkGetParticipants(link.model, self);
-            
+
             var sourceElement = participants.sourceElement;
             var targetElement = elementViewDisconnected.model
 
             // var targetPort = magnet.getAttribute('port');
             var targetPort = participants.targetPort;
-            var sourcePort =  participants.sourcePort;            
+            var sourcePort = participants.sourcePort;
             var newTargetElement = participants.targetElement;
 
             // console.log(sourceElement, targetElement, newTargetElement);
-            if(targetElement!=undefined && sourceElement!= undefined){
-                sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id); 
-                targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);            
-            }            
+            if (targetElement != undefined && sourceElement != undefined) {
+                sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id);
+                targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);
+            }
         })
-        this.graph.on('remove', function(cell) {
-            
-            if(cell.isLink()){
+        this.graph.on('remove', function (cell) {
+
+            if (cell.isLink()) {
                 var participants = helper.linkGetParticipants(cell, self);
 
                 var sourceElement = participants.sourceElement;
@@ -145,20 +156,44 @@ class Flow {
 
                 var sourcePort = participants.sourcePort;
                 var targetPort = participants.targetPort;
-                if(targetElement!=undefined && sourceElement!= undefined){
+                if (targetElement != undefined && sourceElement != undefined) {
                     sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
                     targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
                 }
 
                 // if (participants)
                 //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
+            } else {
+                console.log('delete');
+                var blockToDelete = cell;
+                // Stop any further actions with the element view e.g. dragging
+                // evt.stopPropagation();
+                // remove the block 
+                self._blocks = self._blocks.filter(block => {
+                    return block.id != blockToDelete.id
+                })
+                self._blocks.forEach(block => {
+                    block._handleDelete(blockToDelete);
+                })
+                // blockToDelete.remove();
+                // if (confirm('Are you sure you want to delete this element?')) {
+                //     elementView.model.remove();
+                // }
             }
-            
+
         })
     }
 
-    enablePanAndZoom(panAndZoom){
-        var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'),{
+    addBlock(block) {
+        this._blocks.push(block);
+        this.graph.addCell(block);
+        block._enableRemoval(this.paper);
+    }
+
+
+
+    enablePanAndZoom(panAndZoom) {
+        var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'), {
             fit: false,
             panEnabled: false,
             controlIconsEnabled: true,
@@ -169,34 +204,34 @@ class Flow {
 
         //Enable pan when a blank area is click (held) on
         this.paper.on('blank:pointerdown', function (evt, x, y) {
-            pzController.enablePan();            
+            pzController.enablePan();
         });
 
         //Disable pan when the mouse button is released
-        this.paper.on('cell:pointerup blank:pointerup', function(cellView, event) {
+        this.paper.on('cell:pointerup blank:pointerup', function (cellView, event) {
             pzController.disablePan();
         });
     }
 
-    validate(){
+    validate() {
         var isOK = true;
-        var errorBlocks = [];        
-        this._blocks.forEach(block=>{
+        var errorBlocks = [];
+        this._blocks.forEach(block => {
             var blockStatus = block.getStatus();
-                        
 
-            if(!blockStatus.valid){
+
+            if (!blockStatus.valid) {
                 errorBlocks.push({
                     blockId: block.get('blockId'),
                     errors: blockStatus.errors
-                });                
+                });
             }
-                
+
             isOK = isOK && blockStatus.valid;
         })
         return {
             valid: isOK,
-            errorBlocks: errorBlocks,            
+            errorBlocks: errorBlocks,
         };
     }
 

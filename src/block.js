@@ -266,6 +266,10 @@ class Block {
              * One that wants to retrieve block status shall call getStatus().
              */
             _recalculateStatus() {
+                // reset status
+                this.set('status', 'OK');
+                this.get('errors').length = 0; 
+
                 var freePorts = this.freePorts();
 
                 if (freePorts.length > 0){
@@ -283,6 +287,14 @@ class Block {
                 }
                     
                 // console.log(this.get('blockId'),  freePorts.length, this.get('status'));
+            },
+
+            _handleDelete(blockToBeDeleted) {
+                var blockConnections = this.get('_portConnections').filter(block=>{
+                    return block.id != blockToBeDeleted
+                })
+                this.set('_portConnections',blockConnections);
+                this._recalculateStatus();
             },
 
             _handleDisconnect(block, port, linkId) {
@@ -376,6 +388,47 @@ class Block {
                 this.attr(classSelectorPrefix + '-image/href', iconHref);
 
                 return partHeight;
+            },
+
+            _enableRemoval(paper){
+                var view = this.findView(paper);
+                var dx = view.getBBox().width-this.getBBox().width;
+                var ports = this.getPorts();
+                var hasIn = false;
+                var hasOut = false;
+                ports.forEach(port=>{
+                    if(port.group == 'out')
+                        hasOut = true;
+                    if(port.group == 'in')
+                        hasIn = true;
+                })
+        
+                if(hasIn&&hasOut){
+                    dx = -dx/2;    
+                }else if(hasOut){
+                    dx = -dx;
+                }else{
+                    dx=0
+                }
+        
+                
+                var removeButton = new joint.elementTools.Remove({
+                    focusOpacity: 0.5,
+                    rotate: true,
+                    x: '100%',
+                    // y: '0%',
+                    offset: { x: dx, y: 0 }
+                });
+                
+                var toolsView =  new joint.dia.ToolsView({
+                    name: 'basic-tools',
+                    tools: [removeButton]
+                });
+        
+                
+                
+                view.addTools(toolsView);
+                view.hideTools();
             },
 
             // _recalculatePorts: function(baseSize){
@@ -478,7 +531,7 @@ class Block {
      */
     createSplitElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in']
+        options.inPorts = ['in1']
         options.outPorts = ['out1', 'out2']
     
         var newBlock = new this.Model(options);                
@@ -493,7 +546,7 @@ class Block {
     createJoinElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1', 'in2'];
-        options.outPorts = ['out'];
+        options.outPorts = ['out1'];
 
         var newBlock = new this.Model(options);        
         return newBlock;
@@ -506,8 +559,8 @@ class Block {
      */
     createPassThroughElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in'];
-        options.outPorts = ['out'];
+        options.inPorts = ['in1'];
+        options.outPorts = ['out1'];
 
         var newBlock = new this.Model(options);
         return newBlock;
@@ -521,7 +574,7 @@ class Block {
      */
     createStartElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();        
-        options.outPorts = ['out'];
+        options.outPorts = ['out1'];
 
         var newBlock = new this.Model(options);
         return newBlock;
@@ -534,10 +587,12 @@ class Block {
      */
     createSinkElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in'];
+        options.inPorts = ['in1'];
         
         var newBlock = new this.Model(options);
         return newBlock;
     }
+
+    
 }
 module.exports = new Block({});
