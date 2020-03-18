@@ -73,7 +73,10 @@ class Flowblocks {
             element._dumpConnections();
         })
     }
-
+    /**
+     * Adds pan and zoom functionality to flow diagram
+     * @param {*} panAndZoom svg-pan-zoom object that will be used to controll panning and zooming
+     */
     enablePanAndZoom(panAndZoom){
         // must have svg-pan-zoom library loaded on page
         if(!panAndZoom) return;

@@ -156,6 +156,7 @@ class Flow {
             
         })
     }
+
     enablePanAndZoom(panAndZoom){
         var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'),{
             fit: false,
@@ -167,8 +168,7 @@ class Flow {
 
         //Enable pan when a blank area is click (held) on
         this.paper.on('blank:pointerdown', function (evt, x, y) {
-            pzController.enablePan();
-            //console.log(x + ' ' + y);
+            pzController.enablePan();            
         });
 
         //Disable pan when the mouse button is released

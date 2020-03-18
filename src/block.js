@@ -154,6 +154,7 @@ class Block {
 
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
+            
             /**
              * Block available public operations
              */
