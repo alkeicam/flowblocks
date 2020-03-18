@@ -159,7 +159,10 @@ class Flow {
     enablePanAndZoom(panAndZoom){
         var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'),{
             fit: false,
-            panEnabled: false
+            panEnabled: false,
+            controlIconsEnabled: true,
+            center: false,
+            dblClickZoomEnabled: false
         });
 
         //Enable pan when a blank area is click (held) on
