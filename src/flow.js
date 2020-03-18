@@ -63,6 +63,18 @@ class Flow {
                 // console.log('Target', cellViewT, magnetT )
                 var targetElement = cellViewT.model;
                 return magnetS != magnetT && magnetT.getAttribute('port-group')=='in' && cellViewS != cellViewT;
+            },
+            validateMagnet: function (cellView, magnet, evt) {
+                
+                // by default passive magnets cant create connections
+                if(magnet.getAttribute('magnet') == 'passive'){
+                    return false;
+                }
+                // check if there is a free output port
+                var sourceElement = cellView.model;
+                var freePorts = sourceElement.freePorts('out')
+
+                return freePorts.length > 0;                
             }
         });
 

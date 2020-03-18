@@ -194,8 +194,20 @@ class Block {
                 }
             },
 
-            freePorts() {
-                var ports = this.getPorts();
+            /**
+             * Returns array of free ports of element.
+             * One can filter by portType ('in' or 'out')
+             * @param {*} portType When provided only free ports of given type are returned
+             * @returns Array of ports that are free in given block
+             */
+            freePorts(portType) {
+                var ports = this.getPorts().filter(port=>{                    
+                    if(portType){
+                        return port.group == portType;
+                    } else
+                        return true;                    
+                });
+
                 var usedPorts = this.get('_portConnections');
 
                 // ports that are not used and can be connected
