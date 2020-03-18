@@ -261,6 +261,7 @@ class Block {
                 if (this.get('debug'))
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
+            
             /**
              * Revalidates block
              * One that wants to retrieve block status shall call getStatus().

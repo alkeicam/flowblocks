@@ -160,14 +160,8 @@ class Flow {
                     sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
                     targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
                 }
-
-                // if (participants)
-                //     console.log('Removed:', participants.sourceElement, participants.sourcePort, participants.targetElement, participants.targetPort);                    
             } else {
-                console.log('delete');
                 var blockToDelete = cell;
-                // Stop any further actions with the element view e.g. dragging
-                // evt.stopPropagation();
                 // remove the block 
                 self._blocks = self._blocks.filter(block => {
                     return block.id != blockToDelete.id
@@ -175,10 +169,6 @@ class Flow {
                 self._blocks.forEach(block => {
                     block._handleDelete(blockToDelete);
                 })
-                // blockToDelete.remove();
-                // if (confirm('Are you sure you want to delete this element?')) {
-                //     elementView.model.remove();
-                // }
             }
 
         })
