@@ -166,15 +166,17 @@ class Flow {
         var isOK = true;
         var errorBlocks = [];        
         this._blocks.forEach(block=>{
-            var blockStatus = block.getStatus() == 'ERROR' ? false : true;
-            if(!blockStatus){
+            var blockStatus = block.getStatus();
+                        
+
+            if(!blockStatus.valid){
                 errorBlocks.push({
                     blockId: block.get('blockId'),
-                    errors: block.get('errors')
+                    errors: blockStatus.errors
                 });                
             }
                 
-            isOK = isOK && blockStatus;
+            isOK = isOK && blockStatus.valid;
         })
         return {
             valid: isOK,

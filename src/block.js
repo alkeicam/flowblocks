@@ -154,7 +154,9 @@ class Block {
 
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
-
+            /**
+             * Block available public operations
+             */
             api: function () {
                 var api = [
                     "element.set('name','my label');",
@@ -162,17 +164,28 @@ class Block {
                     "element.set('size', {width:50, height: 50});",
                     "element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/vase.svg');",
                     "element.style({titleBarColor: '#FADB50'});",
+                    "element.getStatus();",
+                    "element.freePorts();",
+
                 ];
                 return api;
             },
-
+            /**
+             * Returns status of the block and eventuall errors connected with the block
+             */
             getStatus(){
-                return this.get('status');
+                return {
+                    valid: this.get('status') == 'OK',
+                    errors: this.get('errors')
+                }
             },
-
+            /**
+             * Applies style for the block.
+             * @param {*} style Either name of the available preset styles or style specification
+             */
             style(style) {
                 if(!style) return;
-                
+
                 if (typeof style === 'string' || style instanceof String) {
                     var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
                     if (presetStyle)
@@ -238,7 +251,10 @@ class Block {
                 if (this.get('debug'))
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
-
+            /**
+             * Revalidates block
+             * One that wants to retrieve block status shall call getStatus().
+             */
             _recalculateStatus() {
                 var freePorts = this.freePorts();
 
@@ -256,7 +272,7 @@ class Block {
                     this.get('errors').length = 0; // reset errors array
                 }
                     
-                console.log(this.get('blockId'),  freePorts.length, this.get('status'));
+                // console.log(this.get('blockId'),  freePorts.length, this.get('status'));
             },
 
             _handleDisconnect(block, port, linkId) {
@@ -389,14 +405,6 @@ class Block {
             }
         });
         this.View = jointjs.shapes.flowblocks.BlockView;
-    }
-
-    /**
-     * Returns array of validation errors for block
-     */
-    getErrors(){
-        var result = [];
-
     }
 
     createBlank(blockId, template, statusDefinition, style) {
