@@ -21,8 +21,8 @@ class Flow {
         this.paper = new jointjs.dia.Paper({
 
             el: document.getElementById(paperDivId),
-            width: 1600,
-            height: 1200,
+            width: 1400,
+            height: 1000,
             gridSize: 1,
             model: self.graph,
             snapLinks: true,
@@ -163,7 +163,8 @@ class Flow {
             panEnabled: false,
             controlIconsEnabled: true,
             center: false,
-            dblClickZoomEnabled: false
+            dblClickZoomEnabled: false,
+            minZoom: 0.3
         });
 
         //Enable pan when a blank area is click (held) on

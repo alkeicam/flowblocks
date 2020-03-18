@@ -6,7 +6,16 @@ class Block {
             defaultSize: {
                 width: 70,
                 height: 70
+            },
+            defaultPosition: { 
+                x: 40, 
+                y: 20
+            },
+            defaultPositionDelta: {
+                dx: 50,
+                dy: 50
             }
+            
         };
         this.Model = {};
         this.View = {};
@@ -154,7 +163,7 @@ class Block {
 
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
-            
+
             /**
              * Block available public operations
              */
@@ -430,18 +439,10 @@ class Block {
         }
     }
 
-
-    /**
-     * Element with a single input and a dual output
-     * @param {*} name 
-     * @param {*} statusDefinition 
-     */
-    createSplitElement(name, statusDefinition, style) {
+    _createBaseOptions(){
         var options = {
-            position: { x: 40, y: 20 },
+            position: this.options.defaultPosition,
             size: this.options.defaultSize,
-            inPorts: ['in'],
-            outPorts: ['out1', 'out2'],
             ports: {
                 groups: {
                     'in': {
@@ -466,6 +467,20 @@ class Block {
                 rect: { fill: '#2ECC71' }
             }
         }
+        return options;
+    }
+
+
+    /**
+     * Element with a single input and a dual output
+     * @param {*} name 
+     * @param {*} statusDefinition 
+     */
+    createSplitElement(name, statusDefinition, style) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in']
+        options.outPorts = ['out1', 'out2']
+    
         var newBlock = new this.Model(options);                
         return newBlock;
     }
@@ -476,35 +491,10 @@ class Block {
      * @param {*} statusDefinition 
      */
     createJoinElement(name, statusDefinition, style) {
-        var options = {
-            position: { x: 40, y: 20 },
-            size: this.options.defaultSize,
-            inPorts: ['in1', 'in2'],
-            outPorts: ['out'],
-            ports: {
-                groups: {
-                    'in': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#16A085',
-                                magnet: 'passive'
-                            }
-                        }
-                    },
-                    'out': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#E74C3C'
-                            }
-                        }
-                    }
-                }
-            },
-            attrs: {
-                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
-                rect: { fill: '#2ECC71' }
-            }
-        }
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1', 'in2'];
+        options.outPorts = ['out'];
+
         var newBlock = new this.Model(options);        
         return newBlock;
     }
@@ -515,35 +505,10 @@ class Block {
      * @param {*} statusDefinition 
      */
     createPassThroughElement(name, statusDefinition, style) {
-        var options = {
-            position: { x: 40, y: 20 },
-            size: this.options.defaultSize,
-            inPorts: ['in'],
-            outPorts: ['out'],
-            ports: {
-                groups: {
-                    'in': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#16A085',
-                                magnet: 'passive'
-                            }
-                        }
-                    },
-                    'out': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#E74C3C'
-                            }
-                        }
-                    }
-                }
-            },
-            attrs: {
-                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
-                rect: { fill: '#2ECC71' }
-            }
-        }
+        var options = this._createBaseOptions();
+        options.inPorts = ['in'];
+        options.outPorts = ['out'];
+
         var newBlock = new this.Model(options);
         return newBlock;
     }
@@ -555,26 +520,9 @@ class Block {
      * @param {*} statusDefinition 
      */
     createStartElement(name, statusDefinition, style) {
-        var options = {
-            position: { x: 40, y: 20 },
-            size: this.options.defaultSize,
-            outPorts: ['out'],
-            ports: {
-                groups: {
-                    'out': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#E74C3C'
-                            }
-                        }
-                    }
-                }
-            },
-            attrs: {
-                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
-                rect: { fill: '#2ECC71' }
-            }
-        }
+        var options = this._createBaseOptions();        
+        options.outPorts = ['out'];
+
         var newBlock = new this.Model(options);
         return newBlock;
     }
@@ -585,26 +533,9 @@ class Block {
      * @param {*} statusDefinition 
      */
     createSinkElement(name, statusDefinition, style) {
-        var options = {
-            position: { x: 40, y: 20 },
-            size: this.options.defaultSize,
-            inPorts: ['in'],
-            ports: {
-                groups: {
-                    'in': {
-                        attrs: {
-                            '.port-body': {
-                                fill: '#16A085',
-                                magnet: 'passive'
-                            }
-                        }
-                    },
-                }
-            }, rs: {
-                '.label': { text: 'Model', 'ref-x': .5, 'ref-y': .2 },
-                rect: { fill: '#2ECC71' }
-            }
-        }
+        var options = this._createBaseOptions();
+        options.inPorts = ['in'];
+        
         var newBlock = new this.Model(options);
         return newBlock;
     }
