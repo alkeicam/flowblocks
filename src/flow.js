@@ -7,6 +7,7 @@ class Flow {
         };
         this.graph = {};
         this.paper = {};
+        this._blocks = [];
         Object.assign(this.options, options);
         this._initialize();
     }
@@ -159,6 +160,26 @@ class Flow {
             }
             
         })
+    }
+
+    validate(){
+        var isOK = true;
+        var errorBlocks = [];        
+        this._blocks.forEach(block=>{
+            var blockStatus = block.getStatus() == 'ERROR' ? false : true;
+            if(!blockStatus){
+                errorBlocks.push({
+                    blockId: block.get('blockId'),
+                    errors: block.get('errors')
+                });                
+            }
+                
+            isOK = isOK && blockStatus;
+        })
+        return {
+            valid: isOK,
+            errorBlocks: errorBlocks,            
+        };
     }
 
 }

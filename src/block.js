@@ -21,10 +21,11 @@ class Block {
             // now model fields            
             name: '',
             icon: './resources/img/svg/agave.svg',
-            status: 'OK', // OK, ERROR,
+            status: 'ERROR', // OK, ERROR,
             statusMsg: 'OK',
             blockId: undefined,
             debug: true, // debug mode when blockId is presented
+            errors: [], // array of block errors that are the cause for the ERROR status of the block
             _styles: {
                 'americana': {
                     icon: undefined,
@@ -148,8 +149,9 @@ class Block {
 
                 //this.updateRectangles();
 
-                this._updateMyModel();
+                this._updateMyModel();                
                 jointjs.shapes.devs.Model.prototype.initialize.apply(this, arguments);
+
                 //joint.shapes.basic.Generic.prototype.initialize.apply(this, arguments);
             },
 
@@ -164,7 +166,13 @@ class Block {
                 return api;
             },
 
+            getStatus(){
+                return this.get('status');
+            },
+
             style(style) {
+                if(!style) return;
+                
                 if (typeof style === 'string' || style instanceof String) {
                     var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
                     if (presetStyle)
@@ -232,13 +240,23 @@ class Block {
             },
 
             _recalculateStatus() {
-                var freePortsCount = this.freePorts().length;
+                var freePorts = this.freePorts();
 
-                if (freePortsCount > 0)
+                if (freePorts.length > 0){
                     this.set('status', 'ERROR');
-                else
+                    freePorts.forEach(port=>{
+                        this.get('errors').push({
+                            code: 'PORT_NOT_CONNECTED',
+                            cId: port.id,
+                            msg: 'Port ['+port.id+'] is not connected'
+                        })
+                    })                    
+                } else {
                     this.set('status', 'OK');
-                // console.log(this.get('blockId'),  freePortsCount, this.get('status'));
+                    this.get('errors').length = 0; // reset errors array
+                }
+                    
+                console.log(this.get('blockId'),  freePorts.length, this.get('status'));
             },
 
             _handleDisconnect(block, port, linkId) {
@@ -373,7 +391,15 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlankElement(template, statusDefinition, style) {
+    /**
+     * Returns array of validation errors for block
+     */
+    getErrors(){
+        var result = [];
+
+    }
+
+    createBlank(blockId, template, statusDefinition, style) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -382,7 +408,13 @@ class Block {
             End: this.createSinkElement
         }
         if (factories[template]) {
-            var block = factories[template].call(this, '', statusDefinition, style);
+            var block = factories[template].call(this, '', statusDefinition);
+            // set id
+            block.set('blockId',blockId);
+            // apply style
+            block.style(style);
+            // calculate initial status of block 
+            block._recalculateStatus();
             return block;
         } else {
             throw new Error('Unsuported template: ' + template);
@@ -425,9 +457,7 @@ class Block {
                 rect: { fill: '#2ECC71' }
             }
         }
-        var newBlock = new this.Model(options);
-        if(style)
-            newBlock.style(style);
+        var newBlock = new this.Model(options);                
         return newBlock;
     }
 
@@ -466,9 +496,7 @@ class Block {
                 rect: { fill: '#2ECC71' }
             }
         }
-        var newBlock = new this.Model(options);
-        if(style)
-            newBlock.style(style);
+        var newBlock = new this.Model(options);        
         return newBlock;
     }
 
@@ -508,8 +536,6 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
-        if(style)
-            newBlock.style(style);
         return newBlock;
     }
 
@@ -541,8 +567,6 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
-        if(style)
-            newBlock.style(style);
         return newBlock;
     }
 
@@ -573,8 +597,6 @@ class Block {
             }
         }
         var newBlock = new this.Model(options);
-        if(style)
-            newBlock.style(style);
         return newBlock;
     }
 }
