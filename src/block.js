@@ -218,9 +218,7 @@ class Block {
                     if (presetStyle)
                         this.style(presetStyle);
                 } else {
-                    this.set('_style', style);
-                    console.log(style);
-                    console.log(style.icon);
+                    this.set('_style', style);                
                     if (style.icon)
                         this.set('icon', style.icon);
                     if (style.bodyColor)
@@ -321,6 +319,7 @@ class Block {
             },
 
             _handleDisconnect(block, port, linkId) {
+                // console.log(this.get('blockId'),block.get('blockId'), port, linkId);
                 if(block==undefined)
                     return;
                 var recordToRemove = this.get('_portConnections').find(element => {

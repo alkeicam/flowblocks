@@ -60,10 +60,17 @@ class Flow {
             validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
                 // console.log('Source', cellViewS, magnetS )
                 var sourceElement = cellViewS.model;
+                
 
                 // console.log('Target', cellViewT, magnetT )
                 var targetElement = cellViewT.model;
-                return magnetS != magnetT && magnetT.getAttribute('port-group') == 'in' && cellViewS != cellViewT;
+                var freeInPorts = targetElement.freePorts('in');                
+                var freePort = freeInPorts.find(port=>{
+                    return port.id == magnetT.getAttribute('port');
+                })
+                var portIsFree = freePort ? true : false;
+                
+                return magnetS != magnetT && magnetT.getAttribute('port-group') == 'in' && cellViewS != cellViewT && portIsFree;
             },
             validateMagnet: function (cellView, magnet, evt) {
 
@@ -129,7 +136,7 @@ class Flow {
         })
 
         this.paper.on('link:disconnect', function (link, evt, elementViewDisconnected, magnet, arrowhead) {
-
+            // console.log(magnet.getAttribute('port'), magnet);
             var participants = helper.linkGetParticipants(link.model, self);
 
             var sourceElement = participants.sourceElement;
@@ -143,7 +150,8 @@ class Flow {
             // console.log(sourceElement, targetElement, newTargetElement);
             if (targetElement != undefined && sourceElement != undefined) {
                 sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id);
-                targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);
+                //targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);
+                targetElement._handleDisconnect(sourceElement, magnet.getAttribute('port'), link.model.id);
             }
         })
         this.graph.on('remove', function (cell) {
