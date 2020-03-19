@@ -56,8 +56,7 @@ class Flowblocks {
                     newBlock.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+customIconHref+'.svg');
                 }else{
                     newBlock.set('icon', customIconHref);
-                }
-                
+                }                
             }     
             this.flow.addBlock(newBlock);
             return newBlock;

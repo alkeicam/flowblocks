@@ -35,6 +35,8 @@ class Block {
             blockId: undefined,
             debug: true, // debug mode when blockId is presented
             errors: [], // array of block errors that are the cause for the ERROR status of the block
+            _style: undefined,
+            _defaultStyle: 'americana',
             _styles: {
                 'americana': {
                     icon: undefined,
@@ -42,7 +44,10 @@ class Block {
                     titleBarColor: '#ffeaa7',
                     statusBarColor: '#fdcb6e',
                     portInColor: '#00cec9',
-                    portOutColor: '#ff7675'
+                    portOutColor: '#ff7675',
+                    validationERRORColor: '#d63031',
+                    validationOKColor: '#00b894'
+                    
                 },
                 'original':{
                     icon: undefined,
@@ -50,7 +55,9 @@ class Block {
                     titleBarColor: 'rgb(255, 230, 206)',
                     statusBarColor: 'rgb(209, 226, 208)',
                     portInColor: '#16A085',
-                    portOutColor: '#E74C3C'
+                    portOutColor: '#E74C3C',
+                    validationERRORColor: '#950952',
+                    validationOKColor: '#008D83'
                 },
                 'cream' : {
                     icon: undefined,
@@ -58,7 +65,10 @@ class Block {
                     titleBarColor: '#E1C2ED',
                     statusBarColor: '#E1C2ED',
                     portInColor: '#936DED',
-                    portOutColor: '#F2EAD7'
+                    portOutColor: '#F2EAD7',
+                    validationERRORColor: '#950952',
+                    validationOKColor: '#008D83'
+
                 }
                 
             },
@@ -71,8 +81,7 @@ class Block {
 
             // now presentation fields
             attrs: {
-                rect: {
-                    'ref-width': '100%',
+                rect: {                    
                     'fill': 'rgb(211, 55, 255)'
                 },
                 body: {
@@ -94,6 +103,7 @@ class Block {
                 },
 
                 '.fb-icon-rect': {
+                    'ref-width': '100%',
                     'fill': '#3DB5FF'
 
                 },
@@ -102,6 +112,7 @@ class Block {
                 },
 
                 '.fb-status-rect': {
+                    'ref-width': '100%',
                     'fill': 'rgb(209, 226, 208)'
 
                 },
@@ -114,7 +125,11 @@ class Block {
                 },
 
                 '.fb-label-rect': {
+                    'ref-width': '100%',
                     'fill': 'rgb(255, 230, 206)'
+                },
+                '.fb-validation-rect': {
+                    'fill': '#d63031'
                 },
                 '.fb-label-text': {
                     'ref': '.fb-label-rect',
@@ -143,6 +158,7 @@ class Block {
                 '<text class="fb-label-text">Label</text>',
                 '<rect class="fb-status-rect"/>',
                 '<text class="fb-status-text"></text>',
+                '<rect class="fb-validation-rect"/>',
                 '</g>'
             ].join(''),
 
@@ -189,18 +205,22 @@ class Block {
                     errors: this.get('errors')
                 }
             },
+
             /**
              * Applies style for the block.
              * @param {*} style Either name of the available preset styles or style specification
              */
-            style(style) {
-                if(!style) return;
-
-                if (typeof style === 'string' || style instanceof String) {
+            style(style) {                
+                if(!style){                    
+                    this.style(this.get('_defaultStyle'));                    
+                } else if (typeof style === 'string' || style instanceof String) {
                     var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
                     if (presetStyle)
                         this.style(presetStyle);
                 } else {
+                    this.set('_style', style);
+                    console.log(style);
+                    console.log(style.icon);
                     if (style.icon)
                         this.set('icon', style.icon);
                     if (style.bodyColor)
@@ -261,7 +281,7 @@ class Block {
                 if (this.get('debug'))
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
-            
+
             /**
              * Revalidates block
              * One that wants to retrieve block status shall call getStatus().
@@ -275,6 +295,7 @@ class Block {
 
                 if (freePorts.length > 0){
                     this.set('status', 'ERROR');
+                    this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
                     freePorts.forEach(port=>{
                         this.get('errors').push({
                             code: 'PORT_NOT_CONNECTED',
@@ -285,6 +306,7 @@ class Block {
                 } else {
                     this.set('status', 'OK');
                     this.get('errors').length = 0; // reset errors array
+                    this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
                 }
                     
                 // console.log(this.get('blockId'),  freePorts.length, this.get('status'));
@@ -374,6 +396,21 @@ class Block {
                 return partHeight;
             },
 
+            _recalculateValidationRect: function (classSelectorPrefix, elementHeight, elementWidth, baseSize, positionY) {
+                var attrs = this.get('attrs');
+                // section height
+                var partHeight = elementHeight * baseSize.height;                
+                
+                var positionX = (1.0-elementWidth) * baseSize.width;
+                var partWidth = elementWidth * baseSize.width;                
+                console.log(positionX, partWidth);
+                this.attr(classSelectorPrefix + '-rect/height', partHeight);
+                this.attr(classSelectorPrefix + '-rect/width', partWidth);                
+                this.attr(classSelectorPrefix + '-rect/transform', 'translate('+positionX+',' + positionY + ')');
+                this.attr(classSelectorPrefix + '-rect/title', 'Block validation state: '+this.get('status'));                
+                return partHeight;
+            },
+
             _recalculateRectWithIcon: function (classSelectorPrefix, iconHref, elementHeight, iconSize, baseSize, positionY) {
                 var partHeight = elementHeight * baseSize.height;
 
@@ -432,10 +469,6 @@ class Block {
                 view.hideTools();
             },
 
-            // _recalculatePorts: function(baseSize){
-
-            // }
-
             _updateMyModel: function () {
                 var self = this;
                 var offsetY = 0;
@@ -444,11 +477,14 @@ class Block {
                     height: this.get('size').height,
                     icon: this.get('icon'),
                     name: this.get('debug') ? this.get('name') + '[' + this.get('blockId') + ']' : this.get('name'),
-                    statusMessage: this.get('statusMsg')
+                    statusMessage: this.get('statusMsg'),
+                    status: this.get('status'),
                 }
                 offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
                 offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
-                offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);
+                var previousOffsetY = offsetY;
+                offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
+                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 
@@ -487,6 +523,7 @@ class Block {
             block.style(style);
             // calculate initial status of block 
             block._recalculateStatus();
+            console.log('Created', block.get('blockId'));
             return block;
         } else {
             throw new Error('Unsuported template: ' + template);
