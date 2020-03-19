@@ -10,13 +10,15 @@ class Flow {
         this._blocks = [];
         Object.assign(this.options, options);
         this._initialize();
+        this.emitter = undefined;
     }
 
     _initialize() {
     }
 
-    create(paperDivId) {
+    create(paperDivId, emitter) {
         var self = this;
+        this.emitter = emitter;
         this.graph = new jointjs.dia.Graph;
         this.paper = new jointjs.dia.Paper({
 

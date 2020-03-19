@@ -199,7 +199,7 @@ class BlockToolbarItem {
                 var fontSize = baseSize.height*DEFAULTS.TOOLBAR.FONT.SIZE;
                 var fontX = 0;
                 var fontY = positionY+fontSize;
-                console.log(classSelectorPrefix, fontSize, fontX, fontY, label);
+                
                 this.attr(classSelectorPrefix + '-text/font-size', fontSize);                
                 this.attr(classSelectorPrefix + '-text/transform', 'translate(' + fontX + ',' + fontY + ')');                
                 this.attr(classSelectorPrefix + '-text/text', label);
@@ -250,8 +250,7 @@ class BlockToolbarItem {
                     status: this.get('status'),
                 }
                 offsetY += self._recalculateRectWithLabel('.fb-label', 'Block', 0.2, 0.6, field, offsetY);
-                offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
-                var previousOffsetY = offsetY;
+                offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);                
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                                
                 self._recalculateToolLabel('.fb-tool-label',field.name, field, offsetY);
             }

@@ -13,14 +13,16 @@ class Toolbar {
         this.graph = {};
         this.paper = {};
         this._items = [];
+        this.emitter = undefined;
         Object.assign(this.options, options);
         this._initialize(); 
     }    
     _initialize() {
     }
 
-    create(div) {
+    create(div, emitter) {
         var self = this;
+        this.emitter = emitter;
         this.graph = new jointjs.dia.Graph;
         this.paper = new jointjs.dia.Paper({
 
@@ -54,7 +56,7 @@ class Toolbar {
         this._resizeItem(item);
         this._items.push(item);        
         this.graph.addCell(item);
-        console.log('Reposition after: ', item.get('_type'));
+        
         this._repositionItems()        
     }
 
@@ -72,11 +74,11 @@ class Toolbar {
         
     }
 
-    _bindEvents(){
-        
+    _bindEvents(){        
+        var self = this;
         this.paper.on('element:pointerdblclick', function (toolView, evt) {
-            var typeClicked = toolView.model.get('_type');
-            console.log('DBLClicked ', typeClicked);
+            var typeClicked = toolView.model.get('_type');            
+            self.emitter.emit('toolbar-item:dblclick', typeClicked)            
         });
     }
 

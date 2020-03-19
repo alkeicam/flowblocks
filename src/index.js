@@ -4,6 +4,7 @@ const block = require('./block')
 const Flow = require('./flow')
 const Toolbar = require('./toolbar')
 const ToolbarItem = require('./toolbar-item')
+const EventEmitter = require('events')
 
 class Flowblocks {
     constructor(options) {
@@ -12,6 +13,14 @@ class Flowblocks {
         this._registeredTypes = {}        
         this.flow = undefined
         this.toolbar = undefined
+        this.emitter = new EventEmitter();
+        this._initialize();
+    }
+    _initialize(){  
+        var self = this;
+        this.emitter.on('toolbar-item:dblclick',function(typeName){            
+            self.createBlock(typeName,'Add date','id2',{x:90, y:50}, undefined);
+        })        
     }
 
     registerType(typeName, statusDefinition, templateName, icon, defaultStyle){        
@@ -29,13 +38,13 @@ class Flowblocks {
     }
     createFlow(paperId){
         var self = this;
-        this.flow = Flow.create(paperId); 
+        this.flow = Flow.create(paperId, this.emitter); 
         return this.flow;        
     }
 
     createToolbar(divId){
         var self = this;
-        this.toolbar = Toolbar.create(divId); 
+        this.toolbar = Toolbar.create(divId, this.emitter); 
         return this.toolbar;        
     }
 
@@ -47,7 +56,7 @@ class Flowblocks {
     
     createToolbarItem(typeName, label, size){
         if(!this.toolbar){
-            console.error('Cant create toolbar icon. Create toolbar first by calling createToolbar().')
+            console.error('Cant create toolbar item. Create toolbar first by calling createToolbar().')
             return;
         }
         var typeDefinition = this._registeredTypes[typeName];
@@ -57,7 +66,14 @@ class Flowblocks {
             toolbarItem.set('_type', typeDefinition.name);
             if(size){
                 toolbarItem.set('size', size);
-            }                
+            }             
+            if(typeDefinition.icon){
+                if(typeDefinition.icon.lastIndexOf('/')==-1){                    
+                    toolbarItem.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
+                }else{
+                    toolbarItem.set('icon', typeDefinition.icon);
+                }                
+            }   
             this.toolbar.addItem(toolbarItem);
             return toolbarItem;
         } else {
