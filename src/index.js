@@ -38,18 +38,21 @@ class Flowblocks {
     }
     createFlow(paperId){
         var self = this;
-        this.flow = Flow.create(paperId, this.emitter);                 
+        this.flow = Flow.create(paperId, this.emitter); 
+        console.log('Flowblocks flow up and running')                
         return this.flow;        
     }
 
     createToolbar(divId){
         var self = this;
         this.toolbar = Toolbar.create(divId, this.emitter); 
+        console.log('Flowblocks toolbar up and running')
         return this.toolbar;        
     }
 
     createApp(flowClass, toolbarClass){
         Interactive.create(this, this.emitter, flowClass, toolbarClass);
+        console.log('Flowblocks app up and running')
     }
 
     getBlock(blockId){

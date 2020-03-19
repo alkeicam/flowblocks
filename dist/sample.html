@@ -22,6 +22,7 @@
 
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
+
 </head>
 
 <body>
@@ -72,7 +73,20 @@
             <!-- <button class="modal-close is-large" aria-label="close" rv-on-click="dismiss"></button> -->
         </div>
     </div>
+    <script>
+        var flow = flowblocks.createFlow('flowblocks-flow');
+        var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
+        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
 
+        flowblocks.registerType('StartNode',{},'Start','tequila', 'cream');
+        flowblocks.registerType('ForwardSplit',{},'Split','jam', 'cream');
+        flowblocks.registerType('Forward',{},'PassThrough', 'rug', 'cream');
+        flowblocks.registerType('Mixer',{},'Mixer', 'cactus', 'cream');
+        flowblocks.registerType('Join',{},'Join','sun', 'cream');
+        flowblocks.registerType('FlowEnd',{},'End', 'zampona', 'cream');
+
+        flowblocks.enablePanAndZoom(svgPanZoom);
+    </script>
 
 
 </body>

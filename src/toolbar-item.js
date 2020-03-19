@@ -281,7 +281,8 @@ class BlockToolbarItem {
             Start: this.createStartElement,
             Split: this.createSplitElement,
             Join: this.createJoinElement,
-            End: this.createSinkElement
+            End: this.createSinkElement,
+            Mixer: this.createMixerElement
         }
         if (factories[template]) {
             var block = factories[template].call(this, '', statusDefinition);
@@ -355,6 +356,15 @@ class BlockToolbarItem {
         var options = this._createBaseOptions();
         options.inPorts = ['i1', 'i2'];
         options.outPorts = ['o1'];
+
+        var newBlock = new this.Model(options);        
+        return newBlock;
+    }
+    
+    createMixerElement(name, statusDefinition, style) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1', 'in2'];
+        options.outPorts = ['out1', 'out2'];
 
         var newBlock = new this.Model(options);        
         return newBlock;
