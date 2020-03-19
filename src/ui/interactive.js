@@ -65,7 +65,7 @@ class Interactive {
     _bindEvents(flowblocks){
         var self = this;
         flowblocks.on('all', function(name){
-            console.log('Interactive Event ', name);
+            
         })
         flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, function(name){
             self.toolbarController.model.create.title = name
