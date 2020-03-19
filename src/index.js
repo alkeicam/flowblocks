@@ -4,7 +4,10 @@ const block = require('./block')
 const Flow = require('./flow')
 const Toolbar = require('./toolbar')
 const ToolbarItem = require('./toolbar-item')
+const EVENTS_DICT = require('./events-dict')
 const EventEmitter = require('events')
+const Interactive = require('./ui/interactive')
+
 
 class Flowblocks {
     constructor(options) {
@@ -17,10 +20,7 @@ class Flowblocks {
         this._initialize();
     }
     _initialize(){  
-        var self = this;
-        this.emitter.on('toolbar-item:dblclick',function(typeName){            
-            self.createBlock(typeName,'Add date','id2',{x:90, y:50}, undefined);
-        })        
+        var self = this;        
     }
 
     registerType(typeName, statusDefinition, templateName, icon, defaultStyle){        
@@ -38,7 +38,7 @@ class Flowblocks {
     }
     createFlow(paperId){
         var self = this;
-        this.flow = Flow.create(paperId, this.emitter); 
+        this.flow = Flow.create(paperId, this.emitter);                 
         return this.flow;        
     }
 
@@ -48,10 +48,25 @@ class Flowblocks {
         return this.toolbar;        
     }
 
+    createApp(flowClass, toolbarClass){
+        Interactive.create(this, this.emitter, flowClass, toolbarClass);
+    }
+
     getBlock(blockId){
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
+    }
+
+    on(eventName, handler){
+        if(eventName == 'all'){
+            EVENTS_DICT.allEvents().forEach(event=>{
+                this.emitter.on(event, handler);                        
+            })
+        }else{
+            this.emitter.on(eventName, handler);
+        }
+        
     }
     
     createToolbarItem(typeName, label, size){

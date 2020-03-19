@@ -15,6 +15,15 @@ class Helper {
             }
         }
     }
+    getElementByClass(className){
+        if(document){
+            var elements = document.getElementsByClassName(className);
+            if(elements.length>0){
+                return elements[0];
+            }
+        }
+    }
+
 }
 
 module.exports = new Helper({});

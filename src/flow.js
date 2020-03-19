@@ -1,6 +1,7 @@
 const jointjs = require("jointjs")
 const helper = require('./helper')
 
+
 class Flow {
     constructor(options) {
         this.options = {
@@ -102,10 +103,10 @@ class Flow {
         ].join('');
 
         this._bindConnectionEvents();
-        this._bindToolsEvents();
+        this._bindToolsEvents();        
         return this;
     }
-
+    
     _bindToolsEvents() {
         this.paper.on('element:mouseenter', function (view) {
             view.showTools();

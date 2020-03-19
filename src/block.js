@@ -437,7 +437,7 @@ class Block {
                 offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
                 var previousOffsetY = offsetY;
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
-                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);
+                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);                
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 

@@ -1,22 +1,22 @@
 const jointjs = require("jointjs")
-
 const DEFAULTS = require('./defaults')
+const EVENTS_DICT = require('./events-dict')
 
 
 class Toolbar {
-    constructor(options) {        
+    constructor(options) {
         this.options = {
             size: DEFAULTS.TOOLBAR.SIZE,
-            padding: DEFAULTS.TOOLBAR.PADDING,    
-            rowPadding: DEFAULTS.TOOLBAR.ROW_PADDING,        
+            padding: DEFAULTS.TOOLBAR.PADDING,
+            rowPadding: DEFAULTS.TOOLBAR.ROW_PADDING,
         };
         this.graph = {};
         this.paper = {};
         this._items = [];
         this.emitter = undefined;
         Object.assign(this.options, options);
-        this._initialize(); 
-    }    
+        this._initialize();
+    }
     _initialize() {
     }
 
@@ -32,7 +32,7 @@ class Toolbar {
             gridSize: 1,
             model: self.graph,
             background: {
-                 color: 'transparent'
+                color: 'transparent'
             },
             interactive: {
                 addLinkFromMagnet: false,
@@ -41,69 +41,69 @@ class Toolbar {
             snapLinks: false,
             linkPinning: false,
             embeddingMode: false,
-            clickThreshold: 5,            
-            defaultConnectionPoint: { name: 'boundary' },            
+            clickThreshold: 5,
+            defaultConnectionPoint: { name: 'boundary' },
 
             validateConnection: function (cellViewS, magnetS, cellViewT, magnetT, end, linkView) {
-                return false            
+                return false
             }
         });
-        this._bindEvents();
+        this._bindEvents();        
         return this;
-    }
+    }   
 
     addItem(item) {
         this._resizeItem(item);
-        this._items.push(item);        
+        this._items.push(item);
         this.graph.addCell(item);
-        
-        this._repositionItems()        
+
+        this._repositionItems()
     }
 
-    _resizeItem(item){
+    _resizeItem(item) {
         var toolbarWidth = this.options.size.width;
-        var padding = 2*this.options.padding.x;
+        var padding = 2 * this.options.padding.x;
         var percentage = 0.2
-        padding *= (1+percentage);
-        var calculatedWidth = toolbarWidth-padding;
-        
-        item.set('size',{
+        padding *= (1 + percentage);
+        var calculatedWidth = toolbarWidth - padding;
+
+        item.set('size', {
             width: calculatedWidth,
             height: calculatedWidth
         })
-        
+
     }
 
-    _bindEvents(){        
+    _bindEvents() {
         var self = this;
-        this.paper.on('element:pointerdblclick', function (toolView, evt) {
-            var typeClicked = toolView.model.get('_type');            
-            self.emitter.emit('toolbar-item:dblclick', typeClicked)            
+        this.paper.on('element:pointerdblclick', function (toolView, evt) {            
+            var typeClicked = toolView.model.get('_type');                        
+            self.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, typeClicked, evt)                        
         });
     }
 
-    _repositionItems(){                
+    _repositionItems() {
         var previousPosition = {
             x: 20,
             y: 20
         }
 
-        this._items.forEach(item=>{
+        this._items.forEach(item => {
 
             var view = item.findView(this.paper);
             // var itemSize = item.get('size');
             // var itemPosition = item.get('position');
 
             var newPosition = {
-                
+
                 x: previousPosition.x,
-                y: previousPosition.y + view.getBBox().height/6
+                y: previousPosition.y + view.getBBox().height / 6
             }
             // console.log('BEFORE: ', item.get('_type'),item.get('position'), previousPosition, newPosition, item.getBBox().height, view.getBBox().height);
 
             item.set('position', newPosition);
 
-            previousPosition = {                
+            previousPosition = {
                 x: newPosition.x,
                 y: newPosition.y + view.getBBox().height
             }
