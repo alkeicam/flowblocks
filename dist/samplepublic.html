@@ -1,22 +1,96 @@
 <html>
-    <head>
-        <!-- these are required by jointjs  -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone.js"></script>
-    
-        <!-- load jointjs  -->
-        <script src="https://unpkg.com/jointjs@^3.1"> </script>
-        <link rel="stylesheet" href="https://unpkg.com/jointjs@3.1.1/dist/joint.min.css"/>
-        <!-- SVG pan and zoom support -->
-        <script src="http://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
-        <!-- load flowblocks -->
-        <script src="https://unpkg.com/flowblocks"></script>
-        <link rel="stylesheet" href="https://unpkg.com/flowblocks/dist/resources/css/flowblocks.css"/>
-    </head>
-    <body>
+<head>
+    <!-- these are required by jointjs  -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/3.10.1/lodash.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/backbone.js/1.3.3/backbone.js"></script>
+
+    <!-- These are required by the app -->
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.2/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/js/bulma-extensions.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rivets/0.9.6/rivets.bundled.min.js"></script>
+
+    <!-- load jointjs  -->
+    <script src="https://unpkg.com/jointjs@^3.1"> </script>
+    <link rel="stylesheet" href="https://unpkg.com/jointjs@3.1.1/dist/joint.min.css" />
+    <link rel="stylesheet" href="./resources/css/flowblocks.css" />
+    <!-- SVG pan and zoom support -->
+    <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
+
+    <!-- load flowblocks -->
+    <script src="https://unpkg.com/flowblocks"></script>
+    <link rel="stylesheet" href="https://unpkg.com/flowblocks/dist/resources/css/flowblocks.css" />
+</head>
+
+<body>
+
+    <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
-        <div id="flowblocks-toolbar"></div>        
-    </body>
+        <div class="modal flowblocks-flow-modal">
+            <div class="modal-background"></div>
+            <div class="modal-content">
+
+            </div>
+            <button class="modal-close is-large" aria-label="close"></button>
+        </div>
+    </div>
+
+    <div class="flowblocks-toolbar">
+        <div id="flowblocks-toolbar"></div>
+        <div class="modal flowblocks-toolbar-modal flowblocks-create" rv-class-is-active="model.create.show">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Create <span
+                            class="has-text-weight-bold is-uppercase">{model.create.title}</span></p>
+                    <button class="delete" aria-label="close" rv-on-click="dismiss"></button>
+                </header>
+                <section class="modal-card-body">
+                    <!-- Content ... -->
+                    <form>
+                        <div class="field">
+                            <label class="label">BlockId</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Block unique id"
+                                    rv-value="model.create.blockId">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Label</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Label displayed on block"
+                                    rv-value="model.create.label">
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" rv-on-click="addBlock">Save changes</button>
+                    <button class="button" rv-on-click="dismiss">Cancel</button>
+                </footer>
+            </div>
+            <!-- <button class="modal-close is-large" aria-label="close" rv-on-click="dismiss"></button> -->
+        </div>
+    </div>
+    <script>
+        var flow = flowblocks.createFlow('flowblocks-flow');
+        var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
+        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
+
+        flowblocks.registerType('StartNode', {}, 'Start', 'tequila', 'cream');
+        flowblocks.registerType('ForwardSplit', {}, 'Split', 'jam', 'cream');
+        flowblocks.registerType('Forward', {}, 'PassThrough', 'rug', 'cream');
+        flowblocks.registerType('Mixer', {}, 'Mixer', 'cactus', 'cream');
+        flowblocks.registerType('Join', {}, 'Join', 'sun', 'cream');
+        flowblocks.registerType('FlowEnd', {}, 'End', 'zampona', 'cream');
+
+        flowblocks.enablePanAndZoom(svgPanZoom);
+    </script>
+
+
+</body>
+
 </html>
