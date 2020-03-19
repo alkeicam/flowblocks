@@ -3,6 +3,7 @@ const helper = require('./helper')
 const block = require('./block')
 const Flow = require('./flow')
 const Toolbar = require('./toolbar')
+const ToolbarItem = require('./toolbar-item')
 
 class Flowblocks {
     constructor(options) {
@@ -21,6 +22,9 @@ class Flowblocks {
             style: defaultStyle,
             icon: icon
         }
+        // TODO add to toolbar
+        this.createToolbarItem(typeName, typeName)
+
         return this._registeredTypes[typeName];
     }
     createFlow(paperId){
@@ -39,6 +43,26 @@ class Flowblocks {
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
+    }
+    
+    createToolbarItem(typeName, label, size){
+        if(!this.toolbar){
+            console.error('Cant create toolbar icon. Create toolbar first by calling createToolbar().')
+            return;
+        }
+        var typeDefinition = this._registeredTypes[typeName];
+        if(typeDefinition){
+            var toolbarItem = ToolbarItem.createBlank(typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);
+            toolbarItem.set('name', label);
+            toolbarItem.set('_type', typeDefinition.name);
+            if(size){
+                toolbarItem.set('size', size);
+            }                
+            this.toolbar.addItem(toolbarItem);
+            return toolbarItem;
+        } else {
+            throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
+        }
     }
 
     createBlock(typeName, label, blockId, position, size){

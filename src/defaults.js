@@ -43,6 +43,17 @@ class Defaults {
                     validationOKColor: '#008D83'
                 }
             }       
+            this.TOOLBAR = {
+                SIZE: {
+                    width: 120,
+                    height: 960
+                },
+                PADDING: {
+                    x: 20,
+                    y: 20
+                },
+                ROW_PADDING: 30
+            }
     }    
 }
 module.exports = new Defaults({});

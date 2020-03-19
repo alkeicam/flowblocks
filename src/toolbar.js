@@ -1,6 +1,14 @@
+const jointjs = require("jointjs")
+
+const DEFAULTS = require('./defaults')
+
+
 class Toolbar {
     constructor(options) {        
         this.options = {
+            size: DEFAULTS.TOOLBAR.SIZE,
+            padding: DEFAULTS.TOOLBAR.PADDING,    
+            rowPadding: DEFAULTS.TOOLBAR.ROW_PADDING,        
         };
         this.graph = {};
         this.paper = {};
@@ -17,13 +25,17 @@ class Toolbar {
         this.paper = new jointjs.dia.Paper({
 
             el: document.getElementById(div),
-            width: '100%',
-            height: 100,
+            width: self.options.size.width,
+            height: self.options.size.height,
             gridSize: 1,
             model: self.graph,
-            // background: {
-            //     color: '#F2EAD7'
-            // },
+            background: {
+                 color: 'transparent'
+            },
+            interactive: {
+                addLinkFromMagnet: false,
+                elementMove: false
+            },
             snapLinks: false,
             linkPinning: false,
             embeddingMode: false,
@@ -34,12 +46,67 @@ class Toolbar {
                 return false            
             }
         });
+        this._bindEvents();
         return this;
     }
 
     addItem(item) {
-        this._items.push(item);
-        this.graph.addCell(item);        
+        this._resizeItem(item);
+        this._items.push(item);        
+        this.graph.addCell(item);
+        console.log('Reposition after: ', item.get('_type'));
+        this._repositionItems()        
+    }
+
+    _resizeItem(item){
+        var toolbarWidth = this.options.size.width;
+        var padding = 2*this.options.padding.x;
+        var percentage = 0.2
+        padding *= (1+percentage);
+        var calculatedWidth = toolbarWidth-padding;
+        
+        item.set('size',{
+            width: calculatedWidth,
+            height: calculatedWidth
+        })
+        
+    }
+
+    _bindEvents(){
+        
+        this.paper.on('element:pointerdblclick', function (toolView, evt) {
+            var typeClicked = toolView.model.get('_type');
+            console.log('DBLClicked ', typeClicked);
+        });
+    }
+
+    _repositionItems(){                
+        var previousPosition = {
+            x: 20,
+            y: 20
+        }
+
+        this._items.forEach(item=>{
+
+            var view = item.findView(this.paper);
+            // var itemSize = item.get('size');
+            // var itemPosition = item.get('position');
+
+            var newPosition = {
+                
+                x: previousPosition.x,
+                y: previousPosition.y + view.getBBox().height/6
+            }
+            console.log('BEFORE: ', item.get('_type'),item.get('position'), previousPosition, newPosition, item.getBBox().height, view.getBBox().height);
+
+            item.set('position', newPosition);
+
+            previousPosition = {                
+                x: newPosition.x,
+                y: newPosition.y + view.getBBox().height
+            }
+            console.log('AFTER: ', item.get('_type'),item.get('position'));
+        })
     }
 }
 module.exports = new Toolbar({});

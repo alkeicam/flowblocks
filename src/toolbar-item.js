@@ -15,7 +15,7 @@ class BlockToolbarItem {
     }
 
     _initialize() {
-        jointjs.shapes.flowblocks = {};
+        jointjs.shapes.flowblocks.toolbar = {};
 
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.toolbar.BlockToolbarItem', {
             // now model fields            
@@ -44,7 +44,7 @@ class BlockToolbarItem {
                     xlinkShow: 'new',
                     cursor: 'pointer'
                 },
-
+                
                 '.status-err': {
                     'refHeight': '25%',
                     'fill': 'rgb(204, 41, 0)',
@@ -259,7 +259,7 @@ class BlockToolbarItem {
         this.View = jointjs.shapes.flowblocks.toolbar.BlockToolbarItemView;
     }
 
-    createBlank(blockId, template, statusDefinition, style) {
+    createBlank(template, statusDefinition, style) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -288,6 +288,9 @@ class BlockToolbarItem {
                             '.port-body': {
                                 fill: '#16A085',
                                 magnet: 'passive'
+                            },
+                            '.port-label': {
+                                display: 'none'                                
                             }
                         }
                     },
@@ -296,6 +299,9 @@ class BlockToolbarItem {
                             '.port-body': {
                                 fill: '#E74C3C',
                                 magnet: 'passive'
+                            },
+                            '.port-label': {
+                                display: 'none'                                
                             }
                         }
                     }
@@ -317,8 +323,8 @@ class BlockToolbarItem {
      */
     createSplitElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in1']
-        options.outPorts = ['out1', 'out2']
+        options.inPorts = ['i1']
+        options.outPorts = ['o1', 'o2']
     
         var newBlock = new this.Model(options);                
         return newBlock;
@@ -331,8 +337,8 @@ class BlockToolbarItem {
      */
     createJoinElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in1', 'in2'];
-        options.outPorts = ['out1'];
+        options.inPorts = ['i1', 'i2'];
+        options.outPorts = ['o1'];
 
         var newBlock = new this.Model(options);        
         return newBlock;
@@ -345,8 +351,8 @@ class BlockToolbarItem {
      */
     createPassThroughElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in1'];
-        options.outPorts = ['out1'];
+        options.inPorts = ['i1'];
+        options.outPorts = ['o1'];
 
         var newBlock = new this.Model(options);
         return newBlock;
@@ -360,7 +366,7 @@ class BlockToolbarItem {
      */
     createStartElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();        
-        options.outPorts = ['out1'];
+        options.outPorts = ['o1'];
 
         var newBlock = new this.Model(options);
         return newBlock;
@@ -373,7 +379,7 @@ class BlockToolbarItem {
      */
     createSinkElement(name, statusDefinition, style) {
         var options = this._createBaseOptions();
-        options.inPorts = ['in1'];
+        options.inPorts = ['i1'];
         
         var newBlock = new this.Model(options);
         return newBlock;
