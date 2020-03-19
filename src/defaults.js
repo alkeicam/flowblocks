@@ -52,7 +52,13 @@ class Defaults {
                     x: 20,
                     y: 20
                 },
-                ROW_PADDING: 30
+                ROW_PADDING: 30,
+                FONT: {
+                    SIZE: 0.15,
+                    FAMILY: 'Helvetica',
+                    WEIGHT: 'bold'
+                }
+
             }
     }    
 }

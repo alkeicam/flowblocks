@@ -20,7 +20,7 @@ class BlockToolbarItem {
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.toolbar.BlockToolbarItem', {
             // now model fields            
             name: '',
-            icon: './resources/img/svg/agave.svg',
+            icon: './resources/img/svg/agave.svg',            
             debug: true, // debug mode when blockId is presented
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
@@ -87,6 +87,11 @@ class BlockToolbarItem {
                     'text-anchor': 'start',
                     'fill': 'black',
                     'y-alignment': 'middle'
+                },
+                '.fb-tool-label-text': {                    
+                    'text-anchor': 'start',
+                    'fill': 'black',
+                    'y-alignment': 'middle'
                 }
 
                 // label: {
@@ -107,7 +112,7 @@ class BlockToolbarItem {
                 '<rect class="fb-label-rect"/>',
                 '<text class="fb-label-text">Label</text>',
                 '<rect class="fb-status-rect"/>',
-                // '<text class="fb-status-text"></text>',
+                '<text class="fb-tool-label-text"></text>',
                 // '<rect class="fb-validation-rect"/>',
                 '</g>'
             ].join(''),
@@ -190,6 +195,18 @@ class BlockToolbarItem {
                 return partHeight;
             },
 
+            _recalculateToolLabel: function(classSelectorPrefix, label, baseSize, positionY){
+                var fontSize = baseSize.height*DEFAULTS.TOOLBAR.FONT.SIZE;
+                var fontX = 0;
+                var fontY = positionY+fontSize;
+                console.log(classSelectorPrefix, fontSize, fontX, fontY, label);
+                this.attr(classSelectorPrefix + '-text/font-size', fontSize);                
+                this.attr(classSelectorPrefix + '-text/transform', 'translate(' + fontX + ',' + fontY + ')');                
+                this.attr(classSelectorPrefix + '-text/text', label);
+                this.attr(classSelectorPrefix + '-text/font-family', DEFAULTS.TOOLBAR.FONT.FAMILY);    
+                this.attr(classSelectorPrefix + '-text/font-weight', DEFAULTS.TOOLBAR.FONT.WEIGHT);                    
+            },
+
             _recalculateValidationRect: function (classSelectorPrefix, elementHeight, elementWidth, baseSize, positionY) {
                 var attrs = this.get('attrs');
                 // section height
@@ -228,15 +245,15 @@ class BlockToolbarItem {
                     width: this.get('size').width,
                     height: this.get('size').height,
                     icon: this.get('icon'),
-                    name: this.get('debug') ? this.get('name') + '[' + this.get('blockId') + ']' : this.get('name'),
+                    name: this.get('name'),
                     statusMessage: this.get('statusMsg'),
                     status: this.get('status'),
                 }
-                offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
+                offsetY += self._recalculateRectWithLabel('.fb-label', 'Block', 0.2, 0.6, field, offsetY);
                 offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
                 var previousOffsetY = offsetY;
-                offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
-                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);
+                offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                                
+                self._recalculateToolLabel('.fb-tool-label',field.name, field, offsetY);
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 

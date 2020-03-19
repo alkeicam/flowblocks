@@ -97,7 +97,7 @@ class Toolbar {
                 x: previousPosition.x,
                 y: previousPosition.y + view.getBBox().height/6
             }
-            console.log('BEFORE: ', item.get('_type'),item.get('position'), previousPosition, newPosition, item.getBBox().height, view.getBBox().height);
+            // console.log('BEFORE: ', item.get('_type'),item.get('position'), previousPosition, newPosition, item.getBBox().height, view.getBBox().height);
 
             item.set('position', newPosition);
 
@@ -105,7 +105,7 @@ class Toolbar {
                 x: newPosition.x,
                 y: newPosition.y + view.getBBox().height
             }
-            console.log('AFTER: ', item.get('_type'),item.get('position'));
+            // console.log('AFTER: ', item.get('_type'),item.get('position'));
         })
     }
 }
