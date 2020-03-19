@@ -402,8 +402,7 @@ class Block {
                 var partHeight = elementHeight * baseSize.height;                
                 
                 var positionX = (1.0-elementWidth) * baseSize.width;
-                var partWidth = elementWidth * baseSize.width;                
-                console.log(positionX, partWidth);
+                var partWidth = elementWidth * baseSize.width;                                
                 this.attr(classSelectorPrefix + '-rect/height', partHeight);
                 this.attr(classSelectorPrefix + '-rect/width', partWidth);                
                 this.attr(classSelectorPrefix + '-rect/transform', 'translate('+positionX+',' + positionY + ')');
