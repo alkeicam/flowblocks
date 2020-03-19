@@ -1,12 +1,12 @@
 const jointjs = require("jointjs")
 const DEFAULTS = require('./defaults')
 
-class Block {
+class BlockToolbarItem {
     constructor(options) {
         this.options = {
             defaultSize: DEFAULTS.SIZE,
             defaultPosition: DEFAULTS.POSITION,
-            defaultPositionDelta: DEFAULTS.POSITION_DELTA            
+            defaultPositionDelta: DEFAULTS.POSITION_DELTA,            
         };
         this.Model = {};
         this.View = {};
@@ -17,24 +17,17 @@ class Block {
     _initialize() {
         jointjs.shapes.flowblocks = {};
 
-        this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block', {
+        this.Model = jointjs.shapes.devs.Model.define('flowblocks.toolbar.BlockToolbarItem', {
             // now model fields            
             name: '',
             icon: './resources/img/svg/agave.svg',
-            status: 'ERROR', // OK, ERROR,
-            statusMsg: 'OK',
-            blockId: undefined,
             debug: true, // debug mode when blockId is presented
-            errors: [], // array of block errors that are the cause for the ERROR status of the block
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
             _styles: DEFAULTS.STYLES,
-            // stores number of ports of this element that are already connected
-            _portsConnected: 0,
+            
             // type of element
             _type: undefined,
-            // array of ports and elements that are connected to each port
-            _portConnections: [],   // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
 
             // now presentation fields
             attrs: {
@@ -114,15 +107,15 @@ class Block {
                 '<rect class="fb-label-rect"/>',
                 '<text class="fb-label-text">Label</text>',
                 '<rect class="fb-status-rect"/>',
-                '<text class="fb-status-text"></text>',
-                '<rect class="fb-validation-rect"/>',
+                // '<text class="fb-status-text"></text>',
+                // '<rect class="fb-validation-rect"/>',
                 '</g>'
             ].join(''),
 
             initialize: function () {
                 this.on('change:name change:icon change:status change:statusMsg change:size', function () {
                     this._updateMyModel();
-                    this.trigger('flowblocks-block-update');
+                    this.trigger('flowblocks-block-toolbar-item-update');
                 }, this);
 
                 // this.on('all',function(eName, thing){
@@ -138,32 +131,6 @@ class Block {
             },
 
             /**
-             * Block available public operations
-             */
-            api: function () {
-                var api = [
-                    "element.set('name','my label');",
-                    "element.set('position', {x:30, y:10});",
-                    "element.set('size', {width:50, height: 50});",
-                    "element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/vase.svg');",
-                    "element.style({titleBarColor: '#FADB50'});",
-                    "element.getStatus();",
-                    "element.freePorts();",
-
-                ];
-                return api;
-            },
-            /**
-             * Returns status of the block and eventuall errors connected with the block
-             */
-            getStatus(){
-                return {
-                    valid: this.get('status') == 'OK',
-                    errors: this.get('errors')
-                }
-            },
-
-            /**
              * Applies style for the block.
              * @param {*} style Either name of the available preset styles or style specification
              */
@@ -176,6 +143,8 @@ class Block {
                         this.style(presetStyle);
                 } else {
                     this.set('_style', style);                
+                    if (style.icon)
+                        this.set('icon', style.icon);
                     if (style.bodyColor)
                         this.attr('.fb-icon-rect/fill', style.bodyColor)
                     if (style.titleBarColor)
@@ -196,135 +165,6 @@ class Block {
                         })
                     }                                    
                 }
-            },
-
-            /**
-             * Returns array of free ports of element.
-             * One can filter by portType ('in' or 'out')
-             * @param {*} portType When provided only free ports of given type are returned
-             * @returns Array of ports that are free in given block
-             */
-            freePorts(portType) {
-                var ports = this.getPorts().filter(port=>{                    
-                    if(portType){
-                        return port.group == portType;
-                    } else
-                        return true;                    
-                });
-
-                var usedPorts = this.get('_portConnections');
-
-                // ports that are not used and can be connected
-                var freePorts = [];
-
-                ports.forEach(element => {
-                    // find if current port is occupied
-                    var usedPort = usedPorts.find(uPort => {
-                        return uPort.port == element.id;
-                    })
-                    if (!usedPort) {
-                        freePorts.push(element);
-                    }
-                })
-
-                return freePorts;
-            },
-
-            _dumpConnections() {
-                if (this.get('debug'))
-                    console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
-            },
-
-            /**
-             * Revalidates block
-             * One that wants to retrieve block status shall call getStatus().
-             */
-            _recalculateStatus() {
-                // reset status
-                this.set('status', 'OK');
-                this.get('errors').length = 0; 
-
-                var freePorts = this.freePorts();
-
-                if (freePorts.length > 0){
-                    this.set('status', 'ERROR');
-                    this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
-                    freePorts.forEach(port=>{
-                        this.get('errors').push({
-                            code: 'PORT_NOT_CONNECTED',
-                            cId: port.id,
-                            msg: 'Port ['+port.id+'] is not connected'
-                        })
-                    })                    
-                } else {
-                    this.set('status', 'OK');
-                    this.get('errors').length = 0; // reset errors array
-                    this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
-                }
-                    
-                // console.log(this.get('blockId'),  freePorts.length, this.get('status'));
-            },
-
-            _handleDelete(blockToBeDeleted) {
-                var blockConnections = this.get('_portConnections').filter(block=>{
-                    return block.id != blockToBeDeleted
-                })
-                this.set('_portConnections',blockConnections);
-                this._recalculateStatus();
-            },
-
-            _handleDisconnect(block, port, linkId) {
-                // console.log(this.get('blockId'),block.get('blockId'), port, linkId);
-                if(block==undefined)
-                    return;
-                var recordToRemove = this.get('_portConnections').find(element => {
-                    return element.port == port && element.id == block.id && element.linkId == linkId;
-                })
-
-                var idxToRemove = this.get('_portConnections').findIndex(element => {
-                    return element.port == port && element.id == block.id && element.linkId == linkId;
-                })
-                if (idxToRemove >= 0)
-                    this.get('_portConnections').splice(idxToRemove, 1);
-                // console.log('Disconnected',  this.get('blockId'), port, recordToRemove ? recordToRemove.bId: undefined);
-                this._recalculateStatus();
-
-            },
-
-            _handleConnectFrom(participant, port, targetPort, linkId) {
-
-
-                //console.log('ConnectFrom', port, participant);
-                // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
-                var item = {
-                    port: port,
-                    id: participant.get('id'),
-                    bId: participant.get('blockId'),
-                    type: participant.get('_type'),
-                    targetPort: targetPort,
-                    linkId: linkId
-                }
-                this.get('_portConnections').push(item);
-                // console.log('Connect', this.get('blockId'), participant.get('blockId'),  port);
-                this._recalculateStatus();
-            },
-
-            _handleConnectTo(participant, port, targetPort, linkId) {
-
-
-                // console.log('ConnectTo', port, participant);
-                // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
-                var item = {
-                    port: port,
-                    id: participant.get('id'),
-                    bId: participant.get('blockId'),
-                    type: participant.get('_type'),
-                    targetPort: targetPort,
-                    linkId: linkId
-                }
-                this.get('_portConnections').push(item);
-                // console.log('Connect', this.get('blockId'), participant.get('blockId'), port);
-                this._recalculateStatus();
             },
 
             _recalculateRectWithLabel: function (classSelectorPrefix, label, elementHeight, fontSize, baseSize, positionY) {
@@ -381,47 +221,6 @@ class Block {
                 return partHeight;
             },
 
-            _enableRemoval(paper){
-                var view = this.findView(paper);
-                var dx = view.getBBox().width-this.getBBox().width;
-                var ports = this.getPorts();
-                var hasIn = false;
-                var hasOut = false;
-                ports.forEach(port=>{
-                    if(port.group == 'out')
-                        hasOut = true;
-                    if(port.group == 'in')
-                        hasIn = true;
-                })
-        
-                if(hasIn&&hasOut){
-                    dx = -dx/2;    
-                }else if(hasOut){
-                    dx = -dx;
-                }else{
-                    dx=0
-                }
-        
-                
-                var removeButton = new joint.elementTools.Remove({
-                    focusOpacity: 0.5,
-                    rotate: true,
-                    x: '100%',
-                    // y: '0%',
-                    offset: { x: dx, y: 0 }
-                });
-                
-                var toolsView =  new joint.dia.ToolsView({
-                    name: 'basic-tools',
-                    tools: [removeButton]
-                });
-        
-                
-                
-                view.addTools(toolsView);
-                view.hideTools();
-            },
-
             _updateMyModel: function () {
                 var self = this;
                 var offsetY = 0;
@@ -445,19 +244,19 @@ class Block {
         })
 
 
-        jointjs.shapes.flowblocks.BlockView = jointjs.dia.ElementView.extend({
+        jointjs.shapes.flowblocks.toolbar.BlockToolbarItemView = jointjs.dia.ElementView.extend({
 
             initialize: function () {
 
                 jointjs.dia.ElementView.prototype.initialize.apply(this, arguments);
 
-                this.listenTo(this.model, 'flowblocks-block-update', function () {
+                this.listenTo(this.model, 'flowblocks-block-toolbar-item-update', function () {
                     this.update();
                     this.resize();
                 });
             }
         });
-        this.View = jointjs.shapes.flowblocks.BlockView;
+        this.View = jointjs.shapes.flowblocks.toolbar.BlockToolbarItemView;
     }
 
     createBlank(blockId, template, statusDefinition, style) {
@@ -470,13 +269,8 @@ class Block {
         }
         if (factories[template]) {
             var block = factories[template].call(this, '', statusDefinition);
-            // set id
-            block.set('blockId',blockId);
             // apply style
             block.style(style);
-            // calculate initial status of block 
-            block._recalculateStatus();
-
             return block;
         } else {
             throw new Error('Unsuported template: ' + template);
@@ -500,7 +294,8 @@ class Block {
                     'out': {
                         attrs: {
                             '.port-body': {
-                                fill: '#E74C3C'
+                                fill: '#E74C3C',
+                                magnet: 'passive'
                             }
                         }
                     }
@@ -586,4 +381,4 @@ class Block {
 
     
 }
-module.exports = new Block({});
+module.exports = new BlockToolbarItem({});

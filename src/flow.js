@@ -22,9 +22,12 @@ class Flow {
 
             el: document.getElementById(paperDivId),
             width: 1400,
-            height: 1000,
+            height: 960,
             gridSize: 1,
             model: self.graph,
+            // background: {
+            //     color: '#F2EAD7'
+            // },
             snapLinks: true,
             linkPinning: false,
             embeddingMode: true,

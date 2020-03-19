@@ -2,21 +2,24 @@ const joint = require("jointjs")
 const helper = require('./helper')
 const block = require('./block')
 const Flow = require('./flow')
+const Toolbar = require('./toolbar')
 
 class Flowblocks {
     constructor(options) {
         this.options = {}
         Object.assign(this.options, options);
         this._registeredTypes = {}        
-        this.flow = {}
+        this.flow = undefined
+        this.toolbar = undefined
     }
 
-    registerType(typeName, statusDefinition, templateName, defaultStyle){        
+    registerType(typeName, statusDefinition, templateName, icon, defaultStyle){        
         this._registeredTypes[typeName] = {
             name: typeName,
             statusDefinition: statusDefinition,
             template: templateName,
-            style: defaultStyle
+            style: defaultStyle,
+            icon: icon
         }
         return this._registeredTypes[typeName];
     }
@@ -25,13 +28,20 @@ class Flowblocks {
         this.flow = Flow.create(paperId); 
         return this.flow;        
     }
+
+    createToolbar(divId){
+        var self = this;
+        this.toolbar = Toolbar.create(divId); 
+        return this.toolbar;        
+    }
+
     getBlock(blockId){
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
     }
 
-    createBlock(typeName, label, blockId, position, size, customIconHref, style){
+    createBlock(typeName, label, blockId, position, size){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
             var newBlock = block.createBlank(blockId, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);            
@@ -51,11 +61,11 @@ class Flowblocks {
             if(size){
                 newBlock.set('size', size);
             }            
-            if(customIconHref){
-                if(customIconHref.lastIndexOf('/')==-1){                    
-                    newBlock.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+customIconHref+'.svg');
+            if(typeDefinition.icon){
+                if(typeDefinition.icon.lastIndexOf('/')==-1){                    
+                    newBlock.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
                 }else{
-                    newBlock.set('icon', customIconHref);
+                    newBlock.set('icon', typeDefinition.icon);
                 }                
             }     
             this.flow.addBlock(newBlock);
