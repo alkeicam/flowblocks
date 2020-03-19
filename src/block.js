@@ -522,7 +522,7 @@ class Block {
             block.style(style);
             // calculate initial status of block 
             block._recalculateStatus();
-            console.log('Created', block.get('blockId'));
+
             return block;
         } else {
             throw new Error('Unsuported template: ' + template);
