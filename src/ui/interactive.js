@@ -1,5 +1,6 @@
 const helper = require('../helper')
 const EVENTS_DICT = require('../events-dict')
+const shortid = require('shortid');
 
 class Interactive {
     constructor(options) {
@@ -71,6 +72,7 @@ class Interactive {
             self.toolbarController.model.create.title = name
             self.toolbarController.model.create.show = true;
             self.toolbarController.model.create.type = name;
+            self.toolbarController.model.create.blockId = shortid.generate();
         })
     }
 }

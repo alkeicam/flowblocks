@@ -86,6 +86,10 @@
         flowblocks.registerType('FlowEnd',{},'End', 'zampona', 'cream');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
+
+        flowblocks.on('all', function(a,b,c,d,e,f){
+            console.log('Received: ',a,b,c,d,e,f);
+        })
     </script>
 
 

@@ -24,7 +24,7 @@ class Block {
             status: 'ERROR', // OK, ERROR,
             statusMsg: 'OK',
             blockId: undefined,
-            debug: true, // debug mode when blockId is presented
+            debug: false, // debug mode when blockId is presented
             errors: [], // array of block errors that are the cause for the ERROR status of the block
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,

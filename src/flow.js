@@ -1,6 +1,6 @@
 const jointjs = require("jointjs")
 const helper = require('./helper')
-
+const EVENTS_DICT = require('./events-dict')
 
 class Flow {
     constructor(options) {
@@ -106,7 +106,7 @@ class Flow {
         this._bindToolsEvents();        
         return this;
     }
-    
+
     _bindToolsEvents() {
         this.paper.on('element:mouseenter', function (view) {
             view.showTools();
@@ -139,6 +139,8 @@ class Flow {
 
             sourceElement._handleConnectTo(targetElement, sourcePort, targetPort, linkView.model.id);
             targetElement._handleConnectFrom(sourceElement, targetPort, sourcePort, linkView.model.id);
+
+            self.emitter.emit(EVENTS_DICT.EVENTS.CONNECTION_REMOVED,sourceElement, sourcePort, targetElement, targetPort);    
         })
 
         this.paper.on('link:disconnect', function (link, evt, elementViewDisconnected, magnet, arrowhead) {
@@ -158,6 +160,7 @@ class Flow {
                 sourceElement._handleDisconnect(targetElement, sourcePort, link.model.id);
                 //targetElement._handleDisconnect(sourceElement, targetPort, link.model.id);
                 targetElement._handleDisconnect(sourceElement, magnet.getAttribute('port'), link.model.id);
+                self.emitter.emit(EVENTS_DICT.EVENTS.CONNECTION_REMOVED,sourceElement, sourcePort, targetElement, magnet.getAttribute('port'));    
             }
         })
         this.graph.on('remove', function (cell) {
@@ -173,6 +176,7 @@ class Flow {
                 if (targetElement != undefined && sourceElement != undefined) {
                     sourceElement._handleDisconnect(targetElement, sourcePort, cell.id);
                     targetElement._handleDisconnect(sourceElement, targetPort, cell.id);
+                    self.emitter.emit(EVENTS_DICT.EVENTS.CONNECTION_REMOVED,sourceElement, sourcePort, targetElement, targetPort);    
                 }
             } else {
                 var blockToDelete = cell;
@@ -183,6 +187,7 @@ class Flow {
                 self._blocks.forEach(block => {
                     block._handleDelete(blockToDelete);
                 })
+                self.emitter.emit(EVENTS_DICT.EVENTS.BLOCK_REMOVED,blockToDelete);
             }
 
         })
@@ -192,6 +197,7 @@ class Flow {
         this._blocks.push(block);
         this.graph.addCell(block);
         block._enableRemoval(this.paper);
+        this.emitter.emit(EVENTS_DICT.EVENTS.BLOCK_ADDED,block);
     }
 
 
