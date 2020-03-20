@@ -12,6 +12,13 @@
     <script src="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/js/bulma-extensions.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rivets/0.9.6/rivets.bundled.min.js"></script>
+    <script src="./resources/js/rivet-utils.js"></script>
+
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/mode/javascript/javascript.min.js"></script> -->
+
+    
 
     <!-- load jointjs  -->
     <script src="https://unpkg.com/jointjs@^3.1"> </script>
@@ -20,15 +27,15 @@
     <!-- SVG pan and zoom support -->
     <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
-    <script src="./resources/js/rivet-utils.js"></script>
+    <!--  -->
+    
 
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
 
 </head>
 
-<body>
-
+<body>    
     <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
         <div class="modal flowblocks-flow-modal" rv-class-is-active="model.details.show">
@@ -41,7 +48,7 @@
                 </header>
                 <section class="modal-card-body">
                     <!-- Content ... -->
-                    <form>
+                    <form class="flowblocks-details-form">
                         <div class="field">
                             <label class="label">BlockId</label>
                             <div class="control">
@@ -56,7 +63,7 @@
                                     rv-value="model.details.type">
                             </div>
                         </div>
-                        <div class="field" rv-each-c="model.details.configurables">
+                        <div class="field" rv-data-observe="c.type" rv-each-c="model.details.configurables">
                             <div rv-if="c.type | eq 'TEXT'">
                                 <label class="label">{c.label}</label>
                                 <div class="control">
@@ -100,10 +107,10 @@
                                     </span>
                                 </p>
                             </div>
-                            <div>
-                                <label class="label">Message</label>
+                            <div rv-if="c.type | eq 'CODE'">
+                                <label class="label">{c.label}</label>
                                 <div class="control">
-                                    <textarea class="textarea" placeholder="Textarea"></textarea>
+                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="80" rv-value="c.value"></textarea>                                    
                                 </div>
                             </div>
                         </div>
@@ -163,18 +170,19 @@
 
         flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
             configurables: [
-                { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
+                { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
                 { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
                 { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pRecurrentInitializer', label: 'Rec. Initializer', placeholder: 'glorotNormal', type: 'LIST', required: false, options: [{ v: 'glorotNormal', l: 'GlorotNormal' }, { v: 'glorotUniform', l: 'GlorotUniform' }], default: '-1' }
+                { id: 'pRecurrentInitializer', label: 'Rec. initializer', placeholder: 'glorotNormal', type: 'LIST', required: false, options: [{ v: 'glorotNormal', l: 'GlorotNormal' }, { v: 'glorotUniform', l: 'GlorotUniform' }], default: '-1' }
             ]
         });
         flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
             configurables: [
-                { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
+                { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
                 { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false, default: 'relu' },
                 { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false }
+                { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false },
+                { id: 'pUWC', label: 'User code', placeholder: 'javascript code', type: 'CODE', required: false, language: 'javascript', default: 'function a(){}' }
             ]
         });
         flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream');
@@ -183,6 +191,42 @@
         flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
+
+        // // textarea
+        //     var target = document.querySelector('.flowblocks-details-form');
+
+        //     // create an observer instance
+        //     var observer = new MutationObserver(function (mutations) {
+        //         mutations.forEach(function (mutationRecord) {
+        //             console.log(mutationRecord);
+        //             var addedNode = mutationRecord.addedNodes[0];
+        //             var removedNode = mutationRecord.removedNodes[0];
+        //             if(addedNode && addedNode.dataset.observe == 'CODE'){
+        //                 var t = addedNode.querySelectorAll("textarea");
+        //                 t.forEach(tarea=>{
+        //                     var eId = tarea.getAttribute('id');
+        //                     console.log(tarea.getAttribute('id'), tarea);
+        //                     CodeMirror.fromTextArea(document.getElementById(eId), {                             
+        //                         mode:  "javascript",
+        //                         lineNumbers: true,
+        //                     });
+        //                 })
+                        
+        //             }
+                        
+        //             if(removedNode && removedNode.dataset.observe == 'CODE'){
+        //                 console.log(removedNode.dataset.observe);
+        //             }
+                        
+        //         });
+        //     });
+
+        //     // configuration of the observer:
+        //     var config = { childList: true }
+
+        //     // pass in the target node, as well as the observer options
+        //     observer.observe(target, config);
+        
 
         // flowblocks.on('all', function(a,b,c,d,e,f){
         //     console.log('Received: ',a,b,c,d,e,f);
