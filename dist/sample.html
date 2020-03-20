@@ -32,7 +32,7 @@
     <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
         <div class="modal flowblocks-flow-modal" rv-class-is-active="model.details.show">
-            <div class="modal-background"></div>            
+            <div class="modal-background"></div>
             <div class="modal-card">
                 <header class="modal-card-head">
                     <p class="modal-card-title">Configure <span
@@ -45,21 +45,47 @@
                         <div class="field">
                             <label class="label">BlockId</label>
                             <div class="control">
-                                <input class="input" type="text" placeholder="Block unique id" disabled rv-value="model.details.blockId">
+                                <input class="input" type="text" placeholder="Block unique id" disabled
+                                    rv-value="model.details.blockId">
                             </div>
                         </div>
                         <div class="field">
                             <label class="label">Type</label>
                             <div class="control">
-                                <input class="input is-uppercase" type="text" placeholder="BlockType" disabled rv-value="model.details.type">
+                                <input class="input is-uppercase" type="text" placeholder="BlockType" disabled
+                                    rv-value="model.details.type">
                             </div>
-                        </div>    
-                                 
-                        <div class="field" rv-each-c="model.details.configurables">
-                            <label class="label">{c.label}</label>
-                            <div class="control">                                
-                                <input rv-if="c.type | eq 'TEXT'" class="input" type="text" rv-placeholder="c.placeholder" rv-data-bid="c.id" rv-value="c.value">
+                        </div>
+                        <div class="field" rv-each-c="model.details.configurables">                            
+                            <div rv-if="c.type | eq 'TEXT'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+                                    <input class="input" type="text" rv-placeholder="c.placeholder" rv-data-bid="c.id"
+                                        rv-value="c.value">
+                                </div>
                             </div>
+                            <div rv-if="c.type | eq 'NUMBER'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+                                    <input rv-if="c.type | eq 'NUMBER'" class="input" type="number"
+                                        rv-placeholder="c.placeholder" rv-data-bid="c.id" rv-value="c.value">
+                                </div>
+                            </div>
+                            <div rv-if="c.type | eq 'BOOLEAN'">
+                                <label class="label">Message</label>
+                                <div class="control" >
+
+                                    <label class="radio">
+                                        <input type="radio" rv-checked="c.value" value="true">
+                                        OK
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" rv-checked="c.value" value="false">
+                                        No
+                                    </label>
+                                </div>
+                            </div>
+                            
                         </div>
                     </form>
                 </section>
@@ -87,13 +113,15 @@
                         <div class="field">
                             <label class="label">BlockId</label>
                             <div class="control">
-                                <input class="input" type="text" placeholder="Block unique id" rv-value="model.create.blockId">
+                                <input class="input" type="text" placeholder="Block unique id"
+                                    rv-value="model.create.blockId">
                             </div>
                         </div>
                         <div class="field">
                             <label class="label">Label</label>
                             <div class="control">
-                                <input class="input" type="text" placeholder="Label displayed on block" rv-value="model.create.label">
+                                <input class="input" type="text" placeholder="Label displayed on block"
+                                    rv-value="model.create.label">
                             </div>
                         </div>
                     </form>
@@ -107,6 +135,8 @@
         </div>
     </div>
     <script>
+        RivetUtils.initializeRivetFormatters();
+
         var flow = flowblocks.createFlow('flowblocks-flow');
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
         var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
@@ -114,11 +144,18 @@
         flowblocks.registerType('StartNode','Start','tequila', 'cream', {
             configurables: [
                 {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'TEXT', required: false},
-                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},        
+                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
                 {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'TEXT', required: false}                    
             ]
         });
-        flowblocks.registerType('ForwardSplit','Split','jam', 'cream');
+        flowblocks.registerType('ForwardSplit','Split','jam', 'cream', {
+            configurables: [
+                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'TEXT', required: false},
+                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
+                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'TEXT', required: false},
+                {id: 'pEnabled', label: 'Is enabled', placeholder: 'number', type: 'BOOLEAN', required: false}                     
+            ]
+        });
         flowblocks.registerType('Forward','PassThrough', 'rug', 'cream');
         flowblocks.registerType('Mixer','Mixer', 'cactus', 'cream');
         flowblocks.registerType('Join','Join','sun', 'cream');

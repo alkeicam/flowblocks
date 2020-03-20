@@ -7,6 +7,7 @@ RivetUtils.initializeRivetBinders = function () {
 };
 
 RivetUtils.initializeRivetFormatters = function () {
+    console.log('INIT');
     rivets.formatters.fromTimestamp = function (value, format) {
         var theDate = new Date(value);
         
