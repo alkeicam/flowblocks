@@ -143,16 +143,16 @@
 
         flowblocks.registerType('StartNode','Start','tequila', 'cream', {
             configurables: [
-                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'TEXT', required: false},
+                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false},
                 {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
-                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'TEXT', required: false}                    
+                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false}                    
             ]
         });
         flowblocks.registerType('ForwardSplit','Split','jam', 'cream', {
             configurables: [
-                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'TEXT', required: false},
+                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false},
                 {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
-                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'TEXT', required: false},
+                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false},
                 {id: 'pEnabled', label: 'Is enabled', placeholder: 'number', type: 'BOOLEAN', required: false}                     
             ]
         });
