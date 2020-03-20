@@ -13,7 +13,7 @@ class Configurable {
   {field} Boolean required (is the configurable requred - true | false)  
   {field} Function validation (when provided field will be validated using this function on save )  
   {field} Function|String|Number|Boolean default (default value to be presented)  
-  {field} Function|Array options (available options - for LIST configurable)  
+  {field} Function|Array options (available options - for LIST configurable - each option {v: value, l: label})  
   {field} String lang (code language - for CODE configurable)  
 }
 

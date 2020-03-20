@@ -130,6 +130,10 @@ class Interactive {
 
                 var configurableValue = block.get('configurables').find(el=>{return el.i == configurable.id}) ? block.get('configurables').find(el=>{return el.i == configurable.id}).v : undefined;
                 
+                if(!configurableValue && configurable.default)
+                    configurableValue = configurable.default;
+
+
                 var options = [];
                 if(configurable.options){
                     configurable.options.forEach(option=>{
