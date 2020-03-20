@@ -20,18 +20,30 @@ class Flowblocks {
         this._initialize();
     }
     _initialize(){  
-        var self = this;        
+        var self = this;     
+        // initialize events
+        this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_CREATE, function(blockId, blockType, label, event){
+            //that.model.create.blockId, that.model.create.type, that.model.create.label
+            self.createBlock(blockType, label, blockId);
+        }) 
+        this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_DETAILS_SAVE, function(blockId, configurables, event){
+            var block = self.getBlock(blockId);            
+            block.set('configurables', configurables);
+        })   
     }
 
-    registerType(typeName, statusDefinition, templateName, icon, defaultStyle){        
+    
+
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurable){        
         this._registeredTypes[typeName] = {
             name: typeName,
-            statusDefinition: statusDefinition,
+            // statusDefinition: statusDefinition,
             template: templateName,
             style: defaultStyle,
-            icon: icon
+            icon: icon,
+            configurable: typeConfigurable
         }
-        // TODO add to toolbar
+        // add to toolbar
         this.createToolbarItem(typeName, typeName)
 
         return this._registeredTypes[typeName];
@@ -71,10 +83,14 @@ class Flowblocks {
         }
         
     }
+
+    getDefinition(typeName){
+        return this._registeredTypes[typeName];
+    }
     
     createToolbarItem(typeName, label, size){
         if(!this.toolbar){
-            console.error('Cant create toolbar item. Create toolbar first by calling createToolbar().')
+            console.warn('Cant create toolbar item. Create toolbar first by calling createToolbar().')
             return;
         }
         var typeDefinition = this._registeredTypes[typeName];

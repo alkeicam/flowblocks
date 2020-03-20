@@ -26,6 +26,7 @@ class Block {
             blockId: undefined,
             debug: false, // debug mode when blockId is presented
             errors: [], // array of block errors that are the cause for the ERROR status of the block
+            configurables: [], // configurable values {i: id, v: value}
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
             _styles: DEFAULTS.STYLES,
@@ -197,6 +198,8 @@ class Block {
                     }                                    
                 }
             },
+
+            
 
             /**
              * Returns array of free ports of element.

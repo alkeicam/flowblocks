@@ -25,21 +25,21 @@ describe('Flowblocks', () => {
         afterEach(() => {
         });                
         it('register type', () => {
-            var type = flowblocks.registerType(TYPE,{},TEMPLATE);
+            var type = flowblocks.registerType(TYPE,TEMPLATE);
             return expect(type.name).equals(TYPE);
         })
 
         it('register multiple types', () => {
-            var type1 = flowblocks.registerType(TYPE,{},TEMPLATE);
-            var type2 = flowblocks.registerType(TYPE2,{},TEMPLATE);
+            var type1 = flowblocks.registerType(TYPE,TEMPLATE);
+            var type2 = flowblocks.registerType(TYPE2,TEMPLATE);
 
             var typeDef = flowblocks._registeredTypes[TYPE] != undefined ? true: false;
             var typeDef2 = flowblocks._registeredTypes[TYPE2] != undefined ? true: false;            
             return expect(typeDef && typeDef2).is.true;            
         })
         it('overwrite type', () => {
-            var type1 = flowblocks.registerType(TYPE,{},TEMPLATE);
-            var type2 = flowblocks.registerType(TYPE,{},TEMPLATE2);            
+            var type1 = flowblocks.registerType(TYPE,TEMPLATE);
+            var type2 = flowblocks.registerType(TYPE,TEMPLATE2);            
             return expect(type2.template).equal(TEMPLATE2);
         })
         

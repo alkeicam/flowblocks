@@ -1,0 +1,20 @@
+@startuml
+
+class TypeConfigurables {
+  {field} configurables[] (array of configurable items)  
+}
+
+TypeConfigurables ..> Configurable : configurables[]
+class Configurable {
+  {field} String id (business id of the configurable)
+  {field} String label (label of the configurable)
+  {field} String placeholder (placeholder of the configurable)
+  {field} String type (type of configurable - TEXT, NUMBER, LIST, BOOLEAN, CODE)
+  {field} Boolean required (is the configurable requred - true | false)  
+  {field} Function validation (when provided field will be validated using this function on save )  
+  {field} Function|String|Number|Boolean default (default value to be presented)  
+  {field} Function|Array options (available options - for LIST configurable)  
+  {field} String lang (code language - for CODE configurable)  
+}
+
+@enduml

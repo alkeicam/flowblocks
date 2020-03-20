@@ -20,6 +20,8 @@
     <!-- SVG pan and zoom support -->
     <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
+    <script src="./resources/js/rivet-utils.js"></script>
+
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
 
@@ -29,12 +31,43 @@
 
     <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
-        <div class="modal flowblocks-flow-modal">
-            <div class="modal-background"></div>
-            <div class="modal-content">
-
+        <div class="modal flowblocks-flow-modal" rv-class-is-active="model.details.show">
+            <div class="modal-background"></div>            
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Configure <span
+                            class="has-text-weight-bold is-uppercase">{model.details.label}</span></p>
+                    <button class="delete" aria-label="close" rv-on-click="dismiss"></button>
+                </header>
+                <section class="modal-card-body">
+                    <!-- Content ... -->
+                    <form>
+                        <div class="field">
+                            <label class="label">BlockId</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Block unique id" disabled rv-value="model.details.blockId">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Type</label>
+                            <div class="control">
+                                <input class="input is-uppercase" type="text" placeholder="BlockType" disabled rv-value="model.details.type">
+                            </div>
+                        </div>    
+                                 
+                        <div class="field" rv-each-c="model.details.configurables">
+                            <label class="label">{c.label}</label>
+                            <div class="control">                                
+                                <input rv-if="c.type | eq 'TEXT'" class="input" type="text" rv-placeholder="c.placeholder" rv-data-bid="c.id" rv-value="c.value">
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" rv-on-click="detailsSave">Save changes</button>
+                    <button class="button" rv-on-click="dismiss">Cancel</button>
+                </footer>
             </div>
-            <button class="modal-close is-large" aria-label="close"></button>
         </div>
     </div>
 
@@ -78,12 +111,18 @@
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
         var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
 
-        flowblocks.registerType('StartNode',{},'Start','tequila', 'cream');
-        flowblocks.registerType('ForwardSplit',{},'Split','jam', 'cream');
-        flowblocks.registerType('Forward',{},'PassThrough', 'rug', 'cream');
-        flowblocks.registerType('Mixer',{},'Mixer', 'cactus', 'cream');
-        flowblocks.registerType('Join',{},'Join','sun', 'cream');
-        flowblocks.registerType('FlowEnd',{},'End', 'zampona', 'cream');
+        flowblocks.registerType('StartNode','Start','tequila', 'cream', {
+            configurables: [
+                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'TEXT', required: false},
+                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},        
+                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'TEXT', required: false}                    
+            ]
+        });
+        flowblocks.registerType('ForwardSplit','Split','jam', 'cream');
+        flowblocks.registerType('Forward','PassThrough', 'rug', 'cream');
+        flowblocks.registerType('Mixer','Mixer', 'cactus', 'cream');
+        flowblocks.registerType('Join','Join','sun', 'cream');
+        flowblocks.registerType('FlowEnd','End', 'zampona', 'cream');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
 

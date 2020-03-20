@@ -103,8 +103,17 @@ class Flow {
         ].join('');
 
         this._bindConnectionEvents();
-        this._bindToolsEvents();        
+        this._bindToolsEvents();   
+        this._bindInteractionEvents();     
         return this;
+    }
+
+    _bindInteractionEvents(){
+        var self = this;
+        this.paper.on('element:pointerdblclick', function (toolView, evt) {   
+                                 
+            self.emitter.emit(EVENTS_DICT.EVENTS.BLOCK_DBLCLICK, toolView.model, evt)                        
+        });
     }
 
     _bindToolsEvents() {
