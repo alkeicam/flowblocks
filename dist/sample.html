@@ -160,7 +160,7 @@
                 { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
                 { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
                 { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pRecurrentInitializer', label: 'Recurrent Initializez', placeholder: 'number', type: 'NUMBER', required: false }
+                { id: 'pRecurrentInitializer', label: 'Rec. Initializer', placeholder: 'glorotNormal', type: 'LIST', required: false, options:[{v: 'glorotNormal', l: 'GlorotNormal'}, {v: 'glorotUniform', l: 'GlorotUniform'}]}
             ]
         });
         flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
@@ -168,7 +168,7 @@
                 { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
                 { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
                 { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pEnabled', label: 'Is enabled', placeholder: 'glorotNormal', type: 'LIST', required: false, options:[{v: 'glorotNormal', l: 'GlorotNormal'}, {v: 'glorotUniform', l: 'GlorotUniform'}]}
+                { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false}
             ]
         });
         flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream');
