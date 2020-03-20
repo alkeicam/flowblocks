@@ -130,6 +130,15 @@ class Interactive {
 
                 var configurableValue = block.get('configurables').find(el=>{return el.i == configurable.id}) ? block.get('configurables').find(el=>{return el.i == configurable.id}).v : undefined;
                 
+                var options = [];
+                if(configurable.options){
+                    configurable.options.forEach(option=>{
+                        options.push({
+                            v: option.v,
+                            l: option.l
+                        })
+                    })
+                }
 
                 self.flowController.model.details.configurables.push({
                     id: configurable.id,
@@ -137,7 +146,8 @@ class Interactive {
                     placeholder: configurable.placeholder,
                     type: configurable.type,
                     required: configurable.required,
-                    value: configurableValue
+                    value: configurableValue,
+                    options: options
                 })
             });
         })

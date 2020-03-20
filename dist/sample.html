@@ -56,7 +56,7 @@
                                     rv-value="model.details.type">
                             </div>
                         </div>
-                        <div class="field" rv-each-c="model.details.configurables">                            
+                        <div class="field" rv-each-c="model.details.configurables">
                             <div rv-if="c.type | eq 'TEXT'">
                                 <label class="label">{c.label}</label>
                                 <div class="control">
@@ -73,7 +73,7 @@
                             </div>
                             <div rv-if="c.type | eq 'BOOLEAN'">
                                 <label class="label">Message</label>
-                                <div class="control" >
+                                <div class="control">
 
                                     <label class="radio">
                                         <input type="radio" rv-checked="c.value" value="true">
@@ -85,7 +85,21 @@
                                     </label>
                                 </div>
                             </div>
-                            
+                            <div rv-if="c.type | eq 'LIST'"> 
+                                <p class="control has-icons-left">
+                                    <span class="select">
+                                        <select rv-value="c.value">                                            
+                                            <option value="-1">Please select</option>
+                                            <option rv-each-dict="c.options" rv-value="dict.v">
+                                            {dict.l}</option>
+                                        </select>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-globe"></i>
+                                    </span>
+                                </p>
+                            </div>
+
                         </div>
                     </form>
                 </section>
@@ -141,25 +155,26 @@
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
         var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
 
-        flowblocks.registerType('StartNode','Start','tequila', 'cream', {
+        flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
             configurables: [
-                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false},
-                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
-                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false}                    
+                { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
+                { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
+                { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
+                { id: 'pRecurrentInitializer', label: 'Recurrent Initializez', placeholder: 'number', type: 'NUMBER', required: false }
             ]
         });
-        flowblocks.registerType('ForwardSplit','Split','jam', 'cream', {
+        flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
             configurables: [
-                {id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false},
-                {id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false},      
-                {id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false},
-                {id: 'pEnabled', label: 'Is enabled', placeholder: 'number', type: 'BOOLEAN', required: false}                     
+                { id: 'pKernelSize', label: 'Kernel Size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
+                { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
+                { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
+                { id: 'pEnabled', label: 'Is enabled', placeholder: 'glorotNormal', type: 'LIST', required: false, options:[{v: 'glorotNormal', l: 'GlorotNormal'}, {v: 'glorotUniform', l: 'GlorotUniform'}]}
             ]
         });
-        flowblocks.registerType('Forward','PassThrough', 'rug', 'cream');
-        flowblocks.registerType('Mixer','Mixer', 'cactus', 'cream');
-        flowblocks.registerType('Join','Join','sun', 'cream');
-        flowblocks.registerType('FlowEnd','End', 'zampona', 'cream');
+        flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream');
+        flowblocks.registerType('Mixer', 'Mixer', 'cactus', 'cream');
+        flowblocks.registerType('Join', 'Join', 'sun', 'cream');
+        flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
 
