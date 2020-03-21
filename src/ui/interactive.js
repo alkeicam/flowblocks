@@ -1,6 +1,7 @@
 const helper = require('../helper')
 const EVENTS_DICT = require('../events-dict')
 const shortid = require('shortid');
+const DEFAULTS = require('../defaults')
 
 class Interactive {
     constructor(options) {
@@ -8,66 +9,66 @@ class Interactive {
         this.flowClass = undefined;
         this.toolbarClass = undefined
         this.flowblocks = undefined
-        this.flowController = {}        
-        this.toolbarController = undefined        
+        this.flowController = {}
+        this.toolbarController = undefined
     }
 
-    create(flowblocks, emmiter, flowClass, toolbarClass){
+    create(flowblocks, emmiter, flowClass, toolbarClass) {
         this.emmiter = emmiter;
         this.flowClass = flowClass;
-        this.toolbarClass = toolbarClass;  
+        this.toolbarClass = toolbarClass;
         this.flowblocks = flowblocks;
-        this._flowController();  
-        this._toolbarController();      
+        this._flowController();
+        this._toolbarController();
         this._rivetize();
         this._bindFlowEvents(flowblocks);
         this._bindToolbarEvents(flowblocks);
     }
 
-    _flowController(){
+    _flowController() {
         var self = this;
         this.flowController = {
             parent: self,
             model: {
                 details: {
-                    show: false,                    
+                    show: false,
                     type: undefined,
                     label: undefined,
                     blockId: undefined,
                     configurables: []
                 }
             },
-            dismiss: function(e, that){
+            dismiss: function (e, that) {
                 that.model.details.show = false;
                 that.resetDetails();
             },
-            detailsSave: function(e, that){                                
+            detailsSave: function (e, that) {
                 var block = self.flowController.model.details.block;
-                
+
                 var configurables = [];
-                that.model.details.configurables.forEach(item=>{
+                that.model.details.configurables.forEach(item => {
                     configurables.push({
                         i: item.id,
                         v: item.value
-                    })                    
-                })                
+                    })
+                })
 
                 that.parent.emmiter.emit(EVENTS_DICT.EVENTS.BLOCK_DETAILS_SAVE, block.get('blockId'), configurables, e);
                 that.resetDetails();
             },
-            resetDetails(){
+            resetDetails() {
                 this.model.details.show = false;
                 this.model.details.type = undefined;
                 this.model.details.label = undefined;
                 this.model.details.blockId = undefined;
                 this.model.details.block = undefined;
-                
+
                 this.model.details.configurables = [];
             }
         }
     }
 
-    _toolbarController(){
+    _toolbarController() {
         var self = this;
         this.toolbarController = {
             parent: self,
@@ -80,41 +81,41 @@ class Interactive {
                     blockId: undefined
                 }
             },
-            dismiss: function(e, that){
+            dismiss: function (e, that) {
                 that.model.create.show = false;
             },
-            addBlock: function(e, that){
-                
-                that.parent.emmiter.emit(EVENTS_DICT.EVENTS.BLOCK_CREATE, that.model.create.blockId, that.model.create.type, that.model.create.label, e);                
+            addBlock: function (e, that) {
+
+                that.parent.emmiter.emit(EVENTS_DICT.EVENTS.BLOCK_CREATE, that.model.create.blockId, that.model.create.type, that.model.create.label, that.model.create.position, e);
                 that.resetCreate();
             },
-            resetCreate(){
+            resetCreate() {
                 this.model.create.type = undefined;
                 this.model.create.show = false;
                 this.model.create.title = '';
                 this.model.create.label = undefined;
-                this.model.create.blockId = undefined;                
+                this.model.create.blockId = undefined;
             }
         }
     }
 
-    _rivetize(){
-        if(window&&window.rivets){
+    _rivetize() {
+        if (window && window.rivets) {
             var flowHtmlElement = helper.getElementByClass(this.flowClass)
             var toolbarHtmlElement = helper.getElementByClass(this.toolbarClass)
             window.rivets.bind(flowHtmlElement, this.flowController);
             window.rivets.bind(toolbarHtmlElement, this.toolbarController);
-        }else{
+        } else {
             console.warn('For full interactivity rivets is required.');
         }
     }
 
-    _bindFlowEvents(flowblocks){
+    _bindFlowEvents(flowblocks) {
         var self = this;
         // show block configuration view
-        flowblocks.on(EVENTS_DICT.EVENTS.BLOCK_DBLCLICK, function(block, evt){
-            
-            
+        flowblocks.on(EVENTS_DICT.EVENTS.BLOCK_DBLCLICK, function (block, evt) {
+
+
 
             self.flowController.model.details.show = true;
             self.flowController.model.details.type = block.get('_type');
@@ -124,19 +125,19 @@ class Interactive {
             var typeDefinition = flowblocks.getDefinition(self.flowController.model.details.type);
             var configurables = typeDefinition.configurable ? typeDefinition.configurable.configurables : [];
             self.flowController.model.details.configurables.length = 0;
-            
-            configurables.forEach(configurable => {
-                
 
-                var configurableValue = block.get('configurables').find(el=>{return el.i == configurable.id}) ? block.get('configurables').find(el=>{return el.i == configurable.id}).v : undefined;
-                
-                if(!configurableValue && configurable.default)
+            configurables.forEach(configurable => {
+
+
+                var configurableValue = block.get('configurables').find(el => { return el.i == configurable.id }) ? block.get('configurables').find(el => { return el.i == configurable.id }).v : undefined;
+
+                if (!configurableValue && configurable.default)
                     configurableValue = configurable.default;
 
 
                 var options = [];
-                if(configurable.options){
-                    configurable.options.forEach(option=>{
+                if (configurable.options) {
+                    configurable.options.forEach(option => {
                         options.push({
                             v: option.v,
                             l: option.l
@@ -157,16 +158,135 @@ class Interactive {
         })
     }
 
-    _bindToolbarEvents(flowblocks){
+    _bindToolbarEvents(flowblocks) {
         var self = this;
-        flowblocks.on('all', function(name){
-            
+        flowblocks.on('all', function (name) {
+
         })
-        flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, function(name){
-            self.toolbarController.model.create.title = name
+
+        flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, function (typeName) {
+            self.toolbarController.model.create.title = typeName
             self.toolbarController.model.create.show = true;
-            self.toolbarController.model.create.type = name;
+            self.toolbarController.model.create.type = typeName;
             self.toolbarController.model.create.blockId = shortid.generate();
+        })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DRAG, function (typeName, block, x, y, e) {
+            // dragging as presented in https://codepen.io/fxaeberard/pen/reGvjm
+
+            $('body').append('<div id="flyPaper" style="position:fixed;z-index:100;opacity:.8;pointer-event:none;"></div>');
+            var flyGraph = new joint.dia.Graph,
+                flyPaper = new joint.dia.Paper({
+                    el: $('#flyPaper'),
+                    model: flyGraph,
+                    interactive: false,
+                    width: DEFAULTS.TOOLBAR.DRAG.SIZE.width,
+                    height: DEFAULTS.TOOLBAR.DRAG.SIZE.height,
+                    background: {
+                        color: 'transparent'
+                    },
+                }),
+                flyShape = block.clone(),
+                pos = block.position(),
+                offset = {
+                    x: x - pos.x,
+                    y: y - pos.y
+                };
+        
+            flyShape.position(DEFAULTS.POSITION.x, DEFAULTS.POSITION.y);
+            flyGraph.addCell(flyShape);
+            $("#flyPaper").offset({
+                left: e.pageX - offset.x - DEFAULTS.POSITION.x,
+                top: e.pageY - offset.y - DEFAULTS.POSITION.y
+            });
+            $('body').on('mousemove.fly', function (e) {
+                $("#flyPaper").offset({
+                    left: e.pageX - offset.x - DEFAULTS.POSITION.x,
+                    top: e.pageY - offset.y - DEFAULTS.POSITION.y
+                });
+            });
+            $('body').on('mouseup.fly', function (e) {
+                var x = e.pageX,
+                    y = e.pageY,
+                    target = flowblocks.flow.paper.$el.offset();    // target paper
+        
+                // Dropped over paper ?
+                if (x > target.left && x < target.left + flowblocks.flow.paper.$el.width() && y > target.top && y < target.top + flowblocks.flow.paper.$el.height()) {
+                    // here we add
+                    // var s = flyShape.clone();
+                    // s.position(x - target.left - offset.x, y - target.top - offset.y);
+                    // graph.addCell(s);
+
+
+                    self.toolbarController.model.create.title = typeName
+                    self.toolbarController.model.create.show = true;
+                    self.toolbarController.model.create.type = typeName;
+                    self.toolbarController.model.create.position = {
+                        x: x - target.left - offset.x,
+                        y: y - target.top - offset.y
+                    }
+                    self.toolbarController.model.create.blockId = shortid.generate();
+                }
+                $('body').off('mousemove.fly').off('mouseup.fly');
+                flyShape.remove();
+                $('#flyPaper').remove();
+            });
+
+            // ////////
+
+            // // add temporary div
+            // $('body').append('<div id="flowblocks-drag" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
+
+            // // create temporary graph for moving
+            // var dragGraph = new joint.dia.Graph;
+            // var dragPaper = new joint.dia.Paper({
+            //     el: $('#flowblocks-drag'),
+            //     model: dragGraph,
+            //     interactive: false
+            // })
+            // var dragBlock = block.clone(),
+            // var pos = block.position(),
+            // var offset = {
+            //     x: x - pos.x,
+            //     y: y - pos.y
+            // };
+
+            // dragBlock.position(0, 0);
+            // dragGraph.addCell(dragBlock);
+            
+            // // here goes dragging - initialize
+            // $("#flowblocks-drag").offset({
+            //     left: e.pageX - offset.x,
+            //     top: e.pageY - offset.y
+            // });
+            
+            // // drag when mouse moves
+            // $('body').on('mousemove.fly', function (e) {
+            //     $("#flowblocks-drag").offset({
+            //         left: e.pageX - offset.x,
+            //         top: e.pageY - offset.y
+            //     });
+            // });
+
+            // // drag ends
+            // $('body').on('mouseup.fly', function(e) {
+            //     var x = e.pageX,
+            //       y = e.pageY,
+            //       target = paper.$el.offset();
+                
+            //     // Dropped over paper ?
+            //     if (x > target.left && x < target.left + paper.$el.width() && y > target.top && y < target.top + paper.$el.height()) {
+            //       var s = flyShape.clone();
+            //       s.position(x - target.left - offset.x, y - target.top - offset.y);
+            //       graph.addCell(s);
+            //     }
+            //     $('body').off('mousemove.fly').off('mouseup.fly');
+            //     flyShape.remove();
+            //     $('#flyPaper').remove();
+            //   });
+
+
+
         })
     }
 }

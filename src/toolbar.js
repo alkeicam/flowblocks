@@ -34,10 +34,11 @@ class Toolbar {
             background: {
                 color: 'transparent'
             },
-            interactive: {
-                addLinkFromMagnet: false,
-                elementMove: false
-            },
+            interactive: false,
+            // interactive: {
+            //     addLinkFromMagnet: false,
+            //     elementMove: false
+            // },
             snapLinks: false,
             linkPinning: false,
             embeddingMode: false,
@@ -76,10 +77,20 @@ class Toolbar {
 
     _bindEvents() {
         var self = this;
-        this.paper.on('element:pointerdblclick', function (toolView, evt) {            
-            var typeClicked = toolView.model.get('_type');                        
-            self.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, typeClicked, evt)                        
-        });
+        // adding by doubleclick
+        // this.paper.on('element:pointerdblclick', function (toolView, evt) {            
+        //     var typeClicked = toolView.model.get('_type');                        
+        //     self.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, typeClicked, evt)                        
+        //     evt.preventDefault();
+        // });
+
+        // adding by dragging
+        this.paper.on('cell:pointerdown', function(cellView, e, x, y){
+        // this.paper.on('cell:pointerclick', function(cellView, e, x, y){            
+            var block = cellView.model;            
+            var typeClicked = block.get('_type');    
+            self.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DRAG, typeClicked, block, x, y, e);
+        })
     }
 
     _repositionItems() {

@@ -22,9 +22,8 @@ class Flowblocks {
     _initialize(){  
         var self = this;     
         // initialize events
-        this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_CREATE, function(blockId, blockType, label, event){
-            //that.model.create.blockId, that.model.create.type, that.model.create.label
-            self.createBlock(blockType, label, blockId);
+        this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_CREATE, function(blockId, blockType, label, position, event){            
+            self.createBlock(blockType, label, blockId, position);
         }) 
         this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_DETAILS_SAVE, function(blockId, configurables, event){
             var block = self.getBlock(blockId);            

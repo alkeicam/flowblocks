@@ -57,6 +57,12 @@ class Defaults {
                     SIZE: 0.15,
                     FAMILY: 'Helvetica',
                     WEIGHT: 'bold'
+                },
+                DRAG: {
+                    SIZE: {
+                        width: 150,
+                        height: 150
+                    }
                 }
 
             }
