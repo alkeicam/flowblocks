@@ -1,4 +1,4 @@
-<html>
+<html class="has-navbar-fixed-top">
 
 <head>
     <!-- these are required by jointjs  -->
@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/mode/javascript/javascript.min.js"></script> -->
 
-    
+
 
     <!-- load jointjs  -->
     <script src="https://unpkg.com/jointjs@^3.1"> </script>
@@ -28,18 +28,82 @@
     <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
     <!--  -->
-    
+
 
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
 
 </head>
 
-<body>    
+<body>
 
 
     <!-- menu start -->
-    
+    <nav class="navbar is-fixed-top is-light flowblocks-menu" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="#">
+                <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item">
+                    <p>Model MNIST<small>&nbsp;v 1.0.2</small></p>
+                    
+                </a>
+                <a class="navbar-item">
+                    |
+                </a>
+
+                <a class="navbar-item">
+                    Documentation
+                </a>
+
+                <div class="navbar-item has-dropdown is-hoverable">
+                    <a class="navbar-link">
+                        More
+                    </a>
+
+                    <div class="navbar-dropdown">
+                        <a class="navbar-item">
+                            About
+                        </a>
+                        <a class="navbar-item">
+                            Jobs
+                        </a>
+                        <a class="navbar-item">
+                            Contact
+                        </a>
+                        <hr class="navbar-divider">
+                        <a class="navbar-item">
+                            Report an issue
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons">
+                        <a class="button is-primary">
+                            <strong>Sign up</strong>
+                        </a>
+                        <a class="button is-light">
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
     <!-- menu end -->
     <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
@@ -115,7 +179,8 @@
                             <div rv-if="c.type | eq 'CODE'">
                                 <label class="label">{c.label}</label>
                                 <div class="control">
-                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40" rv-value="c.value"></textarea>                                    
+                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40"
+                                        rv-value="c.value"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -171,7 +236,7 @@
 
         var flow = flowblocks.createFlow('flowblocks-flow');
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
-        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
+        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblocks-menu');
 
         flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
             configurables: [
@@ -216,13 +281,13 @@
         //                         lineNumbers: true,
         //                     });
         //                 })
-                        
+
         //             }
-                        
+
         //             if(removedNode && removedNode.dataset.observe == 'CODE'){
         //                 console.log(removedNode.dataset.observe);
         //             }
-                        
+
         //         });
         //     });
 
@@ -231,7 +296,7 @@
 
         //     // pass in the target node, as well as the observer options
         //     observer.observe(target, config);
-        
+
 
         // flowblocks.on('all', function(a,b,c,d,e,f){
         //     console.log('Received: ',a,b,c,d,e,f);

@@ -61,8 +61,8 @@ class Flowblocks {
         return this.toolbar;        
     }
 
-    createApp(flowClass, toolbarClass){
-        Interactive.create(this, this.emitter, flowClass, toolbarClass);
+    createApp(flowClass, toolbarClass, menuClass){
+        Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass);
         console.log('Flowblocks app up and running')
     }
 

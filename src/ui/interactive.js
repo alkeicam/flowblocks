@@ -2,21 +2,25 @@ const helper = require('../helper')
 const EVENTS_DICT = require('../events-dict')
 const shortid = require('shortid');
 const DEFAULTS = require('../defaults')
+const MenuController = require('./menu-controller')
 
 class Interactive {
     constructor(options) {
         this.emmiter = undefined;
         this.flowClass = undefined;
+        this.menuClass = undefined;
         this.toolbarClass = undefined
         this.flowblocks = undefined
         this.flowController = {}
         this.toolbarController = undefined
+        this.menuController = MenuController;
     }
 
-    create(flowblocks, emmiter, flowClass, toolbarClass) {
+    create(flowblocks, emmiter, flowClass, toolbarClass, menuClass) {
         this.emmiter = emmiter;
         this.flowClass = flowClass;
         this.toolbarClass = toolbarClass;
+        this.menuClass = menuClass;
         this.flowblocks = flowblocks;
         this._flowController();
         this._toolbarController();
@@ -103,6 +107,8 @@ class Interactive {
         if (window && window.rivets) {
             var flowHtmlElement = helper.getElementByClass(this.flowClass)
             var toolbarHtmlElement = helper.getElementByClass(this.toolbarClass)
+            var menuHtmlElement = helper.getElementByClass(this.menuClass)
+            window.rivets.bind(menuHtmlElement, this.menuController);
             window.rivets.bind(flowHtmlElement, this.flowController);
             window.rivets.bind(toolbarHtmlElement, this.toolbarController);
         } else {
