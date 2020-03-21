@@ -1,6 +1,7 @@
 const jointjs = require("jointjs")
 const helper = require('./helper')
 const EVENTS_DICT = require('./events-dict')
+const shortid = require('shortid');
 
 class Flow {
     constructor(options) {
@@ -17,7 +18,7 @@ class Flow {
     _initialize() {
     }
 
-    create(paperDivId, emitter) {
+    create(paperDivId, emitter, name, bId) {
         var self = this;
         this.emitter = emitter;
         this.graph = new jointjs.dia.Graph;
@@ -101,7 +102,13 @@ class Flow {
             '</g>',
             '</g>' // <-- missing
         ].join('');
-
+        
+        var graphId = bId ? bId : shortid.generate();
+        var graphName = name ? name : 'Flowblocks #'+graphId;
+        this.graph.set('name', graphName);
+        this.graph.set('id', graphId);
+        this.graph.set('created', Date.now());
+        
         this._bindConnectionEvents();
         this._bindToolsEvents();   
         this._bindInteractionEvents();     

@@ -48,9 +48,9 @@ class Flowblocks {
 
         return this._registeredTypes[typeName];
     }
-    createFlow(paperId){
+    createFlow(paperId, name, bId){
         var self = this;
-        this.flow = Flow.create(paperId, this.emitter); 
+        this.flow = Flow.create(paperId, this.emitter, name, bId); 
         console.log('Flowblocks flow up and running')                
         return this.flow;        
     }
@@ -71,6 +71,17 @@ class Flowblocks {
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
+    }
+
+    export(){
+        this.flow.graph.set('exported', Date.now());
+                
+        var json = this.flow.graph.toJSON();   
+        // also append types definitions
+        json.types = this._registeredTypes;
+
+        helper.downloadObjectAsJson(json, this.flow.graph.get('name'));
+        return json;
     }
 
     on(eventName, handler){
