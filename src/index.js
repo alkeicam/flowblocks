@@ -41,6 +41,11 @@ class Flowblocks {
             var dataJson = self.export();
             Api.save('flowblock',dataJson.id, dataJson, dataJson.version);
         })
+
+        // download flowblocks
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){
+            self.download();            
+        })
     }
 
     
@@ -82,7 +87,7 @@ class Flowblocks {
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
-    }
+    }    
 
     export(){
         this.version++;

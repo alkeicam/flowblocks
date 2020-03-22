@@ -13,5 +13,8 @@ class MenuController {
     modelSpecificationSave(e, that){
         that.emmiter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE);
     }
+    modelSpecificationDownload(e, that){
+        that.emmiter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD);
+    }
 }
 module.exports = new MenuController({});

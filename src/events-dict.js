@@ -16,6 +16,7 @@ class EventsDict {
             CONNECTION_REMOVED: "connection:removed",
             CONNECTION_ADDED: "connection:added",
             FLOWBLOCKS_SAVE: "flowblocks:save", // empty
+            FLOWBLOCKS_DOWNLOAD: "flowblocks:download", // empty
         }
     }
 
