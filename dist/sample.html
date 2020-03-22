@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rivets/0.9.6/rivets.bundled.min.js"></script>
     <script src="./resources/js/rivet-utils.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.css">
@@ -41,53 +42,49 @@
     <!-- menu start -->
     <nav class="navbar is-fixed-top is-light flowblocks-menu" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
-            <a class="navbar-item" href="#">
-                <img src="https://bulma.io/images/bulma-logo.png" width="112" height="28">
+            <a class="navbar-item" rv-href="model.u">
+                <img rv-src="model.b" width="112" height="28">
             </a>
 
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+            <!-- <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
                 data-target="navbarBasicExample">
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
                 <span aria-hidden="true"></span>
-            </a>
+            </a> -->
         </div>
 
         <div id="navbarBasicExample" class="navbar-menu">
             <div class="navbar-start">
-                <a class="navbar-item">
-                    <p>Model MNIST<small>&nbsp;v 1.0.2</small></p>
-                    
+                <a class="navbar-item" rv-on-click="modelSpecificationSave">
+                    <p>{model.c}<small>&nbsp;{model.s}</small></p>
                 </a>
-                <a class="navbar-item">
-                    |
-                </a>
+                <div rv-each-fl="model.m" style="display: flex;">
 
-                <a class="navbar-item">
-                    Documentation
-                </a>
-
-                <div class="navbar-item has-dropdown is-hoverable">
-                    <a class="navbar-link">
-                        Model spec.
+                    <a rv-unless="fl.m" class="navbar-item" rv-data-event="fl.e" rv-on-click="fl.menuClick">
+                        {fl.s | ifThenElseEQ true '|' fl.l}
+                        <!-- <span rv-if="fl.s">|</span>
+                        <span rv-unless="fl.s">{fl.l}</span> -->
                     </a>
+                    <div rv-if="fl.m" class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            {fl.l}
+                        </a>
 
-                    <div class="navbar-dropdown">
-                        <a class="navbar-item" rv-on-click="modelSpecificationSave">
-                            Save
-                        </a>
-                        <a class="navbar-item" rv-on-click="modelSpecificationLoad">
-                            Load
-                        </a>
-                        <hr class="navbar-divider">
-                        <a class="navbar-item" rv-on-click="modelSpecificationDownload">
-                            Download
-                        </a>
+                        <div class="navbar-dropdown">
+                            <div rv-each-fls="fl.m">
+                                <a rv-unless="fls.s" class="navbar-item" rv-data-event="fls.e"
+                                    rv-on-click="fls.menuClick">
+                                    {fls.l}
+                                </a>
+                                <hr rv-if="fls.s" class="navbar-divider">
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="navbar-end">
+            <!-- <div class="navbar-end">
                 <div class="navbar-item">
                     <div class="buttons">
                         <a class="button is-primary">
@@ -98,11 +95,22 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div> -->
         </div>
     </nav>
     <!-- menu end -->
+    
     <div class="flowblocks-flow">
+        <!-- notifications -->
+        <div rv-if="model.general.busy" class="notification is-warning is-light">
+            <!-- <button class="delete"></button> -->
+            <i class="fas fa-spinner fa-spin"></i>&nbsp;Please wait. Performing operation ...
+        </div>
+        <div rv-if="model.general.doneOk" class="notification is-success  is-light">
+            <!-- <button class="delete"></button> -->
+            <i class="fas fa-check"></i>&nbsp;Success
+        </div>
+        <!-- notifications end -->
         <div id="flowblocks-flow"></div>
         <div class="modal flowblocks-flow-modal" rv-class-is-active="model.details.show">
             <div class="modal-background"></div>
@@ -192,6 +200,7 @@
     </div>
 
     <div class="flowblocks-toolbar">
+
         <div id="flowblocks-toolbar"></div>
         <div class="modal flowblocks-toolbar-modal flowblocks-create" rv-class-is-active="model.create.show">
             <div class="modal-background"></div>
@@ -233,7 +242,27 @@
 
         var flow = flowblocks.createFlow('flowblocks-flow');
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
-        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblocks-menu');
+        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblocks-menu', {
+            b: 'https://bulma.io/images/bulma-logo.png',
+            u: '#',
+            c: 'Model MNIST',
+            s: 'v. 15',
+            m: [
+                { s: true },
+                {
+                    s: false, l: 'Types', m: [
+                        { s: false, l: 'Register type', e: 'type:create' }
+                    ]
+                },
+                {
+                    s: false, l: 'Model spec.', m: [
+                        { s: false, l: 'Save', e: 'flowblocks:save' },
+                        { s: true },
+                        { s: false, l: 'Download', e: 'flowblocks:download' },
+                    ]
+                }
+            ]
+        });
 
         flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
             configurables: [

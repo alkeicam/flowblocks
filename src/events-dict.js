@@ -17,6 +17,8 @@ class EventsDict {
             CONNECTION_ADDED: "connection:added",
             FLOWBLOCKS_SAVE: "flowblocks:save", // empty
             FLOWBLOCKS_DOWNLOAD: "flowblocks:download", // empty
+            FLOWBLOCKS_TYPE_CREATE: "type:create", // empty
+            FLOWBLOCKS_DONE_SUCCESS: "result:ok", // operation name, extra data
         }
     }
 

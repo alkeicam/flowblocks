@@ -16,16 +16,17 @@ class Interactive {
         this.menuController = MenuController;
     }
 
-    create(flowblocks, emmiter, flowClass, toolbarClass, menuClass) {
+    create(flowblocks, emmiter, flowClass, toolbarClass, menuClass, menuContents) {
         this.emmiter = emmiter;
         this.flowClass = flowClass;
         this.toolbarClass = toolbarClass;
         this.menuClass = menuClass;
         this.flowblocks = flowblocks;
-        this.menuController.create(emmiter);
+        this.menuController.create(emmiter, menuContents);
         this._flowController();
         this._toolbarController();
         this._rivetize();
+        this._bindMenuEvents(flowblocks);
         this._bindFlowEvents(flowblocks);
         this._bindToolbarEvents(flowblocks);
     }
@@ -41,7 +42,24 @@ class Interactive {
                     label: undefined,
                     blockId: undefined,
                     configurables: []
+                },
+                general: {
+                    busy: false,
+                    doneOk: false
                 }
+            },
+            isBusy(){
+                return this.model.general.busy;
+            },
+            busy(){
+                this.model.general.busy = true;
+                this.model.general.doneOk = false;
+            },
+            done(result){
+                var self = this;
+                this.model.general.busy = false;
+                this.model.general.doneOk = true;                
+                setTimeout(function () { self.model.general.doneOk = false;}, 4000);
             },
             dismiss: function (e, that) {
                 that.model.details.show = false;
@@ -162,6 +180,29 @@ class Interactive {
                     options: options
                 })
             });
+        })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS, function(){                        
+            if(!self.flowController.isBusy()){
+                setTimeout(function () { self.flowController.done(true);}, 1000);
+                
+            }else{
+                self.flowController.done(true);
+            }
+            
+        })
+    }
+
+    _bindMenuEvents(flowblocks) {
+        var self = this;
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_TYPE_CREATE, function(){            
+            self.flowController.busy();
+        })
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){            
+            self.flowController.busy();
+        })
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){                        
+            self.flowController.busy();
         })
     }
 

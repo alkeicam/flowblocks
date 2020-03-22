@@ -62,6 +62,15 @@ RivetUtils.initializeRivetFormatters = function () {
         return text;
     };
 
+    rivets.formatters.ifThenElseEQ = function (testCandidate, expectedValue, valueWhenEquals, valueWhenNot) {
+        if(testCandidate == expectedValue){
+            return valueWhenEquals
+        }
+        else {
+            return valueWhenNot
+        }
+    };
+
     rivets.formatters.eq = function (value, arg) {
         return value == arg;
     };

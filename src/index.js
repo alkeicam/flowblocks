@@ -40,11 +40,13 @@ class Flowblocks {
         this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){
             var dataJson = self.export();
             Api.save('flowblock',dataJson.id, dataJson, dataJson.version);
+            self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
         })
 
         // download flowblocks
         this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){
             self.download();            
+            self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
         })
     }
 
@@ -78,8 +80,8 @@ class Flowblocks {
         return this.toolbar;        
     }
 
-    createApp(flowClass, toolbarClass, menuClass){
-        Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass);
+    createApp(flowClass, toolbarClass, menuClass, menuContents){
+        Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass, menuContents);
         console.log('Flowblocks app up and running')
     }
 
