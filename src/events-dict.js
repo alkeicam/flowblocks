@@ -15,6 +15,7 @@ class EventsDict {
             BLOCK_DBLCLICK: "block:dblclick",   // block, evt
             CONNECTION_REMOVED: "connection:removed",
             CONNECTION_ADDED: "connection:added",
+            FLOWBLOCKS_SAVE: "flowblocks:save", // empty
         }
     }
 

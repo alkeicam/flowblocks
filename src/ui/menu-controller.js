@@ -4,6 +4,14 @@ const shortid = require('shortid');
 const DEFAULTS = require('../defaults')
 
 class MenuController {
-
+    constructor(){
+        this.emmiter = undefined;
+    }
+    create(emmiter){
+        this.emmiter = emmiter;
+    }
+    modelSpecificationSave(e, that){
+        that.emmiter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE);
+    }
 }
 module.exports = new MenuController({});

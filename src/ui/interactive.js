@@ -22,6 +22,7 @@ class Interactive {
         this.toolbarClass = toolbarClass;
         this.menuClass = menuClass;
         this.flowblocks = flowblocks;
+        this.menuController.create(emmiter);
         this._flowController();
         this._toolbarController();
         this._rivetize();
