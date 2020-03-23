@@ -2,31 +2,79 @@ const jointjs = require("jointjs")
 const DEFAULTS = require('./defaults')
 const EVENTS_DICT = require('./events-dict')
 
-
-class Toolbar {
-    constructor(options) {
+class Drawer {
+    constructor(){
+        this.elementId = undefined;
+        this.category = undefined;
+        this.graph = undefined;
+        this.paper = undefined;
+        this.emitter = undefined;
+        this.state = undefined;         
+        this._items = [];
         this.options = {
             size: DEFAULTS.TOOLBAR.SIZE,
             padding: DEFAULTS.TOOLBAR.PADDING,
             rowPadding: DEFAULTS.TOOLBAR.ROW_PADDING,
         };
-        this.graph = {};
-        this.paper = {};
-        this._items = [];
-        this.emitter = undefined;
-        Object.assign(this.options, options);
-        this._initialize();
-    }
-    _initialize() {
     }
 
-    create(div, emitter) {
-        var self = this;
+    /**
+     * Creates empty and detached Drawer. One can populate Drawer contents but the Drawer must be attached
+     * to HTML element in order for elements to be presented.
+     * @param {*} category 
+     * @param {*} emitter 
+     */
+    create(category,  emitter){
+        this.state = 'UNATTACHED';
+        this.category = category;        
         this.emitter = emitter;
-        this.graph = new jointjs.dia.Graph;
-        this.paper = new jointjs.dia.Paper({
+    }
+ 
+    /**
+     * Adds item to the Drawer. When the Drawer is attached then item is immediately being displayed, otherwise
+     * item is stored and will be presented only when the drawer becomes attached.
+     * @param {*} item 
+     */
+    addItem(item){
+        var self = this;
+        this._items.push(item);    
+        this._add(item);
+        return item;       
+    }
+    /**
+     * When Drawer is attached then item is added to the underlying model and presented in the Drawer.
+     * When Drawer is detached then nothing happens.
+     * @param {*} item To be presented in the Drawer
+     */
+    _add(item){
+        if(this.state == 'UNATTACHED'){
+            this.state = 'PENDING';
+            // for detached toolbar request element to which the toolbar may be attached. And await for a drawer to be attached to HTML element
+            this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_REQUEST, this.category);
+            return item;
+        }
+        
+        // add to graph 
+        this.graph.addCell(item);    
+        // resize
+        this._resizeItem(item);
+        // reposition items on paper
+        this._repositionItems();
+    }
 
-            el: document.getElementById(div),
+    /**
+     * Attaches Drawer to the HTML element. As a result 
+     * drawer contents are drawn and become operational.
+     * 
+     * @param {*} elementId Element to which drawer will be attached (drawn)
+     */
+    _attach(elementId){
+        var self = this;
+        this.elementId = elementId;
+        this.graph = new jointjs.dia.Graph;
+        // create paper
+        this.paper = new jointjs.dia.Paper({
+            el: document.getElementById(elementId),
             width: self.options.size.width,
             height: self.options.size.height,
             gridSize: 1,
@@ -49,32 +97,27 @@ class Toolbar {
                 return false
             }
         });
-        this._bindEvents();        
-        return this;
-    }   
 
-    addItem(item, category) {
-        this._resizeItem(item);
-        this._items.push(item);
-        this.graph.addCell(item);
-        // TODO add to proper categories graph
-        this._repositionItems()
-    }
+        // enable toolbar events
+        self._bindEvents();
 
-    _resizeItem(item) {
-        var toolbarWidth = this.options.size.width;
-        var padding = 2 * this.options.padding.x;
-        var percentage = 0.2
-        padding *= (1 + percentage);
-        var calculatedWidth = toolbarWidth - padding;
-
-        item.set('size', {
-            width: calculatedWidth,
-            height: calculatedWidth
+        // add all items to graph and paper (draw the drawer)
+        this._items.forEach(item=>{
+            this._add(item);
         })
+        // mark drawer as attached
+        this.state = 'ATTACHED';
+        // console.log('Drawer attached ', this.category, this.elementId);
+        // notify that drawer is attached
+        this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_ATTACHED, this.category, this.elementId);
 
+        
     }
 
+    /**
+     * Binds interaction events that allow to drag flowblocks elements from toolbar to the 
+     * main flowblocks diagram.
+     */
     _bindEvents() {
         var self = this;
         // adding by doubleclick
@@ -91,6 +134,20 @@ class Toolbar {
             var typeClicked = block.get('_type');    
             self.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DRAG, typeClicked, block, x, y, e);
         })
+    }
+
+    _resizeItem(item) {
+        var toolbarWidth = this.options.size.width;
+        var padding = 2 * this.options.padding.x;
+        var percentage = 0.2
+        padding *= (1 + percentage);
+        var calculatedWidth = toolbarWidth - padding;
+
+        item.set('size', {
+            width: calculatedWidth,
+            height: calculatedWidth
+        })
+
     }
 
     _repositionItems() {
@@ -131,6 +188,66 @@ class Toolbar {
             }
             // console.log('AFTER: ', item.get('_type'),item.get('position'));
         })
+    }
+}
+
+class Toolbar {
+    constructor(options) {        
+        this.emitter = undefined;
+        this.drawers = [];
+        this.options = {};
+        Object.assign(this.options, options);
+        this._initialize();
+    }
+    _initialize() {
+    }
+
+    create(emitter) {
+        var self = this;
+        this.emitter = emitter;
+        this._bindAppEvents();
+        return this;
+    }   
+
+    _bindAppEvents() {        
+        var self = this;
+
+        // binds paper for the given drawer when html presentation element is ready - we try to 
+        // attached proper Drawer to the HTML element
+        this.emitter.on(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_READY,function(category, elementId){
+            // console.log('Drawer is ready', category, elementId);
+            // find drawer
+            var matchingDrawer = self.drawers.find(drawer=>{
+                return drawer.category == category;
+            })
+            // console.log('Matching drawer ', matchingDrawer);
+            if(matchingDrawer){
+                matchingDrawer._attach(elementId);                
+            }
+        })
+    }
+
+    /**
+     * Adds item to given category in toolbar.
+     * @param {*} item 
+     * @param {*} category 
+     */
+    addItem(item, category) {
+        // znajdz drawer. dodaj item
+        var drawer = this.drawers.find(drawer=>{
+            return drawer.category == category;
+        })
+        
+        if(!drawer){
+            // when there is no drawer for a category create a new Drawer
+            drawer = new Drawer();
+            
+            // initialize Drawer (in a detached state)
+            drawer.create(category, this.emitter);
+            this.drawers.push(drawer);
+        }
+
+        drawer.addItem(item);
     }
 }
 module.exports = new Toolbar({});

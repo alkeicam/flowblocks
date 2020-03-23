@@ -289,47 +289,16 @@
         <!-- flowblocks modals end -->
     </div>
 
+    <!-- TOOLBAR PART -->
     <div class="flowblocks-toolbar" >
         <section class="accordions">
-            <article class="accordion is-active">
+            <article class="accordion" rv-class-is-active="%tbd% | eq 0" rv-each-tbd="model.drawers">                
                 <div class="accordion-header toggle">
-                    <p>Basic</p>
+                    <p>{tbd.category}</p>
                 </div>
                 <div class="accordion-body">
                     <div class="accordion-content">
-                        <div id="flowblocks-toolbar"></div>
-                    </div>
-                </div>
-            </article>
-            <article class="accordion">
-                <div class="accordion-header">
-                    <p>Convolutional</p>
-                    <button class="toggle" aria-label="toggle"></button>
-                </div>
-                <div class="accordion-body">
-                    <div class="accordion-content">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <strong>Pellentesque risus mi</strong>,
-                        tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam
-                        gravida purus diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac <em>eleifend
-                            lacus</em>, in mollis lectus. Donec sodales, arcu et sollicitudin porttitor, tortor urna
-                        tempor ligula, id porttitor mi magna a neque. Donec dui urna, vehicula et sem eget, facilisis
-                        sodales sem.
-                    </div>
-                </div>
-            </article>
-            <article class="accordion">
-                <div class="accordion-header">
-                    <p>Merge</p>
-                    <button class="toggle" aria-label="toggle"></button>
-                </div>
-                <div class="accordion-body">
-                    <div class="accordion-content">
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <strong>Pellentesque risus mi</strong>,
-                        tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam
-                        gravida purus diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac <em>eleifend
-                            lacus</em>, in mollis lectus. Donec sodales, arcu et sollicitudin porttitor, tortor urna
-                        tempor ligula, id porttitor mi magna a neque. Donec dui urna, vehicula et sem eget, facilisis
-                        sodales sem.
+                        <div rv-id="tbd.id"></div>
                     </div>
                 </div>
             </article>
@@ -371,6 +340,7 @@
             <!-- <button class="modal-close is-large" aria-label="close" rv-on-click="dismiss"></button> -->
         </div>
     </div>
+    <!-- TOOLBAR PART END -->
     <script>
         RivetUtils.initializeRivetFormatters();
         var accordions = bulmaExtensions.bulmaAccordion.attach();
@@ -418,11 +388,11 @@
                 { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false },
                 { id: 'pUWC', label: 'User code', placeholder: 'javascript code', type: 'CODE', required: false, language: 'javascript', default: 'function a(){}' }
             ]
-        });
-        flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream');
-        flowblocks.registerType('Mixer', 'Mixer', 'cactus', 'cream');
-        flowblocks.registerType('Join', 'Join', 'sun', 'cream');
-        flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream');
+        }, 'Input');
+        flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream', undefined, 'Output');
+        flowblocks.registerType('Mixer', 'Mixer', 'cactus', 'cream', undefined, 'Output');
+        flowblocks.registerType('Join', 'Join', 'sun', 'cream', undefined, 'Input');
+        flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream', undefined, 'Output');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
 

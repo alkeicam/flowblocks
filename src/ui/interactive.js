@@ -107,7 +107,8 @@ class Interactive {
                     type: undefined,
                     label: undefined,
                     blockId: undefined
-                }
+                },
+                drawers: []
             },
             dismiss: function (e, that) {
                 that.model.create.show = false;
@@ -116,6 +117,22 @@ class Interactive {
 
                 that.parent.emmiter.emit(EVENTS_DICT.EVENTS.BLOCK_CREATE, that.model.create.blockId, that.model.create.type, that.model.create.label, that.model.create.position, e);
                 that.resetCreate();
+            },
+            /**
+             * Adds Drawer record to HTML controller so the corresponding HTML element can be redered
+             * @param {*} category 
+             */
+            addDrawer(category){
+                var lastIndex = this.model.drawers.length;
+                var elementId = 'flowblocks-toolbar-drawer'+lastIndex;
+                this.model.drawers.push({
+                    category: category,
+                    id: elementId
+                })
+
+                // notify app that the drawer element is ready in HTML so the Drawer
+                // can be attached to it
+                this.parent.emmiter.emit(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_READY, category, elementId);
             },
             resetCreate() {
                 this.model.create.type = undefined;
@@ -213,9 +230,17 @@ class Interactive {
 
     _bindToolbarEvents(flowblocks) {
         var self = this;
-        flowblocks.on('all', function (name) {
+        // flowblocks.on('all', function (name) {
 
-        })
+        // })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_REQUEST, function (category) {
+            // console.log('Drawer requested ', category);
+            // when toolbar requests drawer we must provide HTML element to which
+            // tolbar drawer may be attached and displayed
+            self.toolbarController.addDrawer(category);
+
+        }); 
 
         flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_DBLCLICK, function (typeName) {
             self.toolbarController.model.create.title = typeName

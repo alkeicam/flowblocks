@@ -63,7 +63,7 @@ class Flowblocks {
             icon: icon,
             configurable: typeConfigurable,
             category: typeCategory
-        }
+        }        
         // add to toolbar
         this.createToolbarItem(typeName, typeName)
 
@@ -76,10 +76,10 @@ class Flowblocks {
         return this.flow;        
     }
 
-    createToolbar(divId){
+    createToolbar(){
         var self = this;
-        this.toolbar = Toolbar.create(divId, this.emitter); 
-        console.log('Flowblocks toolbar up and running')
+        this.toolbar = Toolbar.create(this.emitter); 
+        console.log('Flowblocks toolbar up and running.')
         return this.toolbar;        
     }
 
