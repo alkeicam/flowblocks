@@ -45,8 +45,8 @@ class Defaults {
             }       
             this.TOOLBAR = {
                 SIZE: {
-                    width: 120,
-                    height: 960
+                    width: 110,
+                    height: 110
                 },
                 PADDING: {
                     x: 20,

@@ -1,9 +1,12 @@
 .flowblocks-toolbar {
     position: fixed;
     right: 0;
+    /* top: 3.25rem; */
     top: 0;
     width: 150;
     height: 100%;
     background-color: #F2EAD7;
-    padding-top: 2rem;
+    overflow-y: scroll;
+    padding-top: 3.25rem;
+    
 }

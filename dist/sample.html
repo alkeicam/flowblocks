@@ -289,44 +289,21 @@
         <!-- flowblocks modals end -->
     </div>
 
-    <div class="flowblocks-toolbar">
-        <div class="tabs is-fullwidth">
-            <ul>
-                <li>
-                    <a>
-                        <span class="icon"><i class="fas fa-angle-left" aria-hidden="true"></i></span>
-                        <span>Basic</span>
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        <span class="icon"><i class="fas fa-angle-up" aria-hidden="true"></i></span>
-                        <span>Convolutional</span>
-                    </a>
-                </li>
-                <li>
-                    <a>
-                        <span>Merge</span>
-                        <span class="icon"><i class="fas fa-angle-right" aria-hidden="true"></i></span>
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div id="flowblocks-toolbar"></div>
-        <!-- <section class="accordions">
+    <div class="flowblocks-toolbar" >
+        <section class="accordions">
             <article class="accordion is-active">
                 <div class="accordion-header toggle">
+                    <p>Basic</p>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        <div id="flowblocks-toolbar"></div>
+                    </div>
+                </div>
+            </article>
+            <article class="accordion">
+                <div class="accordion-header">
                     <p>Convolutional</p>
-                </div>
-                <div class="accordion-body">
-                    <div class="accordion-content">
-                        
-                    </div>
-                </div>
-            </article>
-            <article class="accordion">
-                <div class="accordion-header">
-                    <p>Hello World</p>
                     <button class="toggle" aria-label="toggle"></button>
                 </div>
                 <div class="accordion-body">
@@ -342,7 +319,7 @@
             </article>
             <article class="accordion">
                 <div class="accordion-header">
-                    <p>Hello World</p>
+                    <p>Merge</p>
                     <button class="toggle" aria-label="toggle"></button>
                 </div>
                 <div class="accordion-body">
@@ -356,7 +333,7 @@
                     </div>
                 </div>
             </article>
-        </section> -->
+        </section> 
 
 
         <div class="modal flowblocks-toolbar-modal flowblocks-create" rv-class-is-active="model.create.show">
@@ -396,6 +373,7 @@
     </div>
     <script>
         RivetUtils.initializeRivetFormatters();
+        var accordions = bulmaExtensions.bulmaAccordion.attach();
 
         var flow = flowblocks.createFlow('flowblocks-flow');
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
@@ -421,14 +399,17 @@
             ]
         });
 
-        flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
+        flowblocks.registerType('Activation', 'Start', 'tequila', 'cream', {
             configurables: [
-                { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
-                { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false },
-                { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pRecurrentInitializer', label: 'Rec. initializer', placeholder: 'glorotNormal', type: 'LIST', required: false, options: [{ v: 'glorotNormal', l: 'GlorotNormal' }, { v: 'glorotUniform', l: 'GlorotUniform' }], default: '-1' }
+                { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+                { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+                { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+                { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }              
             ]
-        });
+        }, 'Input');
+
         flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
             configurables: [
                 { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },

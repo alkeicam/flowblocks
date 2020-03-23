@@ -28,7 +28,7 @@ class Toolbar {
 
             el: document.getElementById(div),
             width: self.options.size.width,
-            height: 700,
+            height: self.options.size.height,
             gridSize: 1,
             model: self.graph,
             background: {
@@ -94,10 +94,14 @@ class Toolbar {
     }
 
     _repositionItems() {
+        var self = this;
         var previousPosition = {
-            x: 20,
-            y: 20
+            x: 15,
+            y: 5
         }
+
+        var paperHeight = 0;
+        
 
         this._items.forEach(item => {
 
@@ -105,14 +109,21 @@ class Toolbar {
             // var itemSize = item.get('size');
             // var itemPosition = item.get('position');
 
+
+
             var newPosition = {
 
                 x: previousPosition.x,
                 y: previousPosition.y + view.getBBox().height / 6
             }
             // console.log('BEFORE: ', item.get('_type'),item.get('position'), previousPosition, newPosition, item.getBBox().height, view.getBBox().height);
-
+            // update paper size
+            paperHeight = newPosition.y + view.getBBox().height;
+            self.paper.setDimensions(self.paper.width, paperHeight);
+            
             item.set('position', newPosition);
+
+            
 
             previousPosition = {
                 x: newPosition.x,
