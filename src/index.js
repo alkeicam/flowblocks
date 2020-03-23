@@ -33,14 +33,15 @@ class Flowblocks {
 
     
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurable){        
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurable, typeCategory){        
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
             template: templateName,
             style: defaultStyle,
             icon: icon,
-            configurable: typeConfigurable
+            configurable: typeConfigurable,
+            category: typeCategory
         }
         // add to toolbar
         this.createToolbarItem(typeName, typeName)
@@ -118,7 +119,7 @@ class Flowblocks {
                     toolbarItem.set('icon', typeDefinition.icon);
                 }                
             }   
-            this.toolbar.addItem(toolbarItem);
+            this.toolbar.addItem(toolbarItem, typeDefinition.category);
             return toolbarItem;
         } else {
             throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');

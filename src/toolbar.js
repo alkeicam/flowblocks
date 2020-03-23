@@ -28,7 +28,7 @@ class Toolbar {
 
             el: document.getElementById(div),
             width: self.options.size.width,
-            height: self.options.size.height,
+            height: 700,
             gridSize: 1,
             model: self.graph,
             background: {
@@ -53,11 +53,11 @@ class Toolbar {
         return this;
     }   
 
-    addItem(item) {
+    addItem(item, category) {
         this._resizeItem(item);
         this._items.push(item);
         this.graph.addCell(item);
-
+        // TODO add to proper categories graph
         this._repositionItems()
     }
 

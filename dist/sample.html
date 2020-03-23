@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/mode/javascript/javascript.min.js"></script> -->
 
-    
+
 
     <!-- load jointjs  -->
     <script src="https://unpkg.com/jointjs@^3.1"> </script>
@@ -28,18 +28,18 @@
     <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
     <!--  -->
-    
+
 
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
 
 </head>
 
-<body>    
+<body>
 
 
     <!-- menu start -->
-    
+
     <!-- menu end -->
     <div class="flowblocks-flow">
         <div id="flowblocks-flow"></div>
@@ -115,7 +115,8 @@
                             <div rv-if="c.type | eq 'CODE'">
                                 <label class="label">{c.label}</label>
                                 <div class="control">
-                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40" rv-value="c.value"></textarea>                                    
+                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40"
+                                        rv-value="c.value"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -130,7 +131,75 @@
     </div>
 
     <div class="flowblocks-toolbar">
+        <div class="tabs is-fullwidth">
+            <ul>
+                <li>
+                    <a>
+                        <span class="icon"><i class="fas fa-angle-left" aria-hidden="true"></i></span>
+                        <span>Basic</span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <span class="icon"><i class="fas fa-angle-up" aria-hidden="true"></i></span>
+                        <span>Convolutional</span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <span>Merge</span>
+                        <span class="icon"><i class="fas fa-angle-right" aria-hidden="true"></i></span>
+                    </a>
+                </li>
+            </ul>
+        </div>
         <div id="flowblocks-toolbar"></div>
+        <!-- <section class="accordions">
+            <article class="accordion is-active">
+                <div class="accordion-header toggle">
+                    <p>Convolutional</p>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        
+                    </div>
+                </div>
+            </article>
+            <article class="accordion">
+                <div class="accordion-header">
+                    <p>Hello World</p>
+                    <button class="toggle" aria-label="toggle"></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <strong>Pellentesque risus mi</strong>,
+                        tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam
+                        gravida purus diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac <em>eleifend
+                            lacus</em>, in mollis lectus. Donec sodales, arcu et sollicitudin porttitor, tortor urna
+                        tempor ligula, id porttitor mi magna a neque. Donec dui urna, vehicula et sem eget, facilisis
+                        sodales sem.
+                    </div>
+                </div>
+            </article>
+            <article class="accordion">
+                <div class="accordion-header">
+                    <p>Hello World</p>
+                    <button class="toggle" aria-label="toggle"></button>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-content">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. <strong>Pellentesque risus mi</strong>,
+                        tempus quis placerat ut, porta nec nulla. Vestibulum rhoncus ac ex sit amet fringilla. Nullam
+                        gravida purus diam, et dictum <a>felis venenatis</a> efficitur. Aenean ac <em>eleifend
+                            lacus</em>, in mollis lectus. Donec sodales, arcu et sollicitudin porttitor, tortor urna
+                        tempor ligula, id porttitor mi magna a neque. Donec dui urna, vehicula et sem eget, facilisis
+                        sodales sem.
+                    </div>
+                </div>
+            </article>
+        </section> -->
+
+
         <div class="modal flowblocks-toolbar-modal flowblocks-create" rv-class-is-active="model.create.show">
             <div class="modal-background"></div>
             <div class="modal-card">
@@ -216,13 +285,13 @@
         //                         lineNumbers: true,
         //                     });
         //                 })
-                        
+
         //             }
-                        
+
         //             if(removedNode && removedNode.dataset.observe == 'CODE'){
         //                 console.log(removedNode.dataset.observe);
         //             }
-                        
+
         //         });
         //     });
 
@@ -231,7 +300,7 @@
 
         //     // pass in the target node, as well as the observer options
         //     observer.observe(target, config);
-        
+
 
         // flowblocks.on('all', function(a,b,c,d,e,f){
         //     console.log('Received: ',a,b,c,d,e,f);
