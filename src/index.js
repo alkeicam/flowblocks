@@ -7,6 +7,7 @@ const ToolbarItem = require('./toolbar-item')
 const EVENTS_DICT = require('./events-dict')
 const EventEmitter = require('events')
 const Interactive = require('./ui/interactive')
+const Api = require('./api')
 
 
 class Flowblocks {
@@ -17,18 +18,38 @@ class Flowblocks {
         this.flow = undefined
         this.toolbar = undefined
         this.emitter = new EventEmitter();
+        this.version = 1;
         this._initialize();
     }
     _initialize(){  
         var self = this;     
         // initialize events
+
+        // add new block
         this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_CREATE, function(blockId, blockType, label, position, event){            
             self.createBlock(blockType, label, blockId, position);
         }) 
+
+        // save block details
         this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_DETAILS_SAVE, function(blockId, configurables, event){
             var block = self.getBlock(blockId);            
             block.set('configurables', configurables);
         })   
+
+        // save flowblocks
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){
+            var dataJson = self.export();
+            Api.save('flowblock',dataJson.id, dataJson, dataJson.version);
+            self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
+        })
+
+        // download flowblocks
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){
+            self.download();            
+            self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
+        })
+
+        // create new type
     }
 
     
@@ -62,8 +83,8 @@ class Flowblocks {
         return this.toolbar;        
     }
 
-    createApp(flowClass, toolbarClass){
-        Interactive.create(this, this.emitter, flowClass, toolbarClass);
+    createApp(flowClass, toolbarClass, menuClass, menuContents){
+        Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass, menuContents);
         console.log('Flowblocks app up and running')
     }
 
@@ -71,15 +92,22 @@ class Flowblocks {
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
-    }
+    }    
 
     export(){
+        this.version++;
+
         this.flow.graph.set('exported', Date.now());
+        this.flow.graph.set('version', this.version);
                 
         var json = this.flow.graph.toJSON();   
         // also append types definitions
         json.types = this._registeredTypes;
+        return json;        
+    }
 
+    download(){
+        var json = this.export();
         helper.downloadObjectAsJson(json, this.flow.graph.get('name'));
         return json;
     }

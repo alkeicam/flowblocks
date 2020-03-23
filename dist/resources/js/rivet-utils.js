@@ -7,7 +7,6 @@ RivetUtils.initializeRivetBinders = function () {
 };
 
 RivetUtils.initializeRivetFormatters = function () {
-    console.log('INIT');
     rivets.formatters.fromTimestamp = function (value, format) {
         var theDate = new Date(value);
         
@@ -60,6 +59,15 @@ RivetUtils.initializeRivetFormatters = function () {
         text = text.replace('@now', new Date().getTime());
 
         return text;
+    };
+
+    rivets.formatters.ifThenElseEQ = function (testCandidate, expectedValue, valueWhenEquals, valueWhenNot) {
+        if(testCandidate == expectedValue){
+            return valueWhenEquals
+        }
+        else {
+            return valueWhenNot
+        }
     };
 
     rivets.formatters.eq = function (value, arg) {

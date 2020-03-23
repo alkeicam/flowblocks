@@ -2,25 +2,31 @@ const helper = require('../helper')
 const EVENTS_DICT = require('../events-dict')
 const shortid = require('shortid');
 const DEFAULTS = require('../defaults')
+const MenuController = require('./menu-controller')
 
 class Interactive {
     constructor(options) {
         this.emmiter = undefined;
         this.flowClass = undefined;
+        this.menuClass = undefined;
         this.toolbarClass = undefined
         this.flowblocks = undefined
         this.flowController = {}
         this.toolbarController = undefined
+        this.menuController = MenuController;
     }
 
-    create(flowblocks, emmiter, flowClass, toolbarClass) {
+    create(flowblocks, emmiter, flowClass, toolbarClass, menuClass, menuContents) {
         this.emmiter = emmiter;
         this.flowClass = flowClass;
         this.toolbarClass = toolbarClass;
+        this.menuClass = menuClass;
         this.flowblocks = flowblocks;
+        this.menuController.create(emmiter, menuContents);
         this._flowController();
         this._toolbarController();
         this._rivetize();
+        this._bindMenuEvents(flowblocks);
         this._bindFlowEvents(flowblocks);
         this._bindToolbarEvents(flowblocks);
     }
@@ -36,7 +42,29 @@ class Interactive {
                     label: undefined,
                     blockId: undefined,
                     configurables: []
+                },
+                types: {
+                    create: {
+                        show: false
+                    }
+                },
+                general: {
+                    busy: false,
+                    doneOk: false
                 }
+            },
+            isBusy(){
+                return this.model.general.busy;
+            },
+            busy(){
+                this.model.general.busy = true;
+                this.model.general.doneOk = false;
+            },
+            done(result){
+                var self = this;
+                this.model.general.busy = false;
+                this.model.general.doneOk = true;                
+                setTimeout(function () { self.model.general.doneOk = false;}, 4000);
             },
             dismiss: function (e, that) {
                 that.model.details.show = false;
@@ -103,6 +131,8 @@ class Interactive {
         if (window && window.rivets) {
             var flowHtmlElement = helper.getElementByClass(this.flowClass)
             var toolbarHtmlElement = helper.getElementByClass(this.toolbarClass)
+            var menuHtmlElement = helper.getElementByClass(this.menuClass)
+            window.rivets.bind(menuHtmlElement, this.menuController);
             window.rivets.bind(flowHtmlElement, this.flowController);
             window.rivets.bind(toolbarHtmlElement, this.toolbarController);
         } else {
@@ -155,6 +185,29 @@ class Interactive {
                     options: options
                 })
             });
+        })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS, function(){                        
+            if(!self.flowController.isBusy()){
+                setTimeout(function () { self.flowController.done(true);}, 1000);
+                
+            }else{
+                self.flowController.done(true);
+            }
+            
+        })
+    }
+
+    _bindMenuEvents(flowblocks) {
+        var self = this;
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_TYPE_CREATE, function(){            
+            self.flowController.busy();
+        })
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){            
+            self.flowController.busy();
+        })
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){                        
+            self.flowController.busy();
         })
     }
 
