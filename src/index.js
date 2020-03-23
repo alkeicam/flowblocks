@@ -18,7 +18,7 @@ class Flowblocks {
         this.flow = undefined
         this.toolbar = undefined
         this.emitter = new EventEmitter();
-        this.version = 0;
+        this.version = 1;
         this._initialize();
     }
     _initialize(){  
@@ -48,6 +48,8 @@ class Flowblocks {
             self.download();            
             self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
         })
+
+        // create new type
     }
 
     

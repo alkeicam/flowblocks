@@ -15,9 +15,13 @@ class EventsDict {
             BLOCK_DBLCLICK: "block:dblclick",   // block, evt
             CONNECTION_REMOVED: "connection:removed",
             CONNECTION_ADDED: "connection:added",
+            // emited when user wants to save flowblocks specification
             FLOWBLOCKS_SAVE: "flowblocks:save", // empty
+            // emited when user wants to download flowblocks specification
             FLOWBLOCKS_DOWNLOAD: "flowblocks:download", // empty
+            // indicates that user wants to create new type so appropriate form shall be presented
             FLOWBLOCKS_TYPE_CREATE: "type:create", // empty
+            // general event, sent as a feedback from any operation
             FLOWBLOCKS_DONE_SUCCESS: "result:ok", // operation name, extra data
         }
     }

@@ -43,6 +43,11 @@ class Interactive {
                     blockId: undefined,
                     configurables: []
                 },
+                types: {
+                    create: {
+                        show: false
+                    }
+                },
                 general: {
                     busy: false,
                     doneOk: false
