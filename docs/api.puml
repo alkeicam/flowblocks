@@ -1,0 +1,15 @@
+@startuml
+
+class Api {
+  {method} void save(datatype, key, object) saves data in database
+  {method} Saveable load(datatype, key) loads data from database  
+}
+
+class Saveable {
+  {field} String k (business id of the item in database - metadata)
+  {field} String t (datatype of the item in database - metadata)
+  {field} Number s (size of the item in database - metadata)
+  {field} Object d (data / actual object that is in databse)
+}
+
+@enduml

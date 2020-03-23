@@ -1,4 +1,4 @@
-<html>
+<html class="has-navbar-fixed-top">
 
 <head>
     <!-- these are required by jointjs  -->
@@ -13,12 +13,13 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma-extensions@6.2.7/dist/css/bulma-extensions.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/rivets/0.9.6/rivets.bundled.min.js"></script>
     <script src="./resources/js/rivet-utils.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
 
     <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/codemirror.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.52.0/mode/javascript/javascript.min.js"></script> -->
 
-    
+
 
     <!-- load jointjs  -->
     <script src="https://unpkg.com/jointjs@^3.1"> </script>
@@ -28,21 +29,93 @@
     <script src="https://ariutta.github.io/svg-pan-zoom/dist/svg-pan-zoom.min.js"></script>
 
     <!--  -->
-    
+
 
     <!-- load flowblocks -->
     <script src="./flowblocks.js"></script>
 
 </head>
 
-<body>    
+<body>
 
 
     <!-- menu start -->
-    
+    <nav class="navbar is-fixed-top is-light flowblocks-menu" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" rv-href="model.u">
+                <img rv-src="model.b" width="112" height="28">
+            </a>
+
+            <!-- <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a> -->
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item" rv-on-click="modelSpecificationSave">
+                    <p>{model.c}<small>&nbsp;{model.s}</small></p>
+                </a>
+                <div rv-each-fl="model.m" style="display: flex;">
+
+                    <a rv-unless="fl.m" class="navbar-item" rv-data-event="fl.e" rv-on-click="fl.menuClick">
+                        {fl.s | ifThenElseEQ true '|' fl.l}
+                        <!-- <span rv-if="fl.s">|</span>
+                        <span rv-unless="fl.s">{fl.l}</span> -->
+                    </a>
+                    <div rv-if="fl.m" class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">
+                            {fl.l}
+                        </a>
+
+                        <div class="navbar-dropdown">
+                            <div rv-each-fls="fl.m">
+                                <a rv-unless="fls.s" class="navbar-item" rv-data-event="fls.e"
+                                    rv-on-click="fls.menuClick">
+                                    {fls.l}
+                                </a>
+                                <hr rv-if="fls.s" class="navbar-divider">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- <div class="navbar-end">
+                <div class="navbar-item">
+                    <div class="buttons">
+                        <a class="button is-primary">
+                            <strong>Sign up</strong>
+                        </a>
+                        <a class="button is-light">
+                            Log in
+                        </a>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+    </nav>
     <!-- menu end -->
+    
     <div class="flowblocks-flow">
+        <!-- notifications -->
+        <div rv-if="model.general.busy" class="notification is-warning is-light">
+            <!-- <button class="delete"></button> -->
+            <i class="fas fa-spinner fa-spin"></i>&nbsp;Please wait. Performing operation ...
+        </div>
+        <div rv-if="model.general.doneOk" class="notification is-success  is-light">
+            <!-- <button class="delete"></button> -->
+            <i class="fas fa-check"></i>&nbsp;Success
+        </div>
+        <!-- notifications end -->
+        <!-- flowblocks diagram -->
         <div id="flowblocks-flow"></div>
+        <!-- flowblocks diagram end-->
+        <!-- flowblocks modals -->
+        <!-- flowblocks details modal -->
         <div class="modal flowblocks-flow-modal" rv-class-is-active="model.details.show">
             <div class="modal-background"></div>
             <div class="modal-card">
@@ -115,7 +188,8 @@
                             <div rv-if="c.type | eq 'CODE'">
                                 <label class="label">{c.label}</label>
                                 <div class="control">
-                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40" rv-value="c.value"></textarea>                                    
+                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40"
+                                        rv-value="c.value"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -127,9 +201,96 @@
                 </footer>
             </div>
         </div>
+        <div class="modal flowblocks-flow-modal" rv-class-is-active="model.types.create.show">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Configure <span
+                            class="has-text-weight-bold is-uppercase">{model.details.label}</span></p>
+                    <button class="delete" aria-label="close" rv-on-click="dismiss"></button>
+                </header>
+                <section class="modal-card-body">
+                    <!-- Content ... -->
+                    <form class="flowblocks-details-form">
+                        <div class="field">
+                            <label class="label">BlockId</label>
+                            <div class="control">
+                                <input class="input" type="text" placeholder="Block unique id" disabled
+                                    rv-value="model.details.blockId">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Type</label>
+                            <div class="control">
+                                <input class="input is-uppercase" type="text" placeholder="BlockType" disabled
+                                    rv-value="model.details.type">
+                            </div>
+                        </div>
+                        <div class="field" rv-data-observe="c.type" rv-each-c="model.details.configurables">
+                            <div rv-if="c.type | eq 'TEXT'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+                                    <input class="input" type="text" rv-placeholder="c.placeholder" rv-data-bid="c.id"
+                                        rv-value="c.value">
+                                </div>
+                            </div>
+                            <div rv-if="c.type | eq 'NUMBER'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+                                    <input rv-if="c.type | eq 'NUMBER'" class="input" type="number"
+                                        rv-placeholder="c.placeholder" rv-data-bid="c.id" rv-value="c.value">
+                                </div>
+                            </div>
+                            <div rv-if="c.type | eq 'BOOLEAN'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+
+                                    <label class="radio">
+                                        <input type="radio" rv-checked="c.value" value="true">
+                                        OK
+                                    </label>
+                                    <label class="radio">
+                                        <input type="radio" rv-checked="c.value" value="false">
+                                        No
+                                    </label>
+                                </div>
+                            </div>
+                            <div rv-if="c.type | eq 'LIST'">
+                                <label class="label">{c.label}</label>
+                                <p class="control has-icons-left is-expanded">
+                                    <span class="select is-fullwidth">
+                                        <select rv-value="c.value">
+                                            <option value="-1">Please select</option>
+                                            <option rv-each-dict="c.options" rv-value="dict.v">
+                                                {dict.l}</option>
+                                        </select>
+                                    </span>
+                                    <span class="icon is-small is-left">
+                                        <i class="fas fa-globe"></i>
+                                    </span>
+                                </p>
+                            </div>
+                            <div rv-if="c.type | eq 'CODE'">
+                                <label class="label">{c.label}</label>
+                                <div class="control">
+                                    <textarea rv-id="c.id" class="textarea" cols="80" rows="40"
+                                        rv-value="c.value"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" rv-on-click="detailsSave">Save changes</button>
+                    <button class="button" rv-on-click="dismiss">Cancel</button>
+                </footer>
+            </div>
+        </div>
+        <!-- flowblocks modals end -->
     </div>
 
     <div class="flowblocks-toolbar">
+
         <div id="flowblocks-toolbar"></div>
         <div class="modal flowblocks-toolbar-modal flowblocks-create" rv-class-is-active="model.create.show">
             <div class="modal-background"></div>
@@ -171,7 +332,27 @@
 
         var flow = flowblocks.createFlow('flowblocks-flow');
         var toolbar = flowblocks.createToolbar('flowblocks-toolbar');
-        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar');
+        var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblocks-menu', {
+            b: 'https://bulma.io/images/bulma-logo.png',
+            u: '#',
+            c: flow.graph.get('name'),
+            s: 'v. '+flowblocks.version,
+            m: [
+                { s: true },
+                // {
+                //     s: false, l: 'Types', m: [
+                //         { s: false, l: 'Register type', e: 'type:create' }
+                //     ]
+                // },
+                {
+                    s: false, l: 'Model spec.', m: [
+                        { s: false, l: 'Save', e: 'flowblocks:save' },
+                        { s: true },
+                        { s: false, l: 'Download', e: 'flowblocks:download' },
+                    ]
+                }
+            ]
+        });
 
         flowblocks.registerType('StartNode', 'Start', 'tequila', 'cream', {
             configurables: [
@@ -216,13 +397,13 @@
         //                         lineNumbers: true,
         //                     });
         //                 })
-                        
+
         //             }
-                        
+
         //             if(removedNode && removedNode.dataset.observe == 'CODE'){
         //                 console.log(removedNode.dataset.observe);
         //             }
-                        
+
         //         });
         //     });
 
@@ -231,7 +412,7 @@
 
         //     // pass in the target node, as well as the observer options
         //     observer.observe(target, config);
-        
+
 
         // flowblocks.on('all', function(a,b,c,d,e,f){
         //     console.log('Received: ',a,b,c,d,e,f);
