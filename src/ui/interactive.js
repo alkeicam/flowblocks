@@ -170,7 +170,7 @@ class Interactive {
             self.flowController.model.details.label = block.get('name');
             self.flowController.model.details.block = block;
             var typeDefinition = flowblocks.getDefinition(self.flowController.model.details.type);
-            var configurables = typeDefinition.configurable ? typeDefinition.configurable.configurables : [];
+            var configurables = typeDefinition.configurables ? typeDefinition.configurables : [];
             self.flowController.model.details.configurables.length = 0;
 
             configurables.forEach(configurable => {

@@ -14,8 +14,7 @@ class EventsDict {
             BLOCK_CREATE: "block:create",   // blockId, type, label, position (x, y), evt
             BLOCK_DETAILS_SAVE: "block:save", // blockId, [i: configurable id, v: configurable value], evt         
             BLOCK_REMOVED: "block:removed",
-            BLOCK_DBLCLICK: "block:dblclick",   // block, evt
-            BLOCK_DBLCLICK: "block:dblclick",   // block, evt
+            BLOCK_DBLCLICK: "block:dblclick",   // block, evt            
             CONNECTION_REMOVED: "connection:removed",
             CONNECTION_ADDED: "connection:added",
             // emited when user wants to save flowblocks specification

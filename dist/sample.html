@@ -247,7 +247,7 @@
 
                                     <label class="radio">
                                         <input type="radio" rv-checked="c.value" value="true">
-                                        OK
+                                        Yes
                                     </label>
                                     <label class="radio">
                                         <input type="radio" rv-checked="c.value" value="false">
@@ -369,8 +369,45 @@
             ]
         });
 
-        flowblocks.registerType('Activation', 'Start', 'tequila', 'cream', {
-            configurables: [
+            //typeName, templateName, icon, defaultStyle, typeConfigurable, typeCategory
+            var types = [
+                {
+                    name: 'Input',
+                    category: 'Basic',
+                    template: 'Start',
+                    icon: 'tequila',
+                    style: 'cream',
+                    configurables: [
+                        { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+                        { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                        { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+                        { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                        { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+                        { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }
+                    ]
+                },
+                {
+                    name: 'Activation',
+                    category: 'Basic',
+                    template: 'PassThrough',
+                    icon: 'jam',
+                    style: 'cream',
+                    configurables: [
+                        { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+                        { id: 'activation', label: 'Activation function', placeholder: '', type: 'LIST', required: false, options: [{ v: 'elu', l: 'elu' }, { v: 'hardSigmoid', l: 'hardSigmoid' }, { v: 'linear', l: 'linear' }, { v: 'relu', l: 'relu' }, { v: 'relu6', l: 'relu6' }, , { v: 'selu', l: 'selu' }, { v: 'sigmoid', l: 'sigmoid' }, { v: 'softmax', l: 'softmax' }, { v: 'softplus', l: 'softplus' }, { v: 'softsign', l: 'softsign' }, { v: 'tanh', l: 'tanh' }], default: '-1' },                        
+                        { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                        { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+                        { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+                        { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+                        { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },                        
+                    ]
+                }
+            ]
+
+        flowblocks.registerTypes(types);    
+
+        flowblocks.registerType('SiakisInny', 'Start', 'tequila', 'cream', 
+            [
                 { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
                 { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
                 { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
@@ -378,21 +415,21 @@
                 { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
                 { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }              
             ]
-        }, 'Input');
+        , 'Input');
 
-        flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
-            configurables: [
-                { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
-                { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false, default: 'relu' },
-                { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
-                { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false },
-                { id: 'pUWC', label: 'User code', placeholder: 'javascript code', type: 'CODE', required: false, language: 'javascript', default: 'function a(){}' }
-            ]
-        }, 'Input');
-        flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream', undefined, 'Output');
-        flowblocks.registerType('Mixer', 'Mixer', 'cactus', 'cream', undefined, 'Output');
-        flowblocks.registerType('Join', 'Join', 'sun', 'cream', undefined, 'Input');
-        flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream', undefined, 'Output');
+        // flowblocks.registerType('ForwardSplit', 'Split', 'jam', 'cream', {
+        //     configurables: [
+        //         { id: 'pKernelSize', label: 'Kernel size', placeholder: 'Kernel size', type: 'NUMBER', required: false },
+        //         { id: 'pActivation', label: 'Activation', placeholder: 'relu | softmax', type: 'TEXT', required: false, default: 'relu' },
+        //         { id: 'pFilters', label: 'Filters', placeholder: 'number', type: 'NUMBER', required: false },
+        //         { id: 'pEnabled', label: 'Is enabled', placeholder: 'yes, no', type: 'BOOLEAN', required: false },
+        //         { id: 'pUWC', label: 'User code', placeholder: 'javascript code', type: 'CODE', required: false, language: 'javascript', default: 'function a(){}' }
+        //     ]
+        // }, 'Input');
+        // flowblocks.registerType('Forward', 'PassThrough', 'rug', 'cream', undefined, 'Output');
+        // flowblocks.registerType('Mixer', 'Mixer', 'cactus', 'cream', undefined, 'Output');
+        // flowblocks.registerType('Join', 'Join', 'sun', 'cream', undefined, 'Input');
+        // flowblocks.registerType('FlowEnd', 'End', 'zampona', 'cream', undefined, 'Output');
 
         flowblocks.enablePanAndZoom(svgPanZoom);
 

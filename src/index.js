@@ -52,16 +52,20 @@ class Flowblocks {
         // create new type
     }
 
-    
+    registerTypes(typesArray){
+        typesArray.forEach(theType=>{
+            this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category);
+        })
+    }
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurable, typeCategory){        
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory){        
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
             template: templateName,
             style: defaultStyle,
             icon: icon,
-            configurable: typeConfigurable,
+            configurables: typeConfigurableArray,
             category: typeCategory
         }        
         // add to toolbar
