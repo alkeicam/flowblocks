@@ -54,11 +54,11 @@ class Flowblocks {
 
     registerTypes(typesArray){
         typesArray.forEach(theType=>{
-            this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category);
+            this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category, theType.validationFunction);
         })
     }
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory){        
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction){        
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
@@ -66,7 +66,8 @@ class Flowblocks {
             style: defaultStyle,
             icon: icon,
             configurables: typeConfigurableArray,
-            category: typeCategory
+            category: typeCategory,
+            validation: validationFunction
         }        
         // add to toolbar
         this.createToolbarItem(typeName, typeName)
@@ -161,7 +162,7 @@ class Flowblocks {
     createBlock(typeName, label, blockId, position, size){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var newBlock = block.createBlank(blockId, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);            
+            var newBlock = block.createBlank(blockId, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation);            
             newBlock.set('name',label);
             newBlock.set('_type', typeDefinition.name);
             if(blockId){                

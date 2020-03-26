@@ -27,6 +27,7 @@ class Block {
             debug: false, // debug mode when blockId is presented
             errors: [], // array of block errors that are the cause for the ERROR status of the block
             configurables: [], // configurable values {i: id, v: value}
+            _validationFunction: undefined, // validation function
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
             _styles: DEFAULTS.STYLES,
@@ -165,6 +166,26 @@ class Block {
             },
 
             /**
+             * Validation function input:
+             * var blockData = {
+                    blockId: this.get('blockId'),
+                    type: this.get('_type'),
+                    configurables: Object.assign({},this.get('configurables')),
+                    connections: portConnectionsCopy
+                }
+
+             * Validation function output:
+             * Array of errors, each error must have a form of: 
+             *    code: error code,
+             *    cId: element/object id that generated this error (for instance port id)
+             *    msg: error message to be displayed
+             * @param {*} validationFunction 
+             */
+            applyValidation(validationFunction){
+                this.set('_validationFunction', validationFunction);
+            },
+
+            /**
              * Applies style for the block.
              * @param {*} style Either name of the available preset styles or style specification
              */
@@ -238,6 +259,22 @@ class Block {
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
 
+            _baseStatusValidation(){
+                var freePorts = this.freePorts();
+
+                if (freePorts.length > 0){                    
+                    freePorts.forEach(port=>{
+                        this.get('errors').push({
+                            code: 'PORT_NOT_CONNECTED',
+                            cId: port.id,
+                            msg: 'Port ['+port.id+'] is not connected'
+                        })
+                    })                    
+                }
+
+                console.log('Errors from base validation ', this.get('blockId'), this.get('errors'));
+            },
+
             /**
              * Revalidates block
              * One that wants to retrieve block status shall call getStatus().
@@ -247,23 +284,41 @@ class Block {
                 this.set('status', 'OK');
                 this.get('errors').length = 0; 
 
-                var freePorts = this.freePorts();
+                this._baseStatusValidation();
 
-                if (freePorts.length > 0){
+                // Object.assign({}, A1);
+                var portConnectionsCopy = Object.assign({}, this.get('_portConnections'));
+
+                var blockData = {
+                    id: this.id,
+                    blockId: this.get('blockId'),
+                    type: this.get('_type'),
+                    configurables: Object.assign({},this.get('configurables')),
+                    connections: portConnectionsCopy
+                }
+                
+                if(this.get('_validationFunction')){
+                    var errorsArray = this.get('_validationFunction').call(undefined, blockData);
+                    console.log('Errors from custom function ', this.get('blockId'), errorsArray);
+                    errorsArray.forEach(error=>{
+                        this.get('errors').push({
+                            code: error.code,
+                            cId: error.cId,
+                            msg: error.msg
+                        })
+                    })
+                }
+
+                if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
-                    freePorts.forEach(port=>{
-                        this.get('errors').push({
-                            code: 'PORT_NOT_CONNECTED',
-                            cId: port.id,
-                            msg: 'Port ['+port.id+'] is not connected'
-                        })
-                    })                    
                 } else {
                     this.set('status', 'OK');
                     this.get('errors').length = 0; // reset errors array
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
-                }
+                }                
+
+                // use validation function
                     
                 // console.log(this.get('blockId'),  freePorts.length, this.get('status'));
             },
@@ -463,7 +518,7 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlank(blockId, template, statusDefinition, style) {
+    createBlank(blockId, template, statusDefinition, style, validation) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -476,6 +531,7 @@ class Block {
             var block = factories[template].call(this, '', statusDefinition);
             // set id
             block.set('blockId',blockId);
+            block.applyValidation(validation);
             // apply style
             block.style(style);
             // calculate initial status of block 

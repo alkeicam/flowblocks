@@ -1,0 +1,24 @@
+@startuml
+
+class ValidationFunction {
+  {method} ValidationOutput call(ValidationInput) performs validation  
+}
+
+class ValidationInput {
+  {field} String id (graph element id - used in connections)
+  {field} String blockId (business block id)
+  {field} String type (block type)
+  {field} Array configurables (array of block attributes inputed by user)
+  {field} Array connections (array of connections of this block)
+}
+
+class ValidationOutput {
+  
+
+  {field} Array errors (array of errors)
+  {field} String errors[i].code (error code)
+  {field} String errors[i].cId (id of the part/element that triggered the error)
+  {field} String errors[i].msg (error message)
+}
+
+@enduml
