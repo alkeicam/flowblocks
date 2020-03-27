@@ -6,7 +6,13 @@ const DEFAULTS = require('../defaults')
 class MenuController {
     constructor(){
         this.emmiter = undefined;
-        this.model = {}
+        this.model = {
+            import: {
+                json: {
+                    show: false
+                }
+            }
+        }
     }
     /**
      * 
@@ -42,7 +48,24 @@ class MenuController {
             }
             
         }
+        this.bind
 
+    }
+
+    _bindMenuEvents(emmiter){
+        var self = this;
+
+        emmiter.on(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_REQUESTED, function(){
+            self.model.import.json.show = true;
+        })
+    }
+
+    importJson(e, that){
+        that.emmiter.emit(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, that.model.import.json.value);
+    }
+    importJsonDismiss(e, that){
+        that.model.import.json.show = false;
+        that.model.import.json.value = undefined;
     }
 
     menuClick(e, that){

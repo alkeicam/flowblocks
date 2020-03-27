@@ -8,15 +8,11 @@ var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblo
     s: 'v. ' + flowblocks.version,
     m: [
         { s: true },
-        // {
-        //     s: false, l: 'Types', m: [
-        //         { s: false, l: 'Register type', e: 'type:create' }
-        //     ]
-        // },
         {
             s: false, l: 'Model spec.', m: [
                 { s: false, l: 'Save', e: 'flowblocks:save' },
                 { s: true },
+                { s: false, l: 'Import from JSON', e: 'menu:import-json' },
                 { s: false, l: 'Download', e: 'flowblocks:download' },
             ]
         }
@@ -257,8 +253,8 @@ var types = [
         style: 'cream',
         configurables: [
             { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
-            { id: 'filters', label: 'Output dimensionality', placeholder: 'i.e. 4', type: 'NUMBER', required: false },
-            { id: 'kernelSize', label: 'Convolution window dimensions', placeholder: 'i.e. [4] or 4', type: 'TEXT', required: false },
+            { id: 'filters', label: 'Convolution filters', placeholder: 'i.e. 4', type: 'NUMBER', required: false },
+            { id: 'kernelSize', label: 'Convolution kernel size', placeholder: 'i.e. [4] or 4', type: 'TEXT', required: false },
             { id: 'strides', label: 'Strides of convolution', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
             { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
             { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
@@ -532,6 +528,150 @@ var types = [
             { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
             { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
         ]
+    },
+    {
+        name: 'Avg Pooling 3D',
+        category: 'Pooling',
+        template: 'PassThrough',
+        icon: 'prickly-pear',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+
+            { id: 'poolSize', label: 'Pool over window size', placeholder: 'i.e. [1,1,1]', type: 'TEXT', required: false },
+            { id: 'strides', label: 'Sampling period', placeholder: 'i.e. [1,1,1]', type: 'TEXT', required: false },
+            { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
+            { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
+
+            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var poolSize = blockData.configurable('poolSize');
+            var poolSizeArray = blockData.toArray(kernelSize);
+            if(poolSize && (!(poolSizeArray.length == 3 || !isNaN(poolSize)))){
+                errors.push({ code: 'P_POOL_SIZE', cId: 'Pool over window size', msg: 'Pool size must be a 3-dim number array or a number' })
+            }
+            var strides = blockData.configurable('strides');
+            var stridesArray = blockData.toArray(strides);
+            if(strides && (!(stridesArray.length == 3 || !isNaN(strides)))){
+                errors.push({ code: 'P_STRIDES', cId: 'Sampling period', msg: 'Sampling period must be a 3-dim number array or a number' })
+            }
+                        
+            return errors;
+        }
+    },
+    {
+        name: 'Max Pooling 1D',
+        category: 'Pooling',
+        template: 'PassThrough',
+        icon: 'pyramid',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+
+            { id: 'poolSize', label: 'Pool over window size', placeholder: 'i.e. [1]', type: 'TEXT', required: false },
+            { id: 'strides', label: 'Sampling period', placeholder: 'i.e. [1]', type: 'TEXT', required: false },
+            { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
+            { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
+
+            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var poolSize = blockData.configurable('poolSize');
+            var poolSizeArray = blockData.toArray(kernelSize);
+            if(poolSize && (!(poolSizeArray.length == 1 || !isNaN(poolSize)))){
+                errors.push({ code: 'P_POOL_SIZE', cId: 'Pool over window size', msg: 'Pool size must be a 1-dim number array or a number' })
+            }
+            var strides = blockData.configurable('strides');
+            var stridesArray = blockData.toArray(strides);
+            if(strides && (!(stridesArray.length == 1 || !isNaN(strides)))){
+                errors.push({ code: 'P_STRIDES', cId: 'Sampling period', msg: 'Sampling period must be a 1-dim number array or a number' })
+            }
+                        
+            return errors;
+        }
+    },
+    {
+        name: 'Max Pooling 2D',
+        category: 'Pooling',
+        template: 'PassThrough',
+        icon: 'pyramid',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+
+            { id: 'poolSize', label: 'Pool over window size', placeholder: 'i.e. [1,1]', type: 'TEXT', required: false },
+            { id: 'strides', label: 'Sampling period', placeholder: 'i.e. [1,1]', type: 'TEXT', required: false },
+            { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
+            { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
+
+            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var poolSize = blockData.configurable('poolSize');
+            var poolSizeArray = blockData.toArray(kernelSize);
+            if(poolSize && (!(poolSizeArray.length == 2 || !isNaN(poolSize)))){
+                errors.push({ code: 'P_POOL_SIZE', cId: 'Pool over window size', msg: 'Pool size must be a 2-dim number array or a number' })
+            }
+            var strides = blockData.configurable('strides');
+            var stridesArray = blockData.toArray(strides);
+            if(strides && (!(stridesArray.length == 2 || !isNaN(strides)))){
+                errors.push({ code: 'P_STRIDES', cId: 'Sampling period', msg: 'Sampling period must be a 2-dim number array or a number' })
+            }
+                        
+            return errors;
+        }
+    },
+    {
+        name: 'Max Pooling 3D',
+        category: 'Pooling',
+        template: 'PassThrough',
+        icon: 'revolver',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+
+            { id: 'poolSize', label: 'Pool over window size', placeholder: 'i.e. [1,1,1]', type: 'TEXT', required: false },
+            { id: 'strides', label: 'Sampling period', placeholder: 'i.e. [1,1,1]', type: 'TEXT', required: false },
+            { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
+            { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
+
+            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var poolSize = blockData.configurable('poolSize');
+            var poolSizeArray = blockData.toArray(kernelSize);
+            if(poolSize && (!(poolSizeArray.length == 3 || !isNaN(poolSize)))){
+                errors.push({ code: 'P_POOL_SIZE', cId: 'Pool over window size', msg: 'Pool size must be a 3-dim number array or a number' })
+            }
+            var strides = blockData.configurable('strides');
+            var stridesArray = blockData.toArray(strides);
+            if(strides && (!(stridesArray.length == 3 || !isNaN(strides)))){
+                errors.push({ code: 'P_STRIDES', cId: 'Sampling period', msg: 'Sampling period must be a 3-dim number array or a number' })
+            }
+                        
+            return errors;
+        }
     }
 
 ]

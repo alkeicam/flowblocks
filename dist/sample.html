@@ -41,64 +41,92 @@
 
 
     <!-- menu start -->
-    <nav class="navbar is-fixed-top is-light flowblocks-menu" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a class="navbar-item" rv-href="model.u">
-                <img rv-src="model.b" width="112" height="28">
-            </a>
-
-            <!-- <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-                data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a> -->
-        </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item" rv-on-click="modelSpecificationSave">
-                    <p>{model.c}<small>&nbsp;{model.s}</small></p>
+    <div class="flowblocks-menu">
+        <nav class="navbar is-fixed-top is-light " role="navigation" aria-label="main navigation">
+            <div class="navbar-brand">
+                <a class="navbar-item" rv-href="model.u">
+                    <img rv-src="model.b" width="112" height="28">
                 </a>
-                <div rv-each-fl="model.m" style="display: flex;">
 
-                    <a rv-unless="fl.m" class="navbar-item" rv-data-event="fl.e" rv-on-click="fl.menuClick">
-                        {fl.s | ifThenElseEQ true '|' fl.l}
-                        <!-- <span rv-if="fl.s">|</span>
-                        <span rv-unless="fl.s">{fl.l}</span> -->
+                <!-- <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                    data-target="navbarBasicExample">
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a> -->
+            </div>
+
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" rv-on-click="modelSpecificationSave">
+                        <p>{model.c}<small>&nbsp;{model.s}</small></p>
                     </a>
-                    <div rv-if="fl.m" class="navbar-item has-dropdown is-hoverable">
-                        <a class="navbar-link">
-                            {fl.l}
-                        </a>
+                    <div rv-each-fl="model.m" style="display: flex;">
 
-                        <div class="navbar-dropdown">
-                            <div rv-each-fls="fl.m">
-                                <a rv-unless="fls.s" class="navbar-item" rv-data-event="fls.e"
-                                    rv-on-click="fls.menuClick">
-                                    {fls.l}
-                                </a>
-                                <hr rv-if="fls.s" class="navbar-divider">
+                        <a rv-unless="fl.m" class="navbar-item" rv-data-event="fl.e" rv-on-click="fl.menuClick">
+                            {fl.s | ifThenElseEQ true '|' fl.l}
+                            <!-- <span rv-if="fl.s">|</span>
+                            <span rv-unless="fl.s">{fl.l}</span> -->
+                        </a>
+                        <div rv-if="fl.m" class="navbar-item has-dropdown is-hoverable">
+                            <a class="navbar-link">
+                                {fl.l}
+                            </a>
+
+                            <div class="navbar-dropdown">
+                                <div rv-each-fls="fl.m">
+                                    <a rv-unless="fls.s" class="navbar-item" rv-data-event="fls.e"
+                                        rv-on-click="fls.menuClick">
+                                        {fls.l}
+                                    </a>
+                                    <hr rv-if="fls.s" class="navbar-divider">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- <div class="navbar-end">
-                <div class="navbar-item">
-                    <div class="buttons">
-                        <a class="button is-primary">
-                            <strong>Sign up</strong>
-                        </a>
-                        <a class="button is-light">
-                            Log in
-                        </a>
+                <!-- <div class="navbar-end">
+                    <div class="navbar-item">
+                        <div class="buttons">
+                            <a class="button is-primary">
+                                <strong>Sign up</strong>
+                            </a>
+                            <a class="button is-light">
+                                Log in
+                            </a>
+                        </div>
                     </div>
-                </div>
-            </div> -->
+                </div> -->
+            </div>
+        </nav>
+    <!-- Menu modals -->
+        <div class="modal flowblocks-menu-modal-importjson" rv-class-is-active="model.import.json.show">
+            <div class="modal-background"></div>
+            <div class="modal-card">
+                <header class="modal-card-head">
+                    <p class="modal-card-title">Import from JSON</p>
+                    <button class="delete" aria-label="close" rv-on-click="importJsonDismiss"></button>
+                </header>
+                <section class="modal-card-body">
+                    <!-- Content ... -->
+                    <form class="flowblocks-menu-importjson-form">
+                        <div rv-if="c.type | eq 'CODE'">
+                            <label class="label">JSON Contents</label>
+                            <div class="control">
+                                <textarea class="textarea" cols="80" rows="90"
+                                    rv-value="model.import.json.value"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+                <footer class="modal-card-foot">
+                    <button class="button is-success" rv-on-click="importJson">Import (will overwrite current flow)</button>
+                    <button class="button" rv-on-click="importJsonDismiss">Cancel</button>
+                </footer>
+            </div>
         </div>
-    </nav>
+    </div>
     <!-- menu end -->
     
     <div class="flowblocks-flow">
@@ -163,11 +191,11 @@
 
                                     <label class="radio">
                                         <input type="radio" rv-checked="c.value" value="true">
-                                        OK
+                                        True
                                     </label>
                                     <label class="radio">
                                         <input type="radio" rv-checked="c.value" value="false">
-                                        No
+                                        False
                                     </label>
                                 </div>
                             </div>

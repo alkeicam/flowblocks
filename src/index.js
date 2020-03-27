@@ -59,7 +59,12 @@ class Flowblocks {
         })
     }
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction){        
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction){       
+        // check if  validationFunction is an actual function or a string representation
+        // if this is a string representation than create function on the fly from the source
+        var vFunction = validationFunction instanceof Function ? validationFunction : new Function("return " + validationFunction)();
+        // if validationFunction is an actual function we retrieve its source code and store
+        var vFunctionSrc = validationFunction instanceof Function ? validationFunction.toString() : validationFunction;
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
@@ -68,7 +73,8 @@ class Flowblocks {
             icon: icon,
             configurables: typeConfigurableArray,
             category: typeCategory,
-            validation: validationFunction
+            validation: vFunction,
+            validationSrc: vFunctionSrc
         }        
         // add to toolbar
         this.createToolbarItem(typeName, typeName)
@@ -99,6 +105,15 @@ class Flowblocks {
             return element.get('blockId') == blockId;
         })
     }    
+
+    import(modelSpecification){
+        // 
+        //JSONIFY
+        this.flow.graph.fromJSON();
+        // set graph version
+        // set types
+
+    }
 
     export(){
         this.version++;

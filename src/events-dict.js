@@ -10,6 +10,8 @@ class EventsDict {
             TOOLBAR_DRAWER_REQUEST: "toolbar-drawer:requested", // category            
             TOOLBAR_DRAWER_READY: "toolbar-drawer:ready", // category, elementid
             TOOLBAR_DRAWER_ATTACHED: "toolbar-drawer:attached", // category, elementid
+            MENU_IMPORTJSON_REQUESTED: "menu:import-json", // empty   
+            MENU_IMPORTJSON_LOAD: "menu:import-json-load", // json model specification data            
             BLOCK_ADDED: "block:added",
             BLOCK_CREATE: "block:create",   // blockId, type, label, position (x, y), evt
             BLOCK_DETAILS_SAVE: "block:save", // blockId, [i: configurable id, v: configurable value], evt         
