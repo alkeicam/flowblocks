@@ -188,7 +188,8 @@ class Block {
              * @param {*} validationFunction 
              */
             applyValidation(validationFunction){
-                this.set('_validationFunction', validationFunction);
+                if(!validationFunction) return;
+                this.set('_validationFunction', validationFunction);                
             },
 
             /**
@@ -284,17 +285,7 @@ class Block {
                 console.log('Errors from base validation ', this.get('blockId'), this.get('errors'));
             },
 
-            /**
-             * Revalidates block
-             * One that wants to retrieve block status shall call getStatus().
-             */
-            _recalculateStatus() {
-                // reset status
-                this.set('status', 'OK');
-                this.get('errors').length = 0; 
-
-                this._baseStatusValidation();
-
+            _customValidation(){
                 // Object.assign({}, A1);
                 var portConnectionsCopy = Object.assign({}, this.get('_portConnections'));
 
@@ -303,9 +294,48 @@ class Block {
                     blockId: this.get('blockId'),
                     type: this.get('_type'),
                     configurables: Object.assign({},this.get('configurables')),
-                    connections: portConnectionsCopy
+                    connections: portConnectionsCopy,
+                    configurable: function (name) {
+                    
+                        var item = undefined;
+                        Object.entries(this.configurables).forEach(entry=>{
+                            if(entry[1].i == name)
+                                item = entry[1].v;
+                        })
+                        return item;
+                    },
+                    connection: function (port) {
+                    
+                        var item = undefined;
+                        Object.entries(this.connections).forEach(entry=>{
+                            if(entry[1].port == port)
+                                item = entry[1];
+                        })
+                        return item;
+                    }
                 }
-                
+
+                // var configurable = function (name) {
+                    
+                //     var item = undefined;
+                //     return Object.entries(blockData.configurables).forEach(entry=>{
+                //         if(entry[1].i == name)
+                //             item = entry[1];
+                //     })
+                //     return item;
+                // }
+                // configurable.blockData = blockData;
+
+                // var connection = function (port) {                                   
+                //     var item = undefined;
+                //     return Object.entries(blockData.connections).forEach(entry=>{
+                //         if(entry[1].i == name)
+                //             item = entry[1];
+                //     })
+                //     return item;
+                // }
+                // connection.blockData = blockData;
+
                 if(this.get('_validationFunction')){
                     var errorsArray = this.get('_validationFunction').call(undefined, blockData);
                     console.log('Errors from custom function ', this.get('blockId'), errorsArray);
@@ -317,7 +347,24 @@ class Block {
                         })
                     })
                 }
+            },
 
+            // add helper functions
+            
+
+            
+            /**
+             * Revalidates block
+             * One that wants to retrieve block status shall call getStatus().
+             */
+            _recalculateStatus() {
+                // reset status
+                this.set('status', 'OK');
+                this.get('errors').length = 0; 
+
+                this._baseStatusValidation();
+                this._customValidation();
+                
                 if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
