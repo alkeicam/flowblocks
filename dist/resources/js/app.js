@@ -38,7 +38,20 @@ var types = [
             { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
             { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
             { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }
-        ]
+        ],
+        validationFunction: function (blockData) {
+            var connected = blockData.connection('out1');
+            
+            if(connected && connected.type == 'Conv2D'){
+                var inputShapeString = blockData.configurable('inputShape');
+                var inputShape = JSON.parse(inputShapeString);
+                console.log(inputShape);
+            }
+            
+            return [
+                { code: 'CODE', cId: 'port7', msg: 'Something went wrong' }
+            ];
+        }
     },
     {
         name: 'Activation',
@@ -58,9 +71,9 @@ var types = [
         validationFunction: function (blockData) {
             
             
-            console.log(blockData);
-            console.log(blockData.configurable('name'))
-            console.log(blockData.connection('in1'))
+            // console.log(blockData);
+            // console.log(blockData.configurable('name'))
+            // console.log(blockData.connection('in1'))
 
             return [
                 { code: 'CODE', cId: 'port7', msg: 'Something went wrong' }
