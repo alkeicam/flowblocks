@@ -128,7 +128,7 @@ class Block {
             ].join(''),
 
             initialize: function () {
-                this.on('change:name change:icon change:status change:statusMsg change:size change:_type', function () {
+                this.on('change:name change:icon change:status change:errors change:statusMsg change:size change:_type', function () {
                     this._updateMyModel();
                     this.trigger('flowblocks-block-update');
                 }, this);
@@ -269,6 +269,16 @@ class Block {
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
 
+            _statusToString(){
+                var msg = 'Block validation state: '+this.get('status');
+
+                this.get('errors').forEach(error=>{
+                    msg += " | "+error.msg
+                })
+
+                return msg;
+            },
+
             _baseStatusValidation(){
                 var freePorts = this.freePorts();
 
@@ -280,9 +290,7 @@ class Block {
                             msg: 'Port ['+port.id+'] is not connected'
                         })
                     })                    
-                }
-
-                console.log('Errors from base validation ', this.get('blockId'), this.get('errors'));
+                }                
             },
 
             _customValidation(){
@@ -312,6 +320,16 @@ class Block {
                                 item = entry[1];
                         })
                         return item;
+                    },
+                    toArray: function(input){
+                        var stringRepresentation = input || '[]';
+                        var arrayObject = undefined;
+                        try{
+                            var arrayObject = JSON.parse(stringRepresentation);
+                        }catch(e){
+                        }
+                        
+                        return Array.isArray(arrayObject)?arrayObject:[];                
                     }
                 }
 
@@ -337,8 +355,7 @@ class Block {
                 // connection.blockData = blockData;
 
                 if(this.get('_validationFunction')){
-                    var errorsArray = this.get('_validationFunction').call(undefined, blockData);
-                    console.log('Errors from custom function ', this.get('blockId'), errorsArray);
+                    var errorsArray = this.get('_validationFunction').call(undefined, blockData);                    
                     errorsArray.forEach(error=>{
                         this.get('errors').push({
                             code: error.code,
@@ -359,18 +376,21 @@ class Block {
              */
             _recalculateStatus() {
                 // reset status
+                this.set('errors',[]);
                 this.set('status', 'OK');
-                this.get('errors').length = 0; 
+                
 
                 this._baseStatusValidation();
                 this._customValidation();
+
+                console.log('Errors from validation ', this.get('blockId'), this.get('errors'));
                 
                 if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
                 } else {
-                    this.set('status', 'OK');
-                    this.get('errors').length = 0; // reset errors array
+                    this.set('errors',[])// reset errors array
+                    this.set('status', 'OK');                    
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
                 }                
 
@@ -474,7 +494,9 @@ class Block {
                 this.attr(classSelectorPrefix + '-rect/height', partHeight);
                 this.attr(classSelectorPrefix + '-rect/width', partWidth);                
                 this.attr(classSelectorPrefix + '-rect/transform', 'translate('+positionX+',' + positionY + ')');
-                this.attr(classSelectorPrefix + '-rect/title', 'Block validation state: '+this.get('status'));                
+                // this.attr(classSelectorPrefix + '-rect/title', 'Block validation state: '+this.get('status'));                
+                this.attr(classSelectorPrefix + '-rect/title', this._statusToString());                
+                
                 return partHeight;
             },
 

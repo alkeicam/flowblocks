@@ -40,17 +40,17 @@ var types = [
             { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }
         ],
         validationFunction: function (blockData) {
+            var errors = [];
             var connected = blockData.connection('out1');
             
             if(connected && connected.type == 'Conv2D'){
-                var inputShapeString = blockData.configurable('inputShape');
-                var inputShape = JSON.parse(inputShapeString);
-                console.log(inputShape);
+                var inputShape = blockData.toArray(blockData.configurable('inputShape'));                                                
+                if(inputShape.length != 3){
+                    errors.push({ code: 'P_INPUT_SHAPE', cId: 'out1', msg: 'For Conv2D input Input Shape must be an array of 3 dimensions' })
+                }
             }
             
-            return [
-                { code: 'CODE', cId: 'port7', msg: 'Something went wrong' }
-            ];
+            return errors;
         }
     },
     {
@@ -75,9 +75,7 @@ var types = [
             // console.log(blockData.configurable('name'))
             // console.log(blockData.connection('in1'))
 
-            return [
-                { code: 'CODE', cId: 'port7', msg: 'Something went wrong' }
-            ];
+            return [];
         }
     },
     {
@@ -260,7 +258,7 @@ var types = [
         configurables: [
             { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
             { id: 'filters', label: 'Output dimensionality', placeholder: 'i.e. 4', type: 'NUMBER', required: false },
-            { id: 'kernelSize', label: 'Convolution window dimensions', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'kernelSize', label: 'Convolution window dimensions', placeholder: 'i.e. [4] or 4', type: 'TEXT', required: false },
             { id: 'strides', label: 'Strides of convolution', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
             { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
             { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
@@ -275,12 +273,22 @@ var types = [
             { id: 'biasRegularizer', label: 'Bias regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
             { id: 'activityRegularizer', label: 'Activity regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
 
-            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
-            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            // { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            // { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            // { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            // { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
             { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
-        ]
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var kernelSize = blockData.configurable('kernelSize');
+            var kernelSizeArray = blockData.toArray(kernelSize);
+            if(kernelSize && (!(kernelSizeArray.length == 1 || !isNaN(kernelSize)))){
+                errors.push({ code: 'P_KERNEL_SIZE', cId: 'Convolution window dimensions', msg: 'Convolution window dimensions must be a 1-dim array or a number' })
+            }
+                        
+            return errors;
+        }
     },
     {
         name: 'Conv2DTranspose',
