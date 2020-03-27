@@ -401,7 +401,13 @@
                         { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
                         { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
                         { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },                        
-                    ]                    
+                    ],
+                    validationFunction: function(blockData){
+                        console.log(blockData);
+                        return [
+                            {code: 'CODE', cId: 'port7', msg: 'Something went wrong'}
+                        ];
+                    }                    
                 },
                 {
                     name: 'Dense',

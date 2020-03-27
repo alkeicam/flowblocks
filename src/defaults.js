@@ -4,6 +4,13 @@ class Defaults {
                 width: 70,
                 height: 70
             },
+            this.LABEL = {
+                FONT: {
+                    SIZE: 0.15,
+                    FAMILY: 'Helvetica',
+                    WEIGHT: 'bold'
+                }
+            },
             this.POSITION = { 
                 x: 40, 
                 y: 20

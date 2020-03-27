@@ -96,6 +96,11 @@ class Block {
                     'text-anchor': 'start',
                     'fill': 'black',
                     'y-alignment': 'middle'
+                },
+                '.fb-type-label-text': {                    
+                    'text-anchor': 'start',
+                    'fill': 'black',
+                    'y-alignment': 'middle'
                 }
 
                 // label: {
@@ -118,11 +123,12 @@ class Block {
                 '<rect class="fb-status-rect"/>',
                 '<text class="fb-status-text"></text>',
                 '<rect class="fb-validation-rect"/>',
+                '<text class="fb-type-label-text"></text>',                
                 '</g>'
             ].join(''),
 
             initialize: function () {
-                this.on('change:name change:icon change:status change:statusMsg change:size', function () {
+                this.on('change:name change:icon change:status change:statusMsg change:size change:_type', function () {
                     this._updateMyModel();
                     this.trigger('flowblocks-block-update');
                 }, this);
@@ -220,7 +226,10 @@ class Block {
                 }
             },
 
-            
+            setConfigurables(configurables){
+                this.set('configurables', configurables);
+                this._recalculateStatus();
+            },        
 
             /**
              * Returns array of free ports of element.
@@ -480,6 +489,18 @@ class Block {
                 view.hideTools();
             },
 
+            _recalculateTypeLabel: function(classSelectorPrefix, label, baseSize, positionY){
+                var fontSize = baseSize.height*DEFAULTS.LABEL.FONT.SIZE;
+                var fontX = 0;
+                var fontY = positionY+fontSize;
+                
+                this.attr(classSelectorPrefix + '-text/font-size', fontSize);                
+                this.attr(classSelectorPrefix + '-text/transform', 'translate(' + fontX + ',' + fontY + ')');                
+                this.attr(classSelectorPrefix + '-text/text', label);
+                this.attr(classSelectorPrefix + '-text/font-family', DEFAULTS.LABEL.FONT.FAMILY);    
+                this.attr(classSelectorPrefix + '-text/font-weight', DEFAULTS.LABEL.FONT.WEIGHT);                    
+            },
+
             _updateMyModel: function () {
                 var self = this;
                 var offsetY = 0;
@@ -490,12 +511,14 @@ class Block {
                     name: this.get('debug') ? this.get('name') + '[' + this.get('blockId') + ']' : this.get('name'),
                     statusMessage: this.get('statusMsg'),
                     status: this.get('status'),
+                    type: this.get('_type')
                 }
                 offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
                 offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
                 var previousOffsetY = offsetY;
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
-                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);                
+                self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);  
+                self._recalculateTypeLabel('.fb-type-label',field.type, field, offsetY);              
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 
@@ -518,7 +541,7 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlank(blockId, template, statusDefinition, style, validation) {
+    createBlank(blockId, typeName, template, statusDefinition, style, validation) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -531,6 +554,7 @@ class Block {
             var block = factories[template].call(this, '', statusDefinition);
             // set id
             block.set('blockId',blockId);
+            block.set('_type', typeName);
             block.applyValidation(validation);
             // apply style
             block.style(style);

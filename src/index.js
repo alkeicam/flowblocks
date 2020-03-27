@@ -32,8 +32,9 @@ class Flowblocks {
 
         // save block details
         this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_DETAILS_SAVE, function(blockId, configurables, event){
-            var block = self.getBlock(blockId);            
-            block.set('configurables', configurables);
+            var block = self.getBlock(blockId); 
+            block.setConfigurables(configurables);           
+            // block.set('configurables', configurables);
         })   
 
         // save flowblocks
@@ -162,9 +163,8 @@ class Flowblocks {
     createBlock(typeName, label, blockId, position, size){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var newBlock = block.createBlank(blockId, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation);            
-            newBlock.set('name',label);
-            newBlock.set('_type', typeDefinition.name);
+            var newBlock = block.createBlank(blockId, typeDefinition.name, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation);            
+            newBlock.set('name',label);            
             if(blockId){                
                 var duplicateElement = this.flow._blocks.find(el=>{
                     return el.get('blockId') == blockId
@@ -186,6 +186,7 @@ class Flowblocks {
                     newBlock.set('icon', typeDefinition.icon);
                 }                
             }     
+            
             this.flow.addBlock(newBlock);
             return newBlock;
         }else{
