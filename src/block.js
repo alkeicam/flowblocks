@@ -15,7 +15,7 @@ class Block {
     }
 
     _initialize() {
-        jointjs.shapes.flowblocks = {};
+        jointjs.shapes.flowblocks = {};        
 
         this.Model = jointjs.shapes.devs.Model.define('flowblocks.Block', {
             // now model fields            
@@ -191,40 +191,119 @@ class Block {
                 if(!validationFunction) return;
                 this.set('_validationFunction', validationFunction);                
             },
+            /**
+             * Gets style definition. When style is already a style definition then nothing changes. Otherwise
+             * either default style definition is applied or a style definition with given name is returned.
+             * @param {*} style 
+             */
+            _getStyle(style){
+                var returnStyle = undefined;
+                // when no style provided then return default
+                if(!style){                    
+                    returnStyle = this.get('_defaultStyle');                    
+                } else if (typeof style === 'string' || style instanceof String) {
+                    // when style name provided then load style definition
+                    returnStyle = this.get('_styles')[style.toLocaleLowerCase()];                    
+                } else {
+                    // when style object provided return the style definition that
+                    // is provided in object
+                    returnStyle = style;
+                }
+                return returnStyle;
+            },
+
+            _getPortGroup(groupType){
+                var ports = this.attributes.ports || {};
+                var groups = ports.groups || {};
+                var portGroup = groups[groupType];
+                return portGroup;                
+            },
 
             /**
              * Applies style for the block.
              * @param {*} style Either name of the available preset styles or style specification
              */
-            style(style) {                
-                if(!style){                    
-                    this.style(this.get('_defaultStyle'));                    
-                } else if (typeof style === 'string' || style instanceof String) {
-                    var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
-                    if (presetStyle)
-                        this.style(presetStyle);
-                } else {
-                    this.set('_style', style);                
-                    if (style.bodyColor)
-                        this.attr('.fb-icon-rect/fill', style.bodyColor)
-                    if (style.titleBarColor)
-                        this.attr('.fb-label-rect/fill', style.titleBarColor)
-                    if (style.statusBarColor)
-                        this.attr('.fb-status-rect/fill', style.statusBarColor)
-                    if (style.portInColor) {
+            style(style) {
+                var calulatedStyle = this._getStyle(style);
+                if(calulatedStyle){
+                    this.set('_style', calulatedStyle);                
+                    if (calulatedStyle.bodyColor)
+                        this.attr('.fb-icon-rect/fill', calulatedStyle.bodyColor)
+                    if (calulatedStyle.titleBarColor)
+                        this.attr('.fb-label-rect/fill', calulatedStyle.titleBarColor)
+                    if (calulatedStyle.statusBarColor)
+                        this.attr('.fb-status-rect/fill', calulatedStyle.statusBarColor)
+                    if (calulatedStyle.portInColor) {
                         this.getPorts().forEach(port => {                            
-                            if(port.group == 'in')
-                                this.portProp(port.id, 'attrs/circle/fill', style.portInColor);
+                            if(port.group == 'in'){
+                                console.log(port);
+                                this.portProp(port.id, 'attrs/.port-body/fill', calulatedStyle.portInColor);
+                                // .port-body
+
+                                // FIXME hmm not elegant and probably may break in the future
+                                var portGroup = this._getPortGroup('in');
+                                if(portGroup && portGroup.attrs){
+                                    var groupPortBody = portGroup.attrs['.port-body'] || {};
+                                    groupPortBody.fill = calulatedStyle.portInColor;
+                                }
+                                
+                            }
+                                
                         })
                     }
-
-                    if (style.portOutColor){
+                    if (calulatedStyle.portOutColor){                        
                         this.getPorts().forEach(port => {
-                            if(port.group == 'out')
-                                this.portProp(port.id, 'attrs/circle/fill', style.portOutColor);
+                            if(port.group == 'out'){
+                                console.log(port);
+                                //this.portProp(port.id, 'attrs/circle/fill', style.portOutColor);
+                                this.portProp(port.id, 'attrs/.port-body/fill', calulatedStyle.portOutColor);
+                                // FIXME hmm not elegant and probably may break in the future
+                                var portGroup = this._getPortGroup('out');
+                                if(portGroup && portGroup.attrs){
+                                    var groupPortBody = portGroup.attrs['.port-body'] || {};
+                                    groupPortBody.fill = calulatedStyle.portOutColor;
+                                }
+                            }
+                                
                         })
-                    }                                    
+                    }
                 }
+                // if(!style){                    
+                //     this.style(this.get('_defaultStyle'));                    
+                // } else if (typeof style === 'string' || style instanceof String) {
+                //     var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
+                //     if (presetStyle)
+                //         this.style(presetStyle);
+                // } else {
+                //     this.set('_style', style);                
+                //     if (style.bodyColor)
+                //         this.attr('.fb-icon-rect/fill', style.bodyColor)
+                //     if (style.titleBarColor)
+                //         this.attr('.fb-label-rect/fill', style.titleBarColor)
+                //     if (style.statusBarColor)
+                //         this.attr('.fb-status-rect/fill', style.statusBarColor)
+                //     if (style.portInColor) {
+                //         this.getPorts().forEach(port => {                            
+                //             if(port.group == 'in'){
+                //                 console.log(port);
+                //                 this.portProp(port.id, 'attrs/.port-body/fill', style.portInColor);
+                //                 // .port-body
+                //             }
+                                
+                //         })
+                //     }
+
+                //     if (style.portOutColor){
+                //         this.getPorts().forEach(port => {
+                //             if(port.group == 'out'){
+                //                 console.log(port);
+                //                 //this.portProp(port.id, 'attrs/circle/fill', style.portOutColor);
+                //                 this.portProp(port.id, 'attrs/.port-body/fill', style.portOutColor);
+                //             }
+                                
+                //         })
+                //     }                                    
+                // }
             },
 
             setConfigurables(configurables){
@@ -620,7 +699,7 @@ class Block {
             Mixer: this.createMixerElement
         }
         if (factories[template]) {
-            var block = factories[template].call(this, '', statusDefinition);
+            var block = factories[template].call(this, '');
             // set id
             block.set('blockId',blockId);
             block.set('_type', typeName);
@@ -664,6 +743,7 @@ class Block {
                 rect: { fill: '#2ECC71' }
             }
         }
+
         return options;
     }
 
@@ -673,7 +753,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createSplitElement(name, statusDefinition, style) {
+    createSplitElement(name) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1']
         options.outPorts = ['out1', 'out2']
@@ -687,7 +767,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createJoinElement(name, statusDefinition, style) {
+    createJoinElement(name) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1', 'in2'];
         options.outPorts = ['out1'];
@@ -696,7 +776,7 @@ class Block {
         return newBlock;
     }
 
-    createMixerElement(name, statusDefinition, style) {
+    createMixerElement(name) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1', 'in2'];
         options.outPorts = ['out1', 'out2'];
@@ -710,7 +790,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createPassThroughElement(name, statusDefinition, style) {
+    createPassThroughElement(name) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1'];
         options.outPorts = ['out1'];
@@ -725,7 +805,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createStartElement(name, statusDefinition, style) {
+    createStartElement(name) {
         var options = this._createBaseOptions();        
         options.outPorts = ['out1'];
 
@@ -738,7 +818,7 @@ class Block {
      * @param {*} name 
      * @param {*} statusDefinition 
      */
-    createSinkElement(name, statusDefinition, style) {
+    createSinkElement(name) {
         var options = this._createBaseOptions();
         options.inPorts = ['in1'];
         

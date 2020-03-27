@@ -285,7 +285,7 @@ class BlockToolbarItem {
             Mixer: this.createMixerElement
         }
         if (factories[template]) {
-            var block = factories[template].call(this, '', statusDefinition);
+            var block = factories[template].call(this, '', statusDefinition, style);
             // apply style
             block.style(style);
             return block;
