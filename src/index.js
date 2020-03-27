@@ -25,6 +25,11 @@ class Flowblocks {
         var self = this;     
         // initialize events
 
+        this.emitter.on(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, function(modelSpecificationString){
+            self.import(modelSpecificationString);
+        })
+        
+
         // add new block
         this.emitter.on(EVENTS_DICT.EVENTS.BLOCK_CREATE, function(blockId, blockType, label, position, event){            
             self.createBlock(blockType, label, blockId, position);
@@ -55,16 +60,20 @@ class Flowblocks {
 
     registerTypes(typesArray){
         typesArray.forEach(theType=>{
-            this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category, theType.validationFunction);
+            this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category, theType.validationFunction, theType.validationSrc);
         })
     }
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction){       
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
+        console.log('Validation function: ',typeName,  validationFunction, validationFunctionSrc)      ;
         // check if  validationFunction is an actual function or a string representation
         // if this is a string representation than create function on the fly from the source
-        var vFunction = validationFunction instanceof Function ? validationFunction : new Function("return " + validationFunction)();
+        var vFunction = validationFunction instanceof Function ? validationFunction : new Function("return " + validationFunctionSrc)();
+        console.log('Function: ',typeName,  vFunction);
         // if validationFunction is an actual function we retrieve its source code and store
-        var vFunctionSrc = validationFunction instanceof Function ? validationFunction.toString() : validationFunction;
+        var vFunctionSrc = validationFunctionSrc;        
+        console.log('FunctionSrc: ',typeName, vFunctionSrc);
+
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
@@ -106,12 +115,23 @@ class Flowblocks {
         })
     }    
 
-    import(modelSpecification){
-        // 
+    import(modelSpecification) {
         //JSONIFY
-        this.flow.graph.fromJSON();
-        // set graph version
-        // set types
+        var specificationObject = JSON.parse(modelSpecification);
+        this.flow.import(specificationObject);
+        if(this.toolbar){
+            this.toolbar.removeAllItems();
+        }
+        // ew poiterowac i zbudowac tablice blocks
+        // sprawdzic - set graph version
+        // add types
+        var typesArray = []
+        Object.entries(specificationObject.types).forEach(entry => {
+            let key = entry[0];
+            let value = entry[1];
+            typesArray.push(value);
+        });
+        this.registerTypes(typesArray);
 
     }
 

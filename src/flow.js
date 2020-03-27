@@ -115,6 +115,16 @@ class Flow {
         return this;
     }
 
+    import(graphJson){
+        this.graph.fromJSON(graphJson);
+        // now build _blocks array
+        var cells = this.graph.getCells();
+        cells.forEach(cell=>{
+            if(cell.isElement())
+                this.addBlock(cell, true);
+        })
+    }
+
     _bindInteractionEvents(){
         var self = this;
         this.paper.on('element:pointerdblclick', function (toolView, evt) {   
@@ -209,9 +219,10 @@ class Flow {
         })
     }
 
-    addBlock(block) {
+    addBlock(block, omitGraph) {
         this._blocks.push(block);
-        this.graph.addCell(block);
+        if(!omitGraph)
+            this.graph.addCell(block);
         block._enableRemoval(this.paper);
         this.emitter.emit(EVENTS_DICT.EVENTS.BLOCK_ADDED,block);
     }

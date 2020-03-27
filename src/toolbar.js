@@ -29,6 +29,12 @@ class Drawer {
         this.category = category;        
         this.emitter = emitter;
     }
+
+    removeAllItems(){
+        var self = this;        
+        this.graph.removeCells(this._items);
+        this._items = [];
+    }
  
     /**
      * Adds item to the Drawer. When the Drawer is attached then item is immediately being displayed, otherwise
@@ -227,6 +233,14 @@ class Toolbar {
         })
     }
 
+    /**
+     * Cleans toolbar
+     */
+    removeAllItems(){
+        this.drawers.forEach(drawer=>{
+            drawer.removeAllItems();
+        })
+    }
     /**
      * Adds item to given category in toolbar.
      * @param {*} item 

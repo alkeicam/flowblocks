@@ -5,14 +5,7 @@ const DEFAULTS = require('../defaults')
 
 class MenuController {
     constructor(){
-        this.emmiter = undefined;
-        this.model = {
-            import: {
-                json: {
-                    show: false
-                }
-            }
-        }
+        this.emmiter = undefined;        
     }
     /**
      * 
@@ -48,8 +41,12 @@ class MenuController {
             }
             
         }
-        this.bind
-
+        this.model.import = {
+            json: {
+                show: false
+            }
+        }
+        this._bindMenuEvents(this.emmiter);
     }
 
     _bindMenuEvents(emmiter){
