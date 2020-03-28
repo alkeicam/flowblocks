@@ -134,6 +134,14 @@ class Interactive {
                 // can be attached to it
                 this.parent.emmiter.emit(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_READY, category, elementId);
             },
+
+            resetDrawers(){
+                this.model.drawers = [];
+                if(window && window.bulmaExtensions && window.bulmaExtensions.bulmaAccordion){
+                    window.bulmaExtensions.bulmaAccordion.attach();
+                }
+                console.log('drawers reset');
+            },
             resetCreate() {
                 this.model.create.type = undefined;
                 this.model.create.show = false;
@@ -233,6 +241,10 @@ class Interactive {
         // flowblocks.on('all', function (name) {
 
         // })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_REMOVED_ALL, function(){
+            self.toolbarController.resetDrawers();
+        })
 
         flowblocks.on(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_REQUEST, function (category) {
             // console.log('Drawer requested ', category);

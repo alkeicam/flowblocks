@@ -31,7 +31,8 @@ class Drawer {
     }
 
     removeAllItems(){
-        var self = this;        
+        var self = this;  
+        this.state = 'UNATTACHED';      
         this.graph.removeCells(this._items);
         this._items = [];
     }
@@ -239,7 +240,11 @@ class Toolbar {
     removeAllItems(){
         this.drawers.forEach(drawer=>{
             drawer.removeAllItems();
+            
         })
+        this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_DRAWER_REMOVED_ALL);
+        // TOOD wyslac event, ze wyczyszony jest toolbar
+        // w efekcie ktos powinien wywolac bulmaExtensions.bulmaAccordion.attach(); zeby przywrocic dzialanie toolbara
     }
     /**
      * Adds item to given category in toolbar.

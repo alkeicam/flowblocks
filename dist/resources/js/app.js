@@ -21,35 +21,35 @@ var app = flowblocks.createApp('flowblocks-flow', 'flowblocks-toolbar', 'flowblo
 
 //typeName, templateName, icon, defaultStyle, typeConfigurable, typeCategory
 var types = [
-    // {
-    //     name: 'Input',
-    //     category: 'Basic',
-    //     template: 'Start',
-    //     icon: 'agave',
-    //     style: 'cream',
-    //     configurables: [
-    //         { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
-    //         { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
-    //         { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
-    //         { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }
-    //     ],
-    //     validationFunction: function (blockData) {
-    //         var errors = [];
-    //         var connected = blockData.connection('out1');
+    {
+        name: 'Input',
+        category: 'Basic',
+        template: 'Start',
+        icon: 'agave',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+            { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'sparse', label: 'Is placeholder sparse', placeholder: 'true, false', type: 'BOOLEAN', required: false }
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];
+            var connected = blockData.connection('out1');
             
-    //         if(connected && connected.type == 'Conv2D'){
-    //             var inputShape = blockData.toArray(blockData.configurable('inputShape'));                                                
-    //             if(inputShape.length != 3){
-    //                 errors.push({ code: 'P_INPUT_SHAPE', cId: 'out1', msg: 'For Conv2D input Input Shape must be an array of 3 dimensions' })
-    //             }
-    //         }
+            if(connected && connected.type == 'Conv2D'){
+                var inputShape = blockData.toArray(blockData.configurable('inputShape'));                                                
+                if(inputShape.length != 3){
+                    errors.push({ code: 'P_INPUT_SHAPE', cId: 'out1', msg: 'For Conv2D input Input Shape must be an array of 3 dimensions' })
+                }
+            }
             
-    //         return errors;
-    //     }
-    // }
-    // ,
+            return errors;
+        }
+    },
+    // 
     // {
     //     name: 'Activation',
     //     category: 'Basic',
@@ -246,47 +246,47 @@ var types = [
     //         { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
     //     ]
     // },
-    // {
-    //     name: 'Conv2D',
-    //     category: 'Convolutional',
-    //     template: 'PassThrough',
-    //     icon: 'fajita',
-    //     style: 'cream',
-    //     configurables: [
-    //         { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
-    //         { id: 'filters', label: 'Convolution filters', placeholder: 'i.e. 4', type: 'NUMBER', required: false },
-    //         { id: 'kernelSize', label: 'Convolution kernel size', placeholder: 'i.e. [4] or 4', type: 'TEXT', required: false },
-    //         { id: 'strides', label: 'Strides of convolution', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
-    //         { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
-    //         { id: 'dilationRate', label: 'Dilation rate', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         { id: 'activation', label: 'Activation function', placeholder: '', type: 'LIST', required: false, options: [{ v: 'elu', l: 'elu' }, { v: 'hardSigmoid', l: 'hardSigmoid' }, { v: 'linear', l: 'linear' }, { v: 'relu', l: 'relu' }, { v: 'relu6', l: 'relu6' }, { v: 'selu', l: 'selu' }, { v: 'sigmoid', l: 'sigmoid' }, { v: 'softmax', l: 'softmax' }, { v: 'softplus', l: 'softplus' }, { v: 'softsign', l: 'softsign' }, { v: 'tanh', l: 'tanh' }], default: '-1' },
-    //         { id: 'useBias', label: 'Apply bias', placeholder: 'true, false', type: 'BOOLEAN', required: false },
-    //         { id: 'kernelInitializer', label: 'Kernel initializer', placeholder: '', type: 'LIST', required: false, options: [{ v: 'constant', l: 'constant' }, { v: 'glorotNormal', l: 'glorotNormal' }, { v: 'glorotUniform', l: 'glorotUniform' }, { v: 'heNormal', l: 'heNormal' }, { v: 'heUniform', l: 'heUniform' }, { v: 'identity', l: 'identity' }, { v: 'leCunNormal', l: 'leCunNormal' }, { v: 'leCunUniform', l: 'leCunUniform' }, { v: 'ones', l: 'ones' }, { v: 'orthogonal', l: 'orthogonal' }, { v: 'randomNormal', l: 'randomNormal' }, { v: 'randomUniform', l: 'randomUniform' }, { v: 'truncatedNormal', l: 'truncatedNormal' }, { v: 'varianceScaling', l: 'varianceScaling' }, { v: 'zeros', l: 'zeros' }], default: '-1' },
-    //         { id: 'biasInitializer', label: 'Bias initializer', placeholder: '', type: 'LIST', required: false, options: [{ v: 'constant', l: 'constant' }, { v: 'glorotNormal', l: 'glorotNormal' }, { v: 'glorotUniform', l: 'glorotUniform' }, { v: 'heNormal', l: 'heNormal' }, { v: 'heUniform', l: 'heUniform' }, { v: 'identity', l: 'identity' }, { v: 'leCunNormal', l: 'leCunNormal' }, { v: 'leCunUniform', l: 'leCunUniform' }, { v: 'ones', l: 'ones' }, { v: 'orthogonal', l: 'orthogonal' }, { v: 'randomNormal', l: 'randomNormal' }, { v: 'randomUniform', l: 'randomUniform' }, { v: 'truncatedNormal', l: 'truncatedNormal' }, { v: 'varianceScaling', l: 'varianceScaling' }, { v: 'zeros', l: 'zeros' }], default: '-1' },
-    //         { id: 'kernelConstraint', label: 'Kernel constraint', placeholder: '', type: 'LIST', required: false, options: [{ v: 'maxNorm', l: 'maxNorm' }, { v: 'minMaxNorm', l: 'minMaxNorm' }, { v: 'nonNeg', l: 'nonNeg' }, { v: 'unitNorm', l: 'unitNorm' }], default: '-1' },
-    //         { id: 'biasConstraint', label: 'Bias constraint', placeholder: '', type: 'LIST', required: false, options: [{ v: 'maxNorm', l: 'maxNorm' }, { v: 'minMaxNorm', l: 'minMaxNorm' }, { v: 'nonNeg', l: 'nonNeg' }, { v: 'unitNorm', l: 'unitNorm' }], default: '-1' },
-    //         { id: 'kernelRegularizer', label: 'Kernel regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
-    //         { id: 'biasRegularizer', label: 'Bias regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
-    //         { id: 'activityRegularizer', label: 'Activity regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
+    {
+        name: 'Conv2D',
+        category: 'Convolutional',
+        template: 'PassThrough',
+        icon: 'fajita',
+        style: 'cream',
+        configurables: [
+            { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
+            { id: 'filters', label: 'Convolution filters', placeholder: 'i.e. 4', type: 'NUMBER', required: false },
+            { id: 'kernelSize', label: 'Convolution kernel size', placeholder: 'i.e. [4] or 4', type: 'TEXT', required: false },
+            { id: 'strides', label: 'Strides of convolution', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'padding', label: 'Padding mode', placeholder: '', type: 'LIST', required: false, options: [{ v: 'valid', l: 'valid' }, { v: 'same', l: 'same' }, { v: 'causal', l: 'causal' }], default: '-1' },
+            { id: 'dataFormat', label: 'Data format', placeholder: '', type: 'LIST', required: false, options: [{ v: 'channelsFirst', l: 'channelsFirst' }, { v: 'channelsLast', l: 'channelsLast' }], default: '-1' },
+            { id: 'dilationRate', label: 'Dilation rate', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            { id: 'activation', label: 'Activation function', placeholder: '', type: 'LIST', required: false, options: [{ v: 'elu', l: 'elu' }, { v: 'hardSigmoid', l: 'hardSigmoid' }, { v: 'linear', l: 'linear' }, { v: 'relu', l: 'relu' }, { v: 'relu6', l: 'relu6' }, { v: 'selu', l: 'selu' }, { v: 'sigmoid', l: 'sigmoid' }, { v: 'softmax', l: 'softmax' }, { v: 'softplus', l: 'softplus' }, { v: 'softsign', l: 'softsign' }, { v: 'tanh', l: 'tanh' }], default: '-1' },
+            { id: 'useBias', label: 'Apply bias', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+            { id: 'kernelInitializer', label: 'Kernel initializer', placeholder: '', type: 'LIST', required: false, options: [{ v: 'constant', l: 'constant' }, { v: 'glorotNormal', l: 'glorotNormal' }, { v: 'glorotUniform', l: 'glorotUniform' }, { v: 'heNormal', l: 'heNormal' }, { v: 'heUniform', l: 'heUniform' }, { v: 'identity', l: 'identity' }, { v: 'leCunNormal', l: 'leCunNormal' }, { v: 'leCunUniform', l: 'leCunUniform' }, { v: 'ones', l: 'ones' }, { v: 'orthogonal', l: 'orthogonal' }, { v: 'randomNormal', l: 'randomNormal' }, { v: 'randomUniform', l: 'randomUniform' }, { v: 'truncatedNormal', l: 'truncatedNormal' }, { v: 'varianceScaling', l: 'varianceScaling' }, { v: 'zeros', l: 'zeros' }], default: '-1' },
+            { id: 'biasInitializer', label: 'Bias initializer', placeholder: '', type: 'LIST', required: false, options: [{ v: 'constant', l: 'constant' }, { v: 'glorotNormal', l: 'glorotNormal' }, { v: 'glorotUniform', l: 'glorotUniform' }, { v: 'heNormal', l: 'heNormal' }, { v: 'heUniform', l: 'heUniform' }, { v: 'identity', l: 'identity' }, { v: 'leCunNormal', l: 'leCunNormal' }, { v: 'leCunUniform', l: 'leCunUniform' }, { v: 'ones', l: 'ones' }, { v: 'orthogonal', l: 'orthogonal' }, { v: 'randomNormal', l: 'randomNormal' }, { v: 'randomUniform', l: 'randomUniform' }, { v: 'truncatedNormal', l: 'truncatedNormal' }, { v: 'varianceScaling', l: 'varianceScaling' }, { v: 'zeros', l: 'zeros' }], default: '-1' },
+            { id: 'kernelConstraint', label: 'Kernel constraint', placeholder: '', type: 'LIST', required: false, options: [{ v: 'maxNorm', l: 'maxNorm' }, { v: 'minMaxNorm', l: 'minMaxNorm' }, { v: 'nonNeg', l: 'nonNeg' }, { v: 'unitNorm', l: 'unitNorm' }], default: '-1' },
+            { id: 'biasConstraint', label: 'Bias constraint', placeholder: '', type: 'LIST', required: false, options: [{ v: 'maxNorm', l: 'maxNorm' }, { v: 'minMaxNorm', l: 'minMaxNorm' }, { v: 'nonNeg', l: 'nonNeg' }, { v: 'unitNorm', l: 'unitNorm' }], default: '-1' },
+            { id: 'kernelRegularizer', label: 'Kernel regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
+            { id: 'biasRegularizer', label: 'Bias regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
+            { id: 'activityRegularizer', label: 'Activity regularizer', placeholder: 'i.e. l1l2', type: 'TEXT', required: false },
 
-    //         // { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         // { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
-    //         // { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
-    //         // { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
-    //         { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
-    //     ],
-    //     validationFunction: function (blockData) {
-    //         var errors = [];            
-    //         var kernelSize = blockData.configurable('kernelSize');
-    //         var kernelSizeArray = blockData.toArray(kernelSize);
-    //         if(kernelSize && (!(kernelSizeArray.length == 1 || !isNaN(kernelSize)))){
-    //             errors.push({ code: 'P_KERNEL_SIZE', cId: 'Convolution window dimensions', msg: 'Convolution window dimensions must be a 1-dim array or a number' })
-    //         }
+            // { id: 'inputShape', label: 'Input shape', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            // { id: 'batchSize', label: 'Input batch size', placeholder: 'i.e. 250', type: 'NUMBER', required: false },
+            // { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
+            // { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
+            { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var kernelSize = blockData.configurable('kernelSize');
+            var kernelSizeArray = blockData.toArray(kernelSize);
+            if(kernelSize && (!(kernelSizeArray.length == 1 || !isNaN(kernelSize)))){
+                errors.push({ code: 'P_KERNEL_SIZE', cId: 'Convolution window dimensions', msg: 'Convolution window dimensions must be a 1-dim array or a number' })
+            }
                         
-    //         return errors;
-    //     }
-    // },
+            return errors;
+        }
+    },
     // {
     //     name: 'Conv2DTranspose',
     //     category: 'Convolutional',
