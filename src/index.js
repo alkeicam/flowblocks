@@ -64,16 +64,45 @@ class Flowblocks {
         })
     }
 
-    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
-        console.log('Validation function: ',typeName,  validationFunction, validationFunctionSrc)      ;
-        // check if  validationFunction is an actual function or a string representation
-        // if this is a string representation than create function on the fly from the source
-        var vFunction = validationFunction instanceof Function ? validationFunction : new Function("return " + validationFunctionSrc)();
-        console.log('Function: ',typeName,  vFunction);
-        // if validationFunction is an actual function we retrieve its source code and store
-        var vFunctionSrc = validationFunctionSrc;        
-        console.log('FunctionSrc: ',typeName, vFunctionSrc);
+    /**
+     * Helper method that calculates validation function source and object
+     * so it can be bound to blocks that are being created.
+     * It is required as when flowblocks are imported function objects are not persisted.
+     * Instead function source code is persisted so one must instantiate functions from 
+     * source code when importing.
+     * @param {*} validationFunction 
+     * @param {*} validationFunctionSrc 
+     */
+    _prepareTypeValidation(validationFunction, validationFunctionSrc){
+        if(!validationFunction && !validationFunctionSrc)
+            return {
+                f: undefined,
+                s: undefined
+            }
+        var codeSource;
+        var functionSource;
 
+        var codeFunction;
+        var functionFunction;
+
+        if(validationFunction){
+            codeFunction = validationFunction.toString();
+            functionFunction = validationFunction;
+        }
+        if(validationFunctionSrc){
+            codeSource = validationFunctionSrc;
+            functionSource = new Function("return " + validationFunctionSrc)();
+        }
+
+        return {
+            f: functionFunction ? functionFunction : functionSource,
+            s: codeSource ? codeSource : codeFunction
+        }
+    }
+
+    registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
+        // handle validation functions preprocessing
+        var validations = this._prepareTypeValidation(validationFunction, validationFunctionSrc);
         this._registeredTypes[typeName] = {
             name: typeName,
             // statusDefinition: statusDefinition,
@@ -82,8 +111,8 @@ class Flowblocks {
             icon: icon,
             configurables: typeConfigurableArray,
             category: typeCategory,
-            validation: vFunction,
-            validationSrc: vFunctionSrc
+            validation: validations.f,
+            validationSrc: validations.s
         }        
         // add to toolbar
         this.createToolbarItem(typeName, typeName)

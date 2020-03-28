@@ -189,8 +189,19 @@ class Block {
              */
             applyValidation(validationFunction){
                 if(!validationFunction) return;
-                this.set('_validationFunction', validationFunction);                
+                this.set('_validationFunction', validationFunction); 
+                this.set('_validationSource', validationFunction.toString());                
             },
+            /**
+             * Used during import, reinstantiates and binds custom validation 
+             * functions to blocks
+             */
+            _reApplyValidation(){
+                if(this.get('_validationSource')){                  
+                    this.set('_validationFunction', new Function("return " + this.get('_validationSource'))()); 
+                }
+            },
+
             /**
              * Gets style definition. When style is already a style definition then nothing changes. Otherwise
              * either default style definition is applied or a style definition with given name is returned.
@@ -268,42 +279,7 @@ class Block {
                         })
                     }
                 }
-                // if(!style){                    
-                //     this.style(this.get('_defaultStyle'));                    
-                // } else if (typeof style === 'string' || style instanceof String) {
-                //     var presetStyle = this.get('_styles')[style.toLocaleLowerCase()];
-                //     if (presetStyle)
-                //         this.style(presetStyle);
-                // } else {
-                //     this.set('_style', style);                
-                //     if (style.bodyColor)
-                //         this.attr('.fb-icon-rect/fill', style.bodyColor)
-                //     if (style.titleBarColor)
-                //         this.attr('.fb-label-rect/fill', style.titleBarColor)
-                //     if (style.statusBarColor)
-                //         this.attr('.fb-status-rect/fill', style.statusBarColor)
-                //     if (style.portInColor) {
-                //         this.getPorts().forEach(port => {                            
-                //             if(port.group == 'in'){
-                //                 console.log(port);
-                //                 this.portProp(port.id, 'attrs/.port-body/fill', style.portInColor);
-                //                 // .port-body
-                //             }
-                                
-                //         })
-                //     }
 
-                //     if (style.portOutColor){
-                //         this.getPorts().forEach(port => {
-                //             if(port.group == 'out'){
-                //                 console.log(port);
-                //                 //this.portProp(port.id, 'attrs/circle/fill', style.portOutColor);
-                //                 this.portProp(port.id, 'attrs/.port-body/fill', style.portOutColor);
-                //             }
-                                
-                //         })
-                //     }                                    
-                // }
             },
 
             setConfigurables(configurables){

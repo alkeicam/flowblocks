@@ -114,14 +114,22 @@ class Flow {
         this._bindInteractionEvents();     
         return this;
     }
-
+    /**
+     * Imports flowblocks graph
+     * @param {*} graphJson 
+     */
     import(graphJson){
         this.graph.fromJSON(graphJson);
         // now build _blocks array
         var cells = this.graph.getCells();
         cells.forEach(cell=>{
-            if(cell.isElement())
+            if(cell.isElement()){
+                // reinstantiate custom validation functions
+                cell._reApplyValidation();
                 this.addBlock(cell, true);
+                // reinitialize custom validations
+            }
+                
         })
     }
 
