@@ -140,7 +140,7 @@ class Interactive {
                 if(window && window.bulmaExtensions && window.bulmaExtensions.bulmaAccordion){
                     window.bulmaExtensions.bulmaAccordion.attach();
                 }
-                console.log('drawers reset');
+                
             },
             resetCreate() {
                 this.model.create.type = undefined;
@@ -232,6 +232,10 @@ class Interactive {
             self.flowController.busy();
         })
         flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DOWNLOAD, function(){                        
+            self.flowController.busy();
+        })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, function(){
             self.flowController.busy();
         })
     }

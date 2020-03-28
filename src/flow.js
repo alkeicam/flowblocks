@@ -138,6 +138,7 @@ class Flow {
             }
                 
         })
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
 
     _bindInteractionEvents(){

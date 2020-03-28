@@ -264,8 +264,7 @@ class Block {
                     }
                     if (calulatedStyle.portOutColor){                        
                         this.getPorts().forEach(port => {
-                            if(port.group == 'out'){
-                                console.log(port);
+                            if(port.group == 'out'){                                
                                 //this.portProp(port.id, 'attrs/circle/fill', style.portOutColor);
                                 this.portProp(port.id, 'attrs/.port-body/fill', calulatedStyle.portOutColor);
                                 // FIXME hmm not elegant and probably may break in the future
@@ -438,7 +437,7 @@ class Block {
                 this._baseStatusValidation();
                 this._customValidation();
 
-                console.log('Errors from validation ', this.get('blockId'), this.get('errors'));
+                // console.log('Errors from validation ', this.get('blockId'), this.get('errors'));
                 
                 if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
