@@ -114,11 +114,18 @@ class Flow {
         this._bindInteractionEvents();     
         return this;
     }
+
+    removeAllBlocks(){
+        this.graph.removeCells(this._blocks);
+        this._blocks = [];
+    }
+    
     /**
      * Imports flowblocks graph
      * @param {*} graphJson 
      */
     import(graphJson){
+        this.removeAllBlocks();
         this.graph.fromJSON(graphJson);
         // now build _blocks array
         var cells = this.graph.getCells();
