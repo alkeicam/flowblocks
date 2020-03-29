@@ -34,7 +34,8 @@
     "jointjs": "3.1",
     "events": "3.1.0",
     "shortid": "2.2.15",
-    "json-size": "1.0.0"
+    "json-size": "1.0.0",
+    "flowblocks-ui-toolbar": "^1.0.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

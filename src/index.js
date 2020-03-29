@@ -2,7 +2,9 @@ const joint = require("jointjs")
 const helper = require('./helper')
 const block = require('./block')
 const Flow = require('./flow')
-const Toolbar = require('./ui/flowblocks-ui-toolbar');
+// const Toolbar = require('./ui/flowblocks-ui-toolbar');
+const Toolbar = require('flowblocks-ui-toolbar');
+
 // const Toolbar = require('./toolbar')
 // const ToolbarItem = require('./toolbar-item')
 const EVENTS_DICT = require('./events-dict')
@@ -130,8 +132,7 @@ class Flowblocks {
 
     createToolbar(){
         var self = this;
-        this.toolbar = Toolbar.create(this.emitter); 
-        console.log('Flowblocks toolbar up and running.')
+        this.toolbar = Toolbar.create(this.emitter);         
         // using this.toolbar is deprecated, instead EVENTS shall be used
         return this.toolbar;        
     }
