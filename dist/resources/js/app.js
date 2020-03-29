@@ -59,16 +59,7 @@ var types = [
             { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },
         ],
         validationFunction: function (blockData) {
-            var errors = [];
-            var connected = blockData.connection('out1');
-            
-            if(connected && connected.type == 'Conv2D'){
-                var inputShape = blockData.toArray(blockData.configurable('inputShape'));                                                
-                if(inputShape.length != 3){
-                    errors.push({ code: 'P_INPUT_SHAPE', cId: 'out1', msg: 'For Conv2D input Input Shape must be an array of 3 dimensions' })
-                }
-            }
-            
+            var errors = [];                        
             return errors;
         }
     },
@@ -121,7 +112,16 @@ var types = [
             { id: 'batchInputShape', label: 'Batch input size', placeholder: 'i.e. [4]', type: 'TEXT', required: false },
             { id: 'dtype', label: 'Input datatype', placeholder: '', type: 'LIST', required: false, options: [{ v: 'float32', l: 'float32' }, { v: 'int32', l: 'int32' }, { v: 'bool', l: 'bool' }, { v: 'complex64', l: 'complex64' }, { v: 'string', l: 'string' }], default: '-1' },
             { id: 'trainable', label: 'Weights updatable', placeholder: 'true, false', type: 'BOOLEAN', required: false },
-        ]
+        ],
+        validationFunction: function (blockData) {
+            var errors = [];            
+            var item = blockData.configurable('units');
+            var itemArray = blockData.toArray(item);
+            if(item && (isNaN(Number(item))||Number(item)<0 ||!Number.isInteger(Number(item)))){
+                errors.push({ code: 'P_UNITS', cId: 'Units', msg: 'Units must be a positive integer' })
+            }                        
+            return errors;
+        }
     },
     {
         name: 'Dropout',
@@ -302,7 +302,7 @@ var types = [
             var errors = [];            
             var kernelSize = blockData.configurable('kernelSize');
             var kernelSizeArray = blockData.toArray(kernelSize);
-            if(kernelSize && (!(kernelSizeArray.length == 1 || !isNaN(kernelSize)))){
+            if(kernelSize && (!(kernelSizeArray.length == 1 || !isNaN(Number(kernelSize))))){
                 errors.push({ code: 'P_KERNEL_SIZE', cId: 'Convolution window dimensions', msg: 'Convolution window dimensions must be a 1-dim array or a number' })
             }
                         
