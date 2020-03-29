@@ -58,7 +58,7 @@ class MenuController {
     }
 
     importJson(e, that){
-        that.emmiter.emit(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, that.model.import.json.value);
+        that.emmiter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, that.model.import.json.value);
         that.importJsonDismiss(e,that);
 
     }

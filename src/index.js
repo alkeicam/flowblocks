@@ -28,7 +28,7 @@ class Flowblocks {
         var self = this;     
         // initialize events
 
-        this.emitter.on(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, function(modelSpecificationString){
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, function(modelSpecificationString){
             self.import(modelSpecificationString);
         })
         
@@ -106,7 +106,17 @@ class Flowblocks {
             s: codeSource ? codeSource : codeFunction
         }
     }
-
+    /**
+     * Registers new type definition in Flowblocks so one can create new Blocks with given type
+     * @param {*} typeName Name of the type (used when creating Blocks)
+     * @param {*} templateName Template on which new type is constructed
+     * @param {*} icon Icon used to represent the type and blocks of this type on the diagram
+     * @param {*} defaultStyle 
+     * @param {*} typeConfigurableArray (Optional) When type has some user configurable parameters this is a parameters' specification
+     * @param {*} typeCategory Category of the type, used in groupping on the Toolbar
+     * @param {*} validationFunction Javascript function that will be used in order to update/verify block status after modifications
+     * @param {*} validationFunctionSrc Source code of the validation function, used when persisting/exporting/importing blocks
+     */
     registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
         // handle validation functions preprocessing
         var validations = this._prepareTypeValidation(validationFunction, validationFunctionSrc);
@@ -123,13 +133,21 @@ class Flowblocks {
         }        
         return this._registeredTypes[typeName];
     }
+    /**
+     * Creates flowblocks main element - Flow. When flow is ready one can define new Block types via registerType() and create new instances of Blocks via 
+     * @param {*} paperId 
+     * @param {*} name 
+     * @param {*} bId 
+     */
     createFlow(paperId, name, bId){
         var self = this;
         this.flow = Flow.create(paperId, this.emitter, name, bId); 
         console.log('Flowblocks flow up and running')                
         return this.flow;        
     }
-
+    /**
+     * Creates Flowblocks supplementary element - Toolbar which can be bound to view in order to create new Blocks on the diagram from Toolbar.
+     */
     createToolbar(){
         var self = this;
         this.toolbar = Toolbar.create(this.emitter);         
@@ -142,12 +160,20 @@ class Flowblocks {
         console.log('Flowblocks app up and running')
     }
 
+    /**
+     * Returns Block with given id
+     * @param {*} blockId Id of the Block which to load
+     */
     getBlock(blockId){
         return this.flow._blocks.find(element=>{
             return element.get('blockId') == blockId;
         })
     }    
 
+    /**
+     * Resets Flowblocks and imports Flowblocks data from file.
+     * @param {*} modelSpecification JSON representation of Flowblocks (usually generated earlier by using export())
+     */
     import(modelSpecification) {
         //JSONIFY
         var specificationObject = JSON.parse(modelSpecification);
@@ -171,6 +197,10 @@ class Flowblocks {
         this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_RESET, typesArray);        
     }
 
+    /**
+     * Generates new JSON Snapshot of Flowblocks data (Flows, blocks, types).
+     * @returns JSON representation of the Flowblocks data (Flows, blocks, types)
+     */
     export(){
         this.version++;
 
@@ -183,12 +213,20 @@ class Flowblocks {
         return json;        
     }
 
+    /**
+     * Exports Flowblocks data and triggers its download when launched in browser.
+     */
     download(){
         var json = this.export();
         helper.downloadObjectAsJson(json, this.flow.graph.get('name'));
         return json;
     }
 
+    /**
+     * Adds event handler to Flowblocks
+     * @param {*} eventName 
+     * @param {*} handler 
+     */
     on(eventName, handler){
         if(eventName == 'all'){
             EVENTS_DICT.allEvents().forEach(event=>{
@@ -196,54 +234,25 @@ class Flowblocks {
             })
         }else{
             this.emitter.on(eventName, handler);
-        }
-        
+        }        
     }
-
+    /**
+     * Returns type definition registered with given name
+     * @param {*} typeName Name of the type
+     */
     getDefinition(typeName){
         return this._registeredTypes[typeName];
     }
 
-    /**
-     * Creates and adds new type to the toolbar using given type name. Type MUST have been registered beforehand.
-     * @param {*} typeName Name of the type (type must be already registered)
-     * @param {*} label Label to be presented in toolbar for type
-     * @param {*} size (Optional) Display dimensions of the type when presenting in toolbar
-     */
-    createToolbarItem(typeName, label, size){
-        var typeDefinition = this._registeredTypes[typeName];
-        if(typeDefinition){
-            this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_CREATE, this._registeredTypes[typeName], label, size);
-        } else {
-            throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
-        }
-        // 
-        // if(!this.toolbar){
-        //     console.warn('Cant create toolbar item. Create toolbar first by calling createToolbar().')
-        //     return;
-        // }
-        // var typeDefinition = this._registeredTypes[typeName];
-        // if(typeDefinition){
-        //     var toolbarItem = ToolbarItem.createBlank(typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);
-        //     toolbarItem.set('name', label);
-        //     toolbarItem.set('_type', typeDefinition.name);
-        //     if(size){
-        //         toolbarItem.set('size', size);
-        //     }             
-        //     if(typeDefinition.icon){
-        //         if(typeDefinition.icon.lastIndexOf('/')==-1){                    
-        //             toolbarItem.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
-        //         }else{
-        //             toolbarItem.set('icon', typeDefinition.icon);
-        //         }                
-        //     }   
-        //     this.toolbar.addItem(toolbarItem, typeDefinition.category);
-        //     return toolbarItem;
-        // } else {
-        //     throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
-        // }
-    }
 
+    /**
+     * Creates new Flowblocks block on the diagram using provided type.
+     * @param {*} typeName Name of the registered type that will be used for the Block (see registerType)
+     * @param {*} label Label visible on the Flowblocks diagram
+     * @param {*} blockId Business id of the block
+     * @param {*} position (optional) Starting position of Block
+     * @param {*} size (optional) Size of the Block
+     */
     createBlock(typeName, label, blockId, position, size){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){

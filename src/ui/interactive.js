@@ -235,7 +235,7 @@ class Interactive {
             self.flowController.busy();
         })
 
-        flowblocks.on(EVENTS_DICT.EVENTS.MENU_IMPORTJSON_LOAD, function(){
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, function(){
             self.flowController.busy();
         })
     }

@@ -14,22 +14,23 @@ class EventsDict {
             TOOLBAR_DRAWER_ATTACHED: "toolbar-drawer:attached", // category, elementid
             TOOLBAR_DRAWER_REMOVED_ALL: "toolbar-drawer:removedall", // empty
             MENU_IMPORTJSON_REQUESTED: "menu:import-json", // empty   
-            MENU_IMPORTJSON_LOAD: "menu:import-json-load", // json model specification data            
-            BLOCK_ADDED: "block:added",
-            BLOCK_CREATE: "block:create",   // blockId, type, label, position (x, y), evt
-            BLOCK_DETAILS_SAVE: "block:save", // blockId, [i: configurable id, v: configurable value], evt         
-            BLOCK_REMOVED: "block:removed",
-            BLOCK_DBLCLICK: "block:dblclick",   // block, evt            
-            CONNECTION_REMOVED: "connection:removed",
-            CONNECTION_ADDED: "connection:added",
+            
+            BLOCK_ADDED: "flowblocks:block-added",
+            BLOCK_CREATE: "flowblocks:block-create",   // blockId, type, label, position (x, y), evt
+            BLOCK_DETAILS_SAVE: "flowblocks:block-save", // blockId, [i: configurable id, v: configurable value], evt         
+            BLOCK_REMOVED: "flowblocks:block-removed",
+            BLOCK_DBLCLICK: "flowblocks:block-dblclick",   // block, evt            
+            CONNECTION_REMOVED: "flowblocks:connection-removed",
+            CONNECTION_ADDED: "flowblocks:connection-added",
             // emited when user wants to save flowblocks specification
             FLOWBLOCKS_SAVE: "flowblocks:save", // empty
             // emited when user wants to download flowblocks specification
             FLOWBLOCKS_DOWNLOAD: "flowblocks:download", // empty
             // indicates that user wants to create new type so appropriate form shall be presented
-            FLOWBLOCKS_TYPE_CREATE: "type:create", // empty
+            FLOWBLOCKS_TYPE_CREATE: "flowblocks:type-create", // empty
             // general event, sent as a feedback from any operation
-            FLOWBLOCKS_DONE_SUCCESS: "result:ok", // operation name, extra data
+            FLOWBLOCKS_DONE_SUCCESS: "flowblocks:result-ok", // operation name, extra data
+            FLOWBLOCKS_IMPORT_JSON: "flowblocks:import-json", // json model specification data            
         }
     }
 
