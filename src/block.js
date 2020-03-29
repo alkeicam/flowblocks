@@ -247,7 +247,7 @@ class Block {
                     if (calulatedStyle.portInColor) {
                         this.getPorts().forEach(port => {                            
                             if(port.group == 'in'){
-                                console.log(port);
+                                
                                 this.portProp(port.id, 'attrs/.port-body/fill', calulatedStyle.portInColor);
                                 // .port-body
 
