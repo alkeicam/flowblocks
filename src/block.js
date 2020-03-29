@@ -432,7 +432,7 @@ class Block {
                 // reset status
                 this.set('errors',[]);
                 this.set('status', 'OK');
-                
+                this.set('statusMsg', 'OK');
 
                 this._baseStatusValidation();
                 this._customValidation();
@@ -442,10 +442,12 @@ class Block {
                 if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
+                    this.set('statusMsg', 'INVALID');
                 } else {
                     this.set('errors',[])// reset errors array
                     this.set('status', 'OK');                    
                     this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
+                    this.set('statusMsg', 'OK');
                 }                
 
                 // use validation function
