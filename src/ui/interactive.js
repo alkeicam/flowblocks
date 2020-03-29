@@ -169,9 +169,6 @@ class Interactive {
         var self = this;
         // show block configuration view
         flowblocks.on(EVENTS_DICT.EVENTS.BLOCK_DBLCLICK, function (block, evt) {
-
-
-
             self.flowController.model.details.show = true;
             self.flowController.model.details.type = block.get('_type');
             self.flowController.model.details.blockId = block.get('blockId');
@@ -180,10 +177,7 @@ class Interactive {
             var typeDefinition = flowblocks.getDefinition(self.flowController.model.details.type);
             var configurables = typeDefinition.configurables ? typeDefinition.configurables : [];
             self.flowController.model.details.configurables.length = 0;
-
             configurables.forEach(configurable => {
-
-
                 var configurableValue = block.get('configurables').find(el => { return el.i == configurable.id }) ? block.get('configurables').find(el => { return el.i == configurable.id }).v : undefined;
 
                 if (!configurableValue && configurable.default)
@@ -325,62 +319,6 @@ class Interactive {
                 flyShape.remove();
                 $('#flyPaper').remove();
             });
-
-            // ////////
-
-            // // add temporary div
-            // $('body').append('<div id="flowblocks-drag" style="position:fixed;z-index:100;opacity:.7;pointer-event:none;"></div>');
-
-            // // create temporary graph for moving
-            // var dragGraph = new joint.dia.Graph;
-            // var dragPaper = new joint.dia.Paper({
-            //     el: $('#flowblocks-drag'),
-            //     model: dragGraph,
-            //     interactive: false
-            // })
-            // var dragBlock = block.clone(),
-            // var pos = block.position(),
-            // var offset = {
-            //     x: x - pos.x,
-            //     y: y - pos.y
-            // };
-
-            // dragBlock.position(0, 0);
-            // dragGraph.addCell(dragBlock);
-            
-            // // here goes dragging - initialize
-            // $("#flowblocks-drag").offset({
-            //     left: e.pageX - offset.x,
-            //     top: e.pageY - offset.y
-            // });
-            
-            // // drag when mouse moves
-            // $('body').on('mousemove.fly', function (e) {
-            //     $("#flowblocks-drag").offset({
-            //         left: e.pageX - offset.x,
-            //         top: e.pageY - offset.y
-            //     });
-            // });
-
-            // // drag ends
-            // $('body').on('mouseup.fly', function(e) {
-            //     var x = e.pageX,
-            //       y = e.pageY,
-            //       target = paper.$el.offset();
-                
-            //     // Dropped over paper ?
-            //     if (x > target.left && x < target.left + paper.$el.width() && y > target.top && y < target.top + paper.$el.height()) {
-            //       var s = flyShape.clone();
-            //       s.position(x - target.left - offset.x, y - target.top - offset.y);
-            //       graph.addCell(s);
-            //     }
-            //     $('body').off('mousemove.fly').off('mouseup.fly');
-            //     flyShape.remove();
-            //     $('#flyPaper').remove();
-            //   });
-
-
-
         })
     }
 }
