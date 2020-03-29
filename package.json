@@ -31,11 +31,11 @@
   "unpkg": "dist/flowblocks.js",
   "homepage": "https://github.com/alkeicam/flowblocks#readme",
   "dependencies": {
-    "jointjs": "3.1",
     "events": "3.1.0",
-    "shortid": "2.2.15",
+    "flowblocks-ui-toolbar": "^1.0.2",
+    "jointjs": "3.1",
     "json-size": "1.0.0",
-    "flowblocks-ui-toolbar": "^1.0.1"
+    "shortid": "2.2.15"
   },
   "devDependencies": {
     "chai": "^3.5.0",
