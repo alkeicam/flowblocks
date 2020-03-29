@@ -2,8 +2,9 @@ const joint = require("jointjs")
 const helper = require('./helper')
 const block = require('./block')
 const Flow = require('./flow')
-const Toolbar = require('./toolbar')
-const ToolbarItem = require('./toolbar-item')
+const Toolbar = require('./ui/flowblocks-ui-toolbar');
+// const Toolbar = require('./toolbar')
+// const ToolbarItem = require('./toolbar-item')
 const EVENTS_DICT = require('./events-dict')
 const EventEmitter = require('events')
 const Interactive = require('./ui/interactive')
@@ -57,7 +58,11 @@ class Flowblocks {
 
         // create new type
     }
-
+    /**
+     * Registers available Flowblocks types that can be created 
+     * and managed by the Flowblocks.
+     * @param {*} typesArray 
+     */
     registerTypes(typesArray){
         typesArray.forEach(theType=>{
             this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category, theType.validationFunction, theType.validationSrc);
@@ -114,9 +119,6 @@ class Flowblocks {
             validation: validations.f,
             validationSrc: validations.s
         }        
-        // add to toolbar
-        this.createToolbarItem(typeName, typeName)
-
         return this._registeredTypes[typeName];
     }
     createFlow(paperId, name, bId){
@@ -130,6 +132,7 @@ class Flowblocks {
         var self = this;
         this.toolbar = Toolbar.create(this.emitter); 
         console.log('Flowblocks toolbar up and running.')
+        // using this.toolbar is deprecated, instead EVENTS shall be used
         return this.toolbar;        
     }
 
@@ -148,12 +151,6 @@ class Flowblocks {
         //JSONIFY
         var specificationObject = JSON.parse(modelSpecification);
         this.flow.import(specificationObject);
-        if(this.toolbar){
-            this.toolbar.removeAllItems();
-        }
-        // ew poiterowac i zbudowac tablice blocks
-        // sprawdzic - set graph version
-        // add types
         var typesArray = []
         Object.entries(specificationObject.types).forEach(entry => {
             let key = entry[0];
@@ -161,7 +158,16 @@ class Flowblocks {
             typesArray.push(value);
         });
         this.registerTypes(typesArray);
+        // now notify toolbar that it should be reinitialized
+        this.rebuildToolbar(typesArray);        
+    }
 
+    /**
+     * Resets and rebuilds Toolbar contents
+     * @param {*} typesArray 
+     */
+    rebuildToolbar(typesArray){
+        this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_RESET, typesArray);        
     }
 
     export(){
@@ -196,32 +202,45 @@ class Flowblocks {
     getDefinition(typeName){
         return this._registeredTypes[typeName];
     }
-    
+
+    /**
+     * Creates and adds new type to the toolbar using given type name. Type MUST have been registered beforehand.
+     * @param {*} typeName Name of the type (type must be already registered)
+     * @param {*} label Label to be presented in toolbar for type
+     * @param {*} size (Optional) Display dimensions of the type when presenting in toolbar
+     */
     createToolbarItem(typeName, label, size){
-        if(!this.toolbar){
-            console.warn('Cant create toolbar item. Create toolbar first by calling createToolbar().')
-            return;
-        }
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var toolbarItem = ToolbarItem.createBlank(typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);
-            toolbarItem.set('name', label);
-            toolbarItem.set('_type', typeDefinition.name);
-            if(size){
-                toolbarItem.set('size', size);
-            }             
-            if(typeDefinition.icon){
-                if(typeDefinition.icon.lastIndexOf('/')==-1){                    
-                    toolbarItem.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
-                }else{
-                    toolbarItem.set('icon', typeDefinition.icon);
-                }                
-            }   
-            this.toolbar.addItem(toolbarItem, typeDefinition.category);
-            return toolbarItem;
+            this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_ITEM_CREATE, this._registeredTypes[typeName], label, size);
         } else {
             throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
         }
+        // 
+        // if(!this.toolbar){
+        //     console.warn('Cant create toolbar item. Create toolbar first by calling createToolbar().')
+        //     return;
+        // }
+        // var typeDefinition = this._registeredTypes[typeName];
+        // if(typeDefinition){
+        //     var toolbarItem = ToolbarItem.createBlank(typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style);
+        //     toolbarItem.set('name', label);
+        //     toolbarItem.set('_type', typeDefinition.name);
+        //     if(size){
+        //         toolbarItem.set('size', size);
+        //     }             
+        //     if(typeDefinition.icon){
+        //         if(typeDefinition.icon.lastIndexOf('/')==-1){                    
+        //             toolbarItem.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
+        //         }else{
+        //             toolbarItem.set('icon', typeDefinition.icon);
+        //         }                
+        //     }   
+        //     this.toolbar.addItem(toolbarItem, typeDefinition.category);
+        //     return toolbarItem;
+        // } else {
+        //     throw new Error('Undefined type exception:'+typeName+'. Please register type first with registerType().');
+        // }
     }
 
     createBlock(typeName, label, blockId, position, size){

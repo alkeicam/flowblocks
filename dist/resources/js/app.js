@@ -700,7 +700,7 @@ var types = [
 ]
 
 flowblocks.registerTypes(types);
-
+flowblocks.rebuildToolbar(types);
 // flowblocks.registerType('SiakisInny', 'Start', 'tequila', 'cream',
 //     [
 //         { id: 'name', label: 'Layer name', placeholder: 'i.e. my input', type: 'TEXT', required: false },

@@ -5,6 +5,8 @@
 class EventsDict {
     constructor(options) {
         this.EVENTS = {
+            TOOLBAR_RESET: "toolbar:reset", // typeDefinitions array
+            TOOLBAR_ITEM_CREATE: "toolbar-item:create", // typeDefinition, label, size
             TOOLBAR_ITEM_DBLCLICK: "toolbar-item:dblclick",
             TOOLBAR_ITEM_DRAG: "toolbar-item:drag", // typeClicked, block, x, y, event
             TOOLBAR_DRAWER_REQUEST: "toolbar-drawer:requested", // category            
