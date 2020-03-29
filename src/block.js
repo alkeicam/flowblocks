@@ -573,6 +573,8 @@ class Block {
 
             _enableRemoval(paper){
                 var view = this.findView(paper);
+                console.log(view.getBBox().width, this.getBBox().width)
+                console.log(view.getBBox().width, this.getBBox().width)
                 var dx = view.getBBox().width-this.getBBox().width;
                 var ports = this.getPorts();
                 var hasIn = false;
@@ -591,14 +593,20 @@ class Block {
                 }else{
                     dx=0
                 }
-        
+                var nx = '0%';
+                if(hasIn&&hasOut)
+                    nx = '70%'
+                else if (hasOut)
+                    nx = '62%'
+                else   
+                    nx = '100%'
                 
                 var removeButton = new joint.elementTools.Remove({
                     focusOpacity: 0.5,
                     rotate: true,
-                    x: '100%',
+                    x: nx,
                     // y: '0%',
-                    offset: { x: dx, y: 0 }
+                    // offset: { x: dx, y: 0 }
                 });
                 
                 var toolsView =  new joint.dia.ToolsView({
