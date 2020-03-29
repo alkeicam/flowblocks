@@ -13,7 +13,7 @@ class Drawer {
         this.paper = undefined;
         this.emitter = undefined;
         this.state = undefined;         
-        this._items = [];
+        this._items = [];   // stores ToolbarItems that are in this Drawer
         this.options = {
             size: DEFAULTS.TOOLBAR.SIZE,
             padding: DEFAULTS.TOOLBAR.PADDING,
@@ -33,6 +33,9 @@ class Drawer {
         this.emitter = emitter;
     }
 
+    /**
+     * Removes all items frow drawer and marks it with UNATTACHED state so it can be again populated.
+     */
     removeAllItems(){
         var self = this;  
         this.state = 'UNATTACHED';      
@@ -43,31 +46,31 @@ class Drawer {
     /**
      * Adds item to the Drawer. When the Drawer is attached then item is immediately being displayed, otherwise
      * item is stored and will be presented only when the drawer becomes attached.
-     * @param {*} item 
+     * @param {*} toolbarItem 
      */
-    addItem(item){
+    addItem(toolbarItem){
         var self = this;
-        this._items.push(item);    
-        this._add(item);
-        return item;       
+        this._items.push(toolbarItem);    
+        this._add(toolbarItem);
+        return toolbarItem;       
     }
     /**
      * When Drawer is attached then item is added to the underlying model and presented in the Drawer.
      * When Drawer is detached then nothing happens.
-     * @param {*} item To be presented in the Drawer
+     * @param {*} toolbarItem To be presented in the Drawer
      */
-    _add(item){
+    _add(toolbarItem){
         if(this.state == 'UNATTACHED'){
             this.state = 'PENDING';
             // for detached toolbar request element to which the toolbar may be attached. And await for a drawer to be attached to HTML element
             this.emitter.emit('toolbar-drawer:requested', this.category);
-            return item;
+            return toolbarItem;
         }
         
         // add to graph 
-        this.graph.addCell(item);    
+        this.graph.addCell(toolbarItem);    
         // resize
-        this._resizeItem(item);
+        this._resizeItem(toolbarItem);
         // reposition items on paper
         this._repositionItems();
     }
@@ -145,15 +148,18 @@ class Drawer {
             self.emitter.emit('toolbar-item:drag', typeClicked, block, x, y, e);
         })
     }
-
-    _resizeItem(item) {
+    /**
+     * Resizes ToolbarItem
+     * @param {*} toolbarItem 
+     */
+    _resizeItem(toolbarItem) {
         var toolbarWidth = this.options.size.width;
         var padding = 2 * this.options.padding.x;
         var percentage = 0.2
         padding *= (1 + percentage);
         var calculatedWidth = toolbarWidth - padding;
 
-        item.set('size', {
+        toolbarItem.set('size', {
             width: calculatedWidth,
             height: calculatedWidth
         })
@@ -263,7 +269,7 @@ class Toolbar {
         // w efekcie ktos powinien wywolac bulmaExtensions.bulmaAccordion.attach(); zeby przywrocic dzialanie toolbara
     }
     /**
-     * Adds item to given category in toolbar.
+     * Adds toolbar item to given category in toolbar.
      * @param {*} toolbarItem 
      * @param {*} category 
      */
@@ -286,7 +292,7 @@ class Toolbar {
     }
 
     /**
-     * Adds new type to the toolbar so one can create flowblock elements from toolbar using this type.
+     * Adds new type of given definition to the toolbar so one can create flowblock elements from toolbar using this type.
      * @param {*} typeDefinition Type definition object     
      * @param {*} size (Optional) Dimensions of the item in toolbar
      */
