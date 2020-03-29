@@ -573,9 +573,9 @@ class Block {
 
             _enableRemoval(paper){
                 var view = this.findView(paper);
-                console.log(view.getBBox().width, this.getBBox().width)
-                console.log(view.getBBox().width, this.getBBox().width)
-                var dx = view.getBBox().width-this.getBBox().width;
+                // console.log(view.getBBox().width, this.getBBox().width)
+                // console.log(view.getBBox().width, this.getBBox().width)
+                // var dx = view.getBBox().width-this.getBBox().width;
                 var ports = this.getPorts();
                 var hasIn = false;
                 var hasOut = false;
@@ -586,13 +586,13 @@ class Block {
                         hasIn = true;
                 })
         
-                if(hasIn&&hasOut){
-                    dx = -dx/2;    
-                }else if(hasOut){
-                    dx = -dx;
-                }else{
-                    dx=0
-                }
+                // if(hasIn&&hasOut){
+                //     dx = -dx/2;    
+                // }else if(hasOut){
+                //     dx = -dx;
+                // }else{
+                //     dx=0
+                // }
                 var nx = '0%';
                 if(hasIn&&hasOut)
                     nx = '70%'
