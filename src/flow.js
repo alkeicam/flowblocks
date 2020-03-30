@@ -119,7 +119,43 @@ class Flow {
         this.graph.removeCells(this._blocks);
         this._blocks = [];
     }
-    
+    /**
+     * Assumes linear/sequential graph
+     * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks
+     */
+    //(previousBlock, currentBlock, nextBlock)
+    traverseSequential(){
+        var result = []; // {p: previous, c: current, n: next}
+        // find start block
+        var inputBlock = undefined;
+        inputBlock = this._blocks.find(block=>{
+            return block.get('_template') == 'Start';
+        })
+
+        // traverse graph
+        var blocks = []; 
+
+        this.graph.bfs(inputBlock, function(block){
+            blocks.push(block)
+        })
+
+        // build result object
+        for(var i=0; i<blocks.length;i++){
+            var pIdx = i-1>=0?i-1:i;
+            var nIdx = i+1<blocks.length?i+1:i;
+            
+            var previous = blocks[pIdx];
+            var current = blocks[i];   
+            var next = blocks[nIdx];
+            result.push({
+                p: previous.get('blockId') != current.get('blockId')?previous:undefined,
+                c: current,
+                n: next.get('blockId') != current.get('blockId')?next:undefined
+            })
+        }
+        return result;
+    }
+
     /**
      * Imports flowblocks graph
      * @param {*} graphJson 

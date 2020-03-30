@@ -35,6 +35,8 @@ class Block {
             _portsConnected: 0,
             // type of element
             _type: undefined,
+            // template name used to create this element
+            _template: undefined,
             // array of ports and elements that are connected to each port
             _portConnections: [],   // {port: whether connected to in or out port, id: connected element id , bId: connected element block id, type: connected element type, }
 
@@ -688,6 +690,7 @@ class Block {
             // set id
             block.set('blockId',blockId);
             block.set('_type', typeName);
+            block.set('_template', template);
             block.applyValidation(validation);
             // apply style
             block.style(style);
