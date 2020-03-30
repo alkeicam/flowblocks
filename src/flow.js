@@ -119,6 +119,7 @@ class Flow {
         this.graph.removeCells(this._blocks);
         this._blocks = [];
     }
+    
     /**
      * Assumes linear/sequential graph
      * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks

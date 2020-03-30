@@ -305,17 +305,5 @@ class Flowblocks {
             console.error(error);
         }
     }
-    /**
-     * Traverser Flowblocks and return array of Blocks starting from Start element.
-     * If there are more then one Start element the behaviour may be unexpected.
-     * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks
-     */
-    traverseSequential(){
-        if(this.flow)
-            return this.flow.traverseSequential();
-        return undefined;
-    }
-
-    
 }
 module.exports = new Flowblocks({});
