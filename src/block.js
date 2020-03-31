@@ -1,5 +1,6 @@
 const jointjs = require("jointjs")
 const DEFAULTS = require('./defaults')
+const fromstring = require('from-string');
 
 class Block {
     constructor(options) {
@@ -381,7 +382,7 @@ class Block {
                         var stringRepresentation = input || '[]';
                         var arrayObject = undefined;
                         try{
-                            var arrayObject = JSON.parse(stringRepresentation);
+                            var arrayObject = fromstring.parse(stringRepresentation);
                         }catch(e){
                         }
                         
