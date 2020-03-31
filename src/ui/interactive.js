@@ -69,7 +69,7 @@ class Interactive {
                 this.model.general.busy = false;
                 this.model.general.doneError = true;  
                 this.model.general.doneMessage = message;              
-                setTimeout(function () { self.model.general.doneError = false;}, 4000);
+                setTimeout(function () { self.model.general.doneError = false;}, 6000);
             },
             done(result){
                 var self = this;

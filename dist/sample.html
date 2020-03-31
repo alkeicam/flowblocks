@@ -139,6 +139,10 @@
             <!-- <button class="delete"></button> -->
             <i class="fas fa-check"></i>&nbsp;Success
         </div>
+        <div rv-if="model.general.doneError" class="notification is-danger  is-light">
+            <!-- <button class="delete"></button> -->
+            <i class="fas fa-exclamation-triangle"></i>&nbsp;Error {model.general.doneMessage}
+        </div>
         <!-- notifications end -->
         <!-- flowblocks diagram -->
         <div id="flowblocks-flow"></div>
