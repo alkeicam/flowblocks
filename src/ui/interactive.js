@@ -50,7 +50,9 @@ class Interactive {
                 },
                 general: {
                     busy: false,
-                    doneOk: false
+                    doneOk: false,
+                    doneError: false,
+                    doneMessage: undefined
                 }
             },
             isBusy(){
@@ -59,6 +61,15 @@ class Interactive {
             busy(){
                 this.model.general.busy = true;
                 this.model.general.doneOk = false;
+                this.model.general.doneError = false;
+                this.model.general.doneMessage = undefined;
+            },
+            error(operationName, message){
+                var self = this;
+                this.model.general.busy = false;
+                this.model.general.doneError = true;  
+                this.model.general.doneMessage = message;              
+                setTimeout(function () { self.model.general.doneError = false;}, 4000);
             },
             done(result){
                 var self = this;
@@ -206,15 +217,25 @@ class Interactive {
             });
         })
 
-        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS, function(){                        
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS, function(operationName, message){                        
             if(!self.flowController.isBusy()){
                 setTimeout(function () { self.flowController.done(true);}, 1000);
                 
             }else{
                 self.flowController.done(true);
-            }
-            
+            }            
         })
+
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_ERROR, function(operationName, message){                        
+            if(!self.flowController.isBusy()){
+                setTimeout(function () { self.flowController.error(operationName, message);}, 1000);
+                
+            }else{
+                self.flowController.error(operationName, message);
+            }            
+        })
+
+        
     }
 
     _bindMenuEvents(flowblocks) {
