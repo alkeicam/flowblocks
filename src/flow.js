@@ -119,7 +119,7 @@ class Flow {
         this.graph.removeCells(this._blocks);
         this._blocks = [];
     }
-    
+
     /**
      * Assumes linear/sequential graph
      * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks
@@ -132,6 +132,11 @@ class Flow {
         inputBlock = this._blocks.find(block=>{
             return block.get('_template') == 'Start';
         })
+
+        if(!inputBlock){
+            return;
+            console.warn('No input block found.');
+        }
 
         // traverse graph
         var blocks = []; 
