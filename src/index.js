@@ -166,6 +166,53 @@ class Flowblocks {
         Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass, menuContents);
         console.log('Flowblocks app up and running')
     }
+    /**
+     * Loads provided specification into temporary graph, identifies Start element and makes
+     * a BFS graph traversal from the Start element.
+     * @param {*} modelSpecification Target Flowblocks model specification
+     * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks  - starting from the Start type of block
+     */
+    traverseModelSpecificationSequential(modelSpecification){
+        var tempGraph = new joint.dia.Graph();
+        tempGraph.fromJSON(modelSpecification);
+
+
+        var result = []; // {p: previous, c: current, n: next}
+        // find start block
+        var inputBlock = undefined;
+        inputBlock = tempGraph.getCells().find(block=>{
+            return block.get('_template') == 'Start';
+        })
+
+        if(!inputBlock){            
+            console.warn('No input block found.');
+            return;
+        }
+
+        // traverse graph
+        var blocks = []; 
+
+        tempGraph.graph.bfs(inputBlock, function(block){
+            blocks.push(block)
+        })
+
+        // build result object
+        for(var i=0; i<blocks.length;i++){
+            var pIdx = i-1>=0?i-1:i;
+            var nIdx = i+1<blocks.length?i+1:i;
+            
+            var previous = blocks[pIdx];
+            var current = blocks[i];   
+            var next = blocks[nIdx];
+            result.push({
+                p: previous.get('blockId') != current.get('blockId')?previous:undefined,
+                c: current,
+                n: next.get('blockId') != current.get('blockId')?next:undefined
+            })
+        }
+        return result;
+
+    }
 
     /**
      * Returns Block with given id

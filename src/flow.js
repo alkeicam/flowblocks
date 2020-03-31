@@ -121,7 +121,8 @@ class Flow {
     }
 
     /**
-     * Assumes linear/sequential graph
+     * Traverser current model specification that is presented in Flowblocks
+     * Assumes linear/sequential graph.
      * @returns {Array} Array of {p: previous, c: current, n: next} objects holding blocks
      */
     //(previousBlock, currentBlock, nextBlock)
