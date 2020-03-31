@@ -52,23 +52,23 @@ class Interactive {
                     busy: false,
                     doneOk: false,
                     doneError: false,
-                    doneMessage: undefined
+                    message: undefined
                 }
             },
             isBusy(){
                 return this.model.general.busy;
             },
-            busy(){
+            busy(operationName, message){
                 this.model.general.busy = true;
                 this.model.general.doneOk = false;
                 this.model.general.doneError = false;
-                this.model.general.doneMessage = undefined;
+                this.model.general.message = message;
             },
             error(operationName, message){
                 var self = this;
                 this.model.general.busy = false;
                 this.model.general.doneError = true;  
-                this.model.general.doneMessage = message;              
+                this.model.general.message = message;              
                 setTimeout(function () { self.model.general.doneError = false;}, 6000);
             },
             done(result){
@@ -235,6 +235,9 @@ class Interactive {
             }            
         })
 
+        flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_BUSY, function(operationName, message){                        
+            self.flowController.busy();           
+        })    
         
     }
 

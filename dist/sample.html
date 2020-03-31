@@ -133,7 +133,7 @@
         <!-- notifications -->
         <div rv-if="model.general.busy" class="notification is-warning is-light">
             <!-- <button class="delete"></button> -->
-            <i class="fas fa-spinner fa-spin"></i>&nbsp;Please wait. Performing operation ...
+            <i class="fas fa-spinner fa-spin"></i>&nbsp;Please wait. {model.general.message} 
         </div>
         <div rv-if="model.general.doneOk" class="notification is-success  is-light">
             <!-- <button class="delete"></button> -->
@@ -141,7 +141,7 @@
         </div>
         <div rv-if="model.general.doneError" class="notification is-danger  is-light">
             <!-- <button class="delete"></button> -->
-            <i class="fas fa-exclamation-triangle"></i>&nbsp;Error {model.general.doneMessage}
+            <i class="fas fa-exclamation-triangle"></i>&nbsp;Error {model.general.message}
         </div>
         <!-- notifications end -->
         <!-- flowblocks diagram -->

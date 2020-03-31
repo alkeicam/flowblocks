@@ -29,6 +29,7 @@ class EventsDict {
             // indicates that user wants to create new type so appropriate form shall be presented
             FLOWBLOCKS_TYPE_CREATE: "flowblocks:type-create", // empty
             // general event, sent as a feedback from any operation
+            FLOWBLOCKS_BUSY: "flowblocks:busy", // operation name, extra data
             FLOWBLOCKS_DONE_SUCCESS: "flowblocks:result-ok", // operation name, extra data
             FLOWBLOCKS_DONE_ERROR: "flowblocks:result-error", // operation name, extra data
             FLOWBLOCKS_IMPORT_JSON: "flowblocks:import-json", // json model specification data            
