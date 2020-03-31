@@ -24,6 +24,13 @@ class Flowblocks {
         this.version = 1;
         this._initialize();
     }
+    /**
+     * Creates new, clean Flowblocks instance
+     */
+    create(){
+        return new Flowblocks({});
+    }
+
     _initialize(){  
         var self = this;     
         // initialize events
