@@ -219,7 +219,7 @@ class Interactive {
 
         flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS, function(operationName, message){                        
             if(!self.flowController.isBusy()){
-                setTimeout(function () { self.flowController.done(true);}, 1000);
+                setTimeout(function () { self.flowController.done(true);}, 2000);
                 
             }else{
                 self.flowController.done(true);
@@ -228,7 +228,7 @@ class Interactive {
 
         flowblocks.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_ERROR, function(operationName, message){                        
             if(!self.flowController.isBusy()){
-                setTimeout(function () { self.flowController.error(operationName, message);}, 1000);
+                setTimeout(function () { self.flowController.error(operationName, message);}, 2000);
                 
             }else{
                 self.flowController.error(operationName, message);
