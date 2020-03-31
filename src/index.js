@@ -192,7 +192,7 @@ class Flowblocks {
         // traverse graph
         var blocks = []; 
 
-        tempGraph.graph.bfs(inputBlock, function(block){
+        tempGraph.bfs(inputBlock, function(block){
             blocks.push(block)
         })
 
