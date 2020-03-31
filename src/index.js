@@ -223,6 +223,14 @@ class Flowblocks {
     }
 
     /**
+     * Send notification to Flowblocks
+     * @param {*} eventName Name of the event
+     * @param {*} data eventuall data object
+     */
+    notify(eventName, data){
+        this.emitter.emit(eventName, data);
+    }
+    /**
      * Adds event handler to Flowblocks
      * @param {*} eventName 
      * @param {*} handler 
