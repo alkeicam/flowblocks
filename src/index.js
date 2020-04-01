@@ -55,8 +55,7 @@ class Flowblocks {
         // save flowblocks
         this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){
             var dataJson = self.export();
-            Api.save('flowblock',dataJson.id, dataJson, dataJson.version);
-            self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
+            self.save(dataJson);
         })
 
         // download flowblocks
@@ -66,6 +65,14 @@ class Flowblocks {
         })
 
         // create new type
+    }
+
+    save(modelSpecification){
+        // update version
+        modelSpecification.version += 1;
+        // save
+        Api.save('flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
+        self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
     /**
      * Registers available Flowblocks types that can be created 
@@ -255,9 +262,7 @@ class Flowblocks {
      * Generates new JSON Snapshot of Flowblocks data (Flows, blocks, types).
      * @returns JSON representation of the Flowblocks data (Flows, blocks, types)
      */
-    export(){
-        this.version++;
-
+    export(){        
         this.flow.graph.set('exported', Date.now());
         this.flow.graph.set('version', this.version);
                 
