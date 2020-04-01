@@ -54,6 +54,8 @@ class Flowblocks {
 
         // save flowblocks
         this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){
+            // raise version
+            self.raise();
             var dataJson = self.export();
             self.save(dataJson);
         })
@@ -66,10 +68,17 @@ class Flowblocks {
 
         // create new type
     }
-
+    /**
+     * Updates version number on Flowblocks model
+     */
+    raise(){
+        this.flow.graph.set('version', this.version++);
+    }
+    /**
+     * Saves model to storage
+     * @param {*} modelSpecification Json data describing model (usually got from export() method)
+     */
     save(modelSpecification){
-        // update version
-        modelSpecification.version += 1;
         // save
         Api.save('flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
         this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
