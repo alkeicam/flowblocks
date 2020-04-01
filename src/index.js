@@ -381,5 +381,21 @@ class Flowblocks {
             console.error(error);
         }
     }
+    /**
+     * Validates Flowblocks flow and data
+     * 
+     * @returns Object containing status and eventuall list of errors of this Flowblocks instance. {valid: true|false, errorBlocks: [{ blockId: , errors: [{code: , cId:, msg:}]}]}
+     */
+    validate(){
+        if(this.flow)
+            return this.flow.validate();
+        return {
+            valid: false,
+            errorBlocks: [{
+                blockId: undefined,
+                errors: [{ code: 'GENERAL', cId: 'flowblocks', msg: 'No flow configured' }]
+            }],
+        };
+    }
 }
 module.exports = new Flowblocks({});
