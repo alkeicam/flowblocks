@@ -72,7 +72,7 @@ class Flowblocks {
         modelSpecification.version += 1;
         // save
         Api.save('flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
-        self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
     /**
      * Registers available Flowblocks types that can be created 
