@@ -2,14 +2,9 @@ const joint = require("jointjs")
 const helper = require('./helper')
 const block = require('./block')
 const Flow = require('./flow')
-// const Toolbar = require('./ui/flowblocks-ui-toolbar');
-const Toolbar = require('flowblocks-ui-toolbar');
-
-// const Toolbar = require('./toolbar')
-// const ToolbarItem = require('./toolbar-item')
 const EVENTS_DICT = require('./events-dict')
 const EventEmitter = require('events')
-const Interactive = require('./ui/interactive')
+
 const Api = require('./api')
 
 
@@ -18,8 +13,7 @@ class Flowblocks {
         this.options = {}
         Object.assign(this.options, options);
         this._registeredTypes = {}        
-        this.flow = undefined
-        this.toolbar = undefined
+        this.flow = undefined        
         this.emitter = new EventEmitter();
         this.version = 1;
         this._initialize();
@@ -165,23 +159,11 @@ class Flowblocks {
     createFlow(paperId, name, bId){
         var self = this;
         this.flow = Flow.create(paperId, this.emitter, name, bId); 
-        console.log('Flowblocks flow up and running')                
+        console.log('Flowblocks up and running')                
         return this.flow;        
     }
-    /**
-     * Creates Flowblocks supplementary element - Toolbar which can be bound to view in order to create new Blocks on the diagram from Toolbar.
-     */
-    createToolbar(){
-        var self = this;
-        this.toolbar = Toolbar.create(this.emitter);         
-        // using this.toolbar is deprecated, instead EVENTS shall be used
-        return this.toolbar;        
-    }
 
-    createApp(flowClass, toolbarClass, menuClass, menuContents){
-        Interactive.create(this, this.emitter, flowClass, toolbarClass, menuClass, menuContents);
-        console.log('Flowblocks app up and running')
-    }
+
     /**
      * Loads provided specification into temporary graph, identifies Start element and makes
      * a BFS graph traversal from the Start element.
@@ -256,14 +238,14 @@ class Flowblocks {
         });
         this.registerTypes(typesArray);
         // now notify toolbar that it should be reinitialized
-        this.rebuildToolbar(typesArray);        
+        this._rebuildToolbar(typesArray);        
     }
 
     /**
      * Resets and rebuilds Toolbar contents
      * @param {*} typesArray 
      */
-    rebuildToolbar(typesArray){
+    _rebuildToolbar(typesArray){
         this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_RESET, typesArray);        
     }
 
@@ -350,7 +332,7 @@ class Flowblocks {
             }            
             if(typeDefinition.icon){
                 if(typeDefinition.icon.lastIndexOf('/')==-1){                    
-                    newBlock.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/'+typeDefinition.icon+'.svg');
+                    newBlock.set('icon', 'https://cdn.jsdelivr.net/npm/flowblocks-icons@1.0.8/i/'+typeDefinition.icon+'.svg');
                 }else{
                     newBlock.set('icon', typeDefinition.icon);
                 }                
