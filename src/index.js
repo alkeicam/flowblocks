@@ -238,14 +238,14 @@ class Flowblocks {
         });
         this.registerTypes(typesArray);
         // now notify toolbar that it should be reinitialized
-        this._rebuildToolbar(typesArray);        
+        this.rebuildToolbar(typesArray);        
     }
 
     /**
      * Resets and rebuilds Toolbar contents
      * @param {*} typesArray 
      */
-    _rebuildToolbar(typesArray){
+    rebuildToolbar(typesArray){
         this.emitter.emit(EVENTS_DICT.EVENTS.TOOLBAR_RESET, typesArray);        
     }
 
