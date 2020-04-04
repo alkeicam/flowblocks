@@ -156,7 +156,7 @@ class Block {
                     "element.set('name','my label');",
                     "element.set('position', {x:30, y:10});",
                     "element.set('size', {width:50, height: 50});",
-                    "element.set('icon', 'https://unpkg.com/flowblocks/dist/resources/img/svg/vase.svg');",
+                    "element.set('icon', 'https://cdn.jsdelivr.net/npm/flowblocks-icons@1.0.8/i/vase.svg');",
                     "element.style({titleBarColor: '#FADB50'});",
                     "element.getStatus();",
                     "element.freePorts();",
