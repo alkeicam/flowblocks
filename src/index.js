@@ -47,11 +47,11 @@ class Flowblocks {
         })   
 
         // save flowblocks
-        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(){
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE, function(datatype){
             // raise version
             self.raise();
             var dataJson = self.export();
-            self.save(dataJson);
+            self.save(dataJson, datatype);
         })
 
         // download flowblocks
@@ -72,9 +72,9 @@ class Flowblocks {
      * Saves model to storage
      * @param {*} modelSpecification Json data describing model (usually got from export() method)
      */
-    save(modelSpecification){
+    save(modelSpecification, datatype){
         // save
-        Api.save('flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
+        Api.save(datatype?datatype:'flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
         this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
     /**

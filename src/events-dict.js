@@ -23,7 +23,7 @@ class EventsDict {
             CONNECTION_REMOVED: "flowblocks:connection-removed",
             CONNECTION_ADDED: "flowblocks:connection-added",
             // emited when user wants to save flowblocks specification
-            FLOWBLOCKS_SAVE: "flowblocks:save", // empty
+            FLOWBLOCKS_SAVE: "flowblocks:save", // save datatype
             // emited when user wants to download flowblocks specification
             FLOWBLOCKS_DOWNLOAD: "flowblocks:download", // empty
             // indicates that user wants to create new type so appropriate form shall be presented
