@@ -368,7 +368,7 @@ class Block {
                             if(entry[1].i == name)
                                 item = entry[1].v;
                         })
-                        return item;
+                        return fromstring.parse(item);
                     },
                     connection: function (port) {
                     
