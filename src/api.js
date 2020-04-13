@@ -2,7 +2,7 @@ const jsonSize = require('json-size');
 
 class Api {
     constructor(){
-        this.storageContext = '/a/'
+        this.storageContext = ''
     }
 
     save(datatype, key, dataObject, version){
