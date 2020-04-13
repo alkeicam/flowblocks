@@ -351,6 +351,7 @@ class Block {
             },
 
             _customValidation(){
+                var self = this;
                 // Object.assign({}, A1);
                 var portConnectionsCopy = Object.assign({}, this.get('_portConnections'));
 
@@ -412,7 +413,7 @@ class Block {
                 // connection.blockData = blockData;
 
                 if(this.get('_validationFunction')){
-                    var errorsArray = this.get('_validationFunction').call(undefined, blockData);                    
+                    var errorsArray = this.get('_validationFunction').call(self, blockData);                    
                     errorsArray.forEach(error=>{
                         this.get('errors').push({
                             code: error.code,
