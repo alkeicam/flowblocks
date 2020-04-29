@@ -42,7 +42,8 @@ class Flow {
                     '.connection': { stroke: 'blue' },
                     '.marker-source': { d: 'M 15 0 L 0 5 L 15 15 z', opacity: '0', stroke: 'orange' },
                     '.marker-arrowhead[end="source"]': { fill: 'red', d: 'M 10 0 L 0 5 L 10 10 z', opacity: '0' }
-                }
+                },
+                router: { name: 'metro' },
             }),
             defaultConnectionPoint: { name: 'boundary' },
             highlighting: {

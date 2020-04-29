@@ -224,7 +224,7 @@ class Flowblocks {
 
     /**
      * Resets Flowblocks and imports Flowblocks data from file.
-     * @param {*} modelSpecification JSON representation of Flowblocks (usually generated earlier by using export())
+     * @param {*} modelSpecification String representation of Flowblocks (usually generated earlier by using export()) data as exported via export().stringify()
      */
     import(modelSpecification) {
         //JSONIFY
