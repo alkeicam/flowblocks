@@ -10,9 +10,10 @@ class EventsDict {
             TOOLBAR_ITEM_DBLCLICK: "toolbar-item:dblclick",
             TOOLBAR_ITEM_DRAG: "toolbar-item:drag", // typeClicked, block, x, y, event
             TOOLBAR_DRAWER_REQUEST: "toolbar-drawer:requested", // category            
-            TOOLBAR_DRAWER_READY: "toolbar-drawer:ready", // category, elementid
+            TOOLBAR_DRAWER_READY: "toolbar-drawer:view-ready", // category, elementid
             TOOLBAR_DRAWER_ATTACHED: "toolbar-drawer:attached", // category, elementid
-            TOOLBAR_DRAWER_REMOVED_ALL: "toolbar-drawer:removedall", // empty
+            TOOLBAR_DRAWER_REMOVED_ALL: "toolbar-drawer:removedall", // empty, deprecated
+            TOOLBAR_REMOVED_ALL: "toolbar:removedall", // empty, deprecated
             MENU_IMPORTJSON_REQUESTED: "menu:import-json", // empty   
             
             BLOCK_ADDED: "flowblocks:block-added",
