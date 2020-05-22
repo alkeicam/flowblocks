@@ -63,6 +63,18 @@ class Flowblocks {
         // create new type
     }
     /**
+     * Returns flow imprint / base information
+     * @returns Object {n: name, i: business id, v: version, c: created timestamp}
+     */
+    getBaseInformation(){
+        return {
+            n: this.flow.graph.get('name'),
+            i: this.flow.graph.get('id'),
+            v: this.flow.graph.get('version'),
+            c: this.flow.graph.get('created')
+        }
+    }
+    /**
      * Updates version number on Flowblocks model
      */
     raise(){
