@@ -33,7 +33,7 @@
   "homepage": "https://github.com/alkeicam/flowblocks#readme",
   "dependencies": {
     "events": "3.1.0",
-    "flowblocks-ui-toolbar": "^1.1.9",
+    "flowblocks-ui-toolbar": "^1.1.10",
     "from-string": "^1.1.4",
     "jointjs": "3.1",
     "json-size": "1.0.0",
