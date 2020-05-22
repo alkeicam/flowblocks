@@ -179,9 +179,9 @@ class Flow {
                 cell._reApplyValidation();
                 this.addBlock(cell, true);
                 // reinitialize custom validations
-            }
-                
+            }                
         })
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_SUCCES, this.graph.get('name'), this.graph.get('id'));
         this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
 

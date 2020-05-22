@@ -153,8 +153,8 @@ class Flowblocks {
     /**
      * Creates flowblocks main element - Flow. When flow is ready one can define new Block types via registerType() and create new instances of Blocks via 
      * @param {*} paperId 
-     * @param {*} name 
-     * @param {*} bId 
+     * @param {*} name User friendly name of the flowblocks flow
+     * @param {*} bId User friendly business id of the flowblocks flow
      */
     createFlow(paperId, name, bId){
         var self = this;
