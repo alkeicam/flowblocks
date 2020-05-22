@@ -112,7 +112,9 @@ class Flow {
         
         this._bindConnectionEvents();
         this._bindToolsEvents();   
-        this._bindInteractionEvents();     
+        this._bindInteractionEvents();   
+        
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_CREATE_SUCCESS, this.graph.get('name'), this.graph.get('id'), this.graph.get('version'));
         return this;
     }
 
@@ -181,7 +183,7 @@ class Flow {
                 // reinitialize custom validations
             }                
         })
-        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_SUCCES, this.graph.get('name'), this.graph.get('id'), this.graph.get('version'));
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_SUCCESS, this.graph.get('name'), this.graph.get('id'), this.graph.get('version'));
         this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
     }
 

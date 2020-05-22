@@ -15,7 +15,7 @@ class Flowblocks {
         this._registeredTypes = {}        
         this.flow = undefined        
         this.emitter = new EventEmitter();
-        this.version = 1;
+        this.version = 0;
         this._initialize();
     }
     /**
@@ -159,6 +159,7 @@ class Flowblocks {
     createFlow(paperId, name, bId){
         var self = this;
         this.flow = Flow.create(paperId, this.emitter, name, bId); 
+        self.raise();
         console.log('Flowblocks up and running')                
         return this.flow;        
     }
