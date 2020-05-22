@@ -78,7 +78,7 @@ class Flowblocks {
      * Updates version number on Flowblocks model
      */
     raise(){
-        this.flow.graph.set('version', this.version++);
+        this.flow.graph.set('version', ++this.version);
     }
     /**
      * Saves model to storage
