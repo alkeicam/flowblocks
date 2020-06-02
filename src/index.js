@@ -88,6 +88,7 @@ class Flowblocks {
         // save
         Api.save(datatype?datatype:'flowblock',modelSpecification.id, modelSpecification, modelSpecification.version);
         this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_SUCCESS);
+        this.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_SAVE_SUCCESS, datatype, modelSpecification.id, modelSpecification.version, modelSpecification);
     }
     /**
      * Registers available Flowblocks types that can be created 

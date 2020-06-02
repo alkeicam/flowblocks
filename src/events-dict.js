@@ -32,6 +32,7 @@ class EventsDict {
             // general event, sent as a feedback from any operation
             FLOWBLOCKS_BUSY: "flowblocks:busy", // operation name, extra data
             FLOWBLOCKS_DONE_SUCCESS: "flowblocks:result-ok", // operation name, extra data
+            FLOWBLOCKS_SAVE_SUCCESS: "flowblocks:save-ok", // datatype, modelSpecification.id, modelSpecification.version, modelSpecification
             FLOWBLOCKS_DONE_ERROR: "flowblocks:result-error", // operation name, extra data
             FLOWBLOCKS_IMPORT_JSON: "flowblocks:import-json", // json model specification data            
             FLOWBLOCKS_IMPORT_SUCCESS: "flowblocks:import-ok", // model name, model id, version
