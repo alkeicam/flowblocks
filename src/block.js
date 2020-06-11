@@ -29,6 +29,7 @@ class Block {
             errors: [], // array of block errors that are the cause for the ERROR status of the block
             configurables: [], // configurable values {i: id, v: value}
             _validationFunction: undefined, // validation function
+            _configurablesDefinitions: [], // array of configurables definitions
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
             _styles: DEFAULTS.STYLES,
@@ -283,11 +284,40 @@ class Block {
                 }
 
             },
-
+            /**
+             * Resets block configurables values.
+             * Validation is applied to check if all configurables meet validation criteria.
+             * @param {*} configurables Array of configurables values {i: name/id of the configurable, v: values (string)}             
+             */
             setConfigurables(configurables){
                 this.set('configurables', configurables);
                 this._recalculateStatus();
             },        
+            /**
+             * Sets block configurable to given value. If necessary updates existing value.
+             * @param {*} name name/id of the configurable
+             * @param {*} value value to be set
+             */
+            setConfigurable(name, value){
+                var configurable = this.getConfigurable(name);
+                if(configurable){
+                    var configurables = this.get('configurables');
+                    configurables.forEach(item=>{
+                        if(item.i == name){
+                            item.v = value
+                        }
+                    })
+                    this.setConfigurables(configurables);
+                }else{
+                    // no configurable found, adding new
+                    var configurables = this.get('configurables');
+                    configurables.push({
+                        i: name,
+                        v: value
+                    })
+                    this.setConfigurables(configurables);
+                }                
+            },
 
             /**
              * Returns array of free ports of element.
@@ -336,7 +366,10 @@ class Block {
                 return msg;
             },
 
-            _baseStatusValidation(){
+            /**
+             * Validates if all ports are connected
+             */
+            _basePortsValidation(){
                 var freePorts = this.freePorts();
 
                 if (freePorts.length > 0){                    
@@ -347,7 +380,39 @@ class Block {
                             msg: 'Port ['+port.id+'] is not connected'
                         })
                     })                    
-                }                
+                }
+            },
+            /**
+             * Validates if all required configurables are set
+             */
+            _baseConfigurablesValidation(){
+                var self = this;
+                this.get('_configurablesDefinitions').filter(item=>{
+                    return item.required;
+                }).forEach(requiredItem=>{
+                    var actualConfigurable = self.getConfigurable(requiredItem.id);
+                    if(!actualConfigurable){
+                        this.get('errors').push({
+                            code: 'FIELD_REQUIRED',
+                            cId: requiredItem.id,
+                            msg: 'Field ['+requiredItem.id+'] is required'
+                        })
+                    }
+                })
+            },
+
+            _baseStatusValidation(){
+                this._basePortsValidation();   
+                this._baseConfigurablesValidation();                
+            },
+
+            getConfigurable(name){
+                var item = undefined;                
+                Object.entries(this.get('configurables')).forEach(entry=>{
+                    if(entry[1].i == name)
+                        item = entry[1].v;
+                })
+                return fromstring.parse(item);
             },
 
             _customValidation(){
@@ -678,7 +743,7 @@ class Block {
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlank(blockId, typeName, template, statusDefinition, style, validation) {
+    createBlank(blockId, typeName, template, statusDefinition, style, validation, configurablesDefinitionArray) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -693,6 +758,7 @@ class Block {
             block.set('blockId',blockId);
             block.set('_type', typeName);
             block.set('_template', template);
+            block.set('_configurablesDefinitions', configurablesDefinitionArray);
             block.applyValidation(validation);
             // apply style
             block.style(style);

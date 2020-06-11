@@ -328,7 +328,7 @@ class Flowblocks {
     createBlock(typeName, label, blockId, position, size){
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
-            var newBlock = block.createBlank(blockId, typeDefinition.name, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation);            
+            var newBlock = block.createBlank(blockId, typeDefinition.name, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation, typeDefinition.configurables);            
             newBlock.set('name',label);            
             if(blockId){                
                 var duplicateElement = this.flow._blocks.find(el=>{
