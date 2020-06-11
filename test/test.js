@@ -100,6 +100,7 @@ describe('Flowblocks', () => {
                 });
                 return expect(invalidFields.length).eq(2);
             })
+            
             it('ports validation 3', () => {
                 B1.setConfigurables([
                     {i: 'name', v: 'some name'},{i: 'units', v: 'some name'}
