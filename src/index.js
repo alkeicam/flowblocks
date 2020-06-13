@@ -32,6 +32,10 @@ class Flowblocks {
         this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, function(modelSpecificationString){
             self.import(modelSpecificationString);
         })
+
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES, function(modelSpecificationString){
+            self.import(modelSpecificationString, false);
+        })
         
 
         // add new block
@@ -240,19 +244,22 @@ class Flowblocks {
      * Resets Flowblocks and imports Flowblocks data from file.
      * @param {*} modelSpecification String representation of Flowblocks (usually generated earlier by using export()) data as exported via export().stringify()
      */
-    import(modelSpecification) {
+    import(modelSpecification, loadTypes = true) {
         //JSONIFY
         var specificationObject = JSON.parse(modelSpecification);
         this.flow.import(specificationObject);
-        var typesArray = []
-        Object.entries(specificationObject.types).forEach(entry => {
-            let key = entry[0];
-            let value = entry[1];
-            typesArray.push(value);
-        });
-        this.registerTypes(typesArray);
-        // now notify toolbar that it should be reinitialized
-        this.rebuildToolbar(typesArray);        
+        // types will be rebuilt when requested
+        if(loadTypes){
+            var typesArray = []
+            Object.entries(specificationObject.types).forEach(entry => {
+                let key = entry[0];
+                let value = entry[1];
+                typesArray.push(value);
+            });
+            this.registerTypes(typesArray);
+            // now notify toolbar that it should be reinitialized
+            this.rebuildToolbar(typesArray);        
+        }        
     }
 
     /**

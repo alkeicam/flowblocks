@@ -10,12 +10,48 @@ const expect = chai.expect;
 // Sinon is a library used for mocking or verifying function calls in JavaScript.
 const sinon = require('sinon');
 
-const block = require('../src/block')
-
+const block = require('../src/block');
+const Flow = require('../src/flow');
 
 const flowblocks = require('../');
 
 describe('Flowblocks', () => {
+    describe('Module',()=>{
+        
+        describe('Import/Export',()=>{
+            beforeEach(()=>{
+                s1 = sinon.stub(Flow,'import').returns();
+                s2 = sinon.stub(flowblocks, 'registerTypes').returns();
+                s3 = sinon.stub(flowblocks, 'rebuildToolbar').returns();
+                s4 = sinon.stub(Flow,'create').returns({import: function(){}});
+                s5 = sinon.stub(flowblocks,'raise').returns();
+                flowblocks.createFlow('someId','someName','businessId');
+            })
+            afterEach(()=>{
+                s1.restore();
+                s2.restore();
+                s3.restore();
+                s4.restore();
+                s5.restore();
+            })
+            it('by default load types (1)',()=>{
+                flowblocks.import('{"types":{}}');                
+                return expect(s2.callCount).eq(1);
+            })
+            it('by default load types (2)',()=>{
+                flowblocks.import('{"types":{}}');                
+                return expect(s3.callCount).eq(1);
+            })
+            it('skip type loading when requested',()=>{
+                flowblocks.import('{"types":{}}', false);                
+                return expect(s2.callCount).eq(0);
+            })
+            it('skip type loading when requested (2)',()=>{
+                flowblocks.import('{"types":{}}', false);                
+                return expect(s3.callCount).eq(0);
+            })
+        })
+    })
     describe('Block', () => {
         let DEFINITION = {
             name: 'Dense',
@@ -100,7 +136,7 @@ describe('Flowblocks', () => {
                 });
                 return expect(invalidFields.length).eq(2);
             })
-            
+
 
             it('ports validation 3', () => {
                 B1.setConfigurables([

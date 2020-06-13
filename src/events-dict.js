@@ -35,6 +35,7 @@ class EventsDict {
             FLOWBLOCKS_SAVE_SUCCESS: "flowblocks:save-ok", // datatype, modelSpecification.id, modelSpecification.version, modelSpecification
             FLOWBLOCKS_DONE_ERROR: "flowblocks:result-error", // operation name, extra data
             FLOWBLOCKS_IMPORT_JSON: "flowblocks:import-json", // json model specification data            
+            FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES: "flowblocks:import-json-no-types", // json model specification data            
             FLOWBLOCKS_IMPORT_SUCCESS: "flowblocks:import-ok", // model name, model id, version
             FLOWBLOCKS_CREATE_SUCCESS: "flowblocks:create-ok", // model name, model id, version
         }
