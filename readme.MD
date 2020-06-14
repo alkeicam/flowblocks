@@ -10,14 +10,14 @@
         * [Properties](#properties)
         * [Validations](#validations)
 * [API](#api)
-* [Flowblocks](#flowblocks)
-    - [getDefinition(typeName)](#getdefinitiontypename)
-* [Flowblocks.Block](#flowblocksblock)
-    - [block.getConfigurable(name)](#blockgetconfigurablename)
-    - [block.getConfigurables()](#blockgetconfigurables)
-    - [block.getStatus()](#blockgetstatus)            
-    - [block.setConfigurable(name, value)](#blocksetconfigurablename-value)
-    - [block.setConfigurables(configurablesArray)](#blocksetconfigurablesconfigurablesarray)
+    * [Flowblocks](#flowblocks)
+        - [getDefinition(typeName)](#getdefinitiontypename)
+    * [Flowblocks.Block](#flowblocksblock)
+        - [block.getConfigurable(name)](#blockgetconfigurablename)
+        - [block.getConfigurables()](#blockgetconfigurables)
+        - [block.getStatus()](#blockgetstatus)            
+        - [block.setConfigurable(name, value)](#blocksetconfigurablename-value)
+        - [block.setConfigurables(configurablesArray)](#blocksetconfigurablesconfigurablesarray)
 ## General info
 
 ## Building blocks
