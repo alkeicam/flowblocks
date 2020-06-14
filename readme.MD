@@ -1,9 +1,55 @@
 # Flowblocks - Reusable flow diagram blocks
 > Building flow diagrams
 
+[Flowblocks - Reusable flow diagram blocks](#flowblocks---reusable-flow-diagram-blocks)
+* [General info](#general-info)
+* [Building blocks](#building-blocks)        
+* [Block](#block)            
+    * [Properties](#properties)
+    * [Validations](#validations)
+* [API](#api)
+* [Flowblocks](#flowblocks)
+    - [getDefinition(typeName)](#getdefinitiontypename)
+* [Flowblocks.Block](#flowblocksblock)
+    - [block.getConfigurable(name)](#blockgetconfigurablename)
+    - [block.getConfigurables()](#blockgetconfigurables)
+    - [block.getStatus()](#blockgetstatus)            
+    - [block.setConfigurable(name, value)](#blocksetconfigurablename-value)
+    - [block.setConfigurables(configurablesArray)](#blocksetconfigurablesconfigurablesarray)
 ## General info
 
 ## Building blocks
+
+### TypeDefinition
+> Specifies block attributes and behaviour
+
+In Flowblocks each block that is created in the diagram is a block of a given type.
+Types allow to specify all attributes and block behaviour, they are like a template from which all blocks of given type are created.
+
+| Name | Type | Description | 
+| :--- | :--- | :--- | 
+| name | `string` | Unique Name/Id of the type, when block is created this is passed as its type (block property *block._type* is set to this value) |
+| template | `string` | Ports template to be used when block of given type is created. See PortTemplates for more details.|
+| style | `string|object` | Name of the flowblocks style or a specification of a custom style. Style is used when rendering block on a diagram. See custom styling for more details.|
+| icon | `string` | Name of the flowblocks preset icons or a link to a resource that is an icon. See [flowblocks-icons](https://www.npmjs.com/package/flowblocks-icons) for a list of available icons.|
+| configurables | `array<objec>` | Array of configurables definitions. These specify what custom attributes can be set on the block. See Configurables for a detailed description.|
+| category | `string` | When there are plenty of available block types that can be used to build flowblocks diagrams category can be used to group types into similar categories. When used in graphical designer this usually is rendered as groups of available types|
+| validationSrc | `string` | Source code of a custom validation functions. See [Validations](#validations) for a detailed description of how such a function should be constructed |
+
+
+### PortTemplates
+> Specifies input and output port for a block
+
+| Name | Description | 
+| :--- | :--- | 
+| `Start` | Types that use this template have only one output port named `out1`. These are always used as an input/start blocks in diagrams |
+| `End` | Types that use this template have only one input port named `in1`. These are always used as an output/end blocks in diagrams |
+| `PassThrough` | Types that use this template have single input port named `in1` and a single output port `out1`. |
+| `Split` | Types that use this template have single input port named `in1` and a two output ports named `out1`, `out2`. |
+| `Join` | Types that use this template have two input port named `in1`, `in2` and a single output port `out1`. |
+| `Mixer` | Types that use this template have two input port named `in1`, `in2` and a two output ports named `out1`, `out2`. |
+
+
 ### Block
 > Block represents a single element on a flow diagram
 
@@ -13,7 +59,7 @@ Each block has its state (valid/invalid). Each time block is changed (either con
 
 Each block has a definition of parameters that can be configured on the block. The definition defines the name, type and mandatory of the configurable.
 
-### Properties
+#### Properties
 | Name | Type | Description | 
 | :--- | :--- | :--- | 
 | configurablesDefinitions | `array<object>` | Definition of configurables available in the block |
@@ -25,7 +71,7 @@ Each block has a definition of parameters that can be configured on the block. T
 | configurablesDefinitions.required | `boolean` | When true user must provide the configurable of the block will be marked as invalid |
 | configurables | `array<{i: configurable name/id, v: configurable value}>` | Configuration parameters of the block. Each time configuration parameter is updated block revalidation is performed | 
 
-### Validations
+#### Validations
 When block is updated validations are triggered. There are two types of validations for each block.
 
 **Built in validations**
@@ -50,9 +96,22 @@ function (blockData) {
     return errors;
 }
 ```
+Each custom validation functions takes blockData as its input and is expected to return array of errors. When there are no errors (validation successfull) then error array must be empty, when there are any validation errors then these errors must be put into the resulting error array.
 
 ## API 
-### Block
+### Flowblocks
+#### getDefinition(typeName)
+> Returns type definition registered with given name
+```javascript
+var typeDefinition = flowblocks.getDefinition('myType');
+```
+
+|Kind| Parameter | Type | Description |
+| :--- | :--- | :--- | :--- |
+|Argument| `name` | `string` | **Required** Name of the configurable |
+|Returns|   | `string | number | boolean | array` | Value of the configurable with given name|
+
+### Flowblocks.Block
 #### block.getConfigurable(name)
 > Returns configurable value with given name
 ```javascript
