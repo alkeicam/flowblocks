@@ -1,6 +1,6 @@
 {
   "name": "flowblocks",
-  "version": "1.1.21",
+  "version": "1.1.22",
   "description": "Reusable flow diagram blocks",
   "main": "./src/index.js",
   "scripts": {
