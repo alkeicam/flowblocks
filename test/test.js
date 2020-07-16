@@ -17,7 +17,12 @@ const flowblocks = require('../');
 
 describe('Flowblocks', () => {
     describe('Module',()=>{
-        
+        let SPEC_ID = 'PZa1PYfus';
+        let VER_ID = 1;
+        let SPEC_OVERWRITE_ID = 'someother';
+        let VER_OVERWRITE_ID = 7;
+        let NAME = 'Flowblocks #PZa1PYfus';
+        let NAME_OVERWRITE = 'New Name';
         describe('Import/Export',()=>{
             beforeEach(()=>{
                 s1 = sinon.stub(Flow,'import').returns();
@@ -25,7 +30,8 @@ describe('Flowblocks', () => {
                 s3 = sinon.stub(flowblocks, 'rebuildToolbar').returns();
                 s4 = sinon.stub(Flow,'create').returns({import: function(){}});
                 s5 = sinon.stub(flowblocks,'raise').returns();
-                flowblocks.createFlow('someId','someName','businessId');
+                fflow = flowblocks.createFlow('someId','someName','businessId');
+                s6 = sinon.stub(fflow, 'import').returns();
             })
             afterEach(()=>{
                 s1.restore();
@@ -33,6 +39,7 @@ describe('Flowblocks', () => {
                 s3.restore();
                 s4.restore();
                 s5.restore();
+                s6.restore();
             })
             it('by default load types (1)',()=>{
                 flowblocks.import('{"types":{}}');                
@@ -50,6 +57,57 @@ describe('Flowblocks', () => {
                 flowblocks.import('{"types":{}}', false);                
                 return expect(s3.callCount).eq(0);
             })
+            it('by default do not overwrite specification id and version - specification id',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}');                                
+                call = s6.getCall(0);
+                return expect(call.args[0].id).eq(SPEC_ID);
+            })
+            it('by default do not overwrite specification id and version - specification id',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}');                
+                call = s6.getCall(0);
+                return expect(call.args[0].version).eq(VER_ID);
+            })
+            it('specification id overwrite',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].id).eq(SPEC_OVERWRITE_ID);
+            })
+            it('specification id overwrite = version not changed',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].version).eq(VER_ID);
+            })
+            it('version id overwrite',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {versionId: VER_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].version).eq(VER_OVERWRITE_ID);
+            })
+            it('version id overwrite = specification not changed',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {versionId: VER_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].id).eq(SPEC_ID);
+            })
+            it('specification id and version id overwrite (1)',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID, versionId: VER_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].id).eq(SPEC_OVERWRITE_ID);
+            })
+            it('specification id and version id overwrite (1)',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID, versionId: VER_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].version).eq(VER_OVERWRITE_ID);
+            })
+            it('name overwrite ',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID, versionId: VER_OVERWRITE_ID, name: NAME_OVERWRITE});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].name).eq(NAME_OVERWRITE);
+            })
+            it('name no overwrite ',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID, versionId: VER_OVERWRITE_ID});                                
+                call = s6.getCall(0);
+                return expect(call.args[0].name).eq(NAME);
+            })
+
         })
     })
     describe('Block', () => {

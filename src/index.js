@@ -29,12 +29,12 @@ class Flowblocks {
         var self = this;     
         // initialize events
 
-        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, function(modelSpecificationString){
-            self.import(modelSpecificationString);
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON, function(modelSpecificationString, forceSpecification){
+            self.import(modelSpecificationString, true, forceSpecification);
         })
 
-        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES, function(modelSpecificationString){
-            self.import(modelSpecificationString, false);
+        this.emitter.on(EVENTS_DICT.EVENTS.FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES, function(modelSpecificationString, forceSpecification){
+            self.import(modelSpecificationString, false, forceSpecification);
         })
         
 
@@ -243,12 +243,24 @@ class Flowblocks {
     /**
      * Resets Flowblocks and imports Flowblocks data from file.
      * @param {*} modelSpecification String representation of Flowblocks (usually generated earlier by using export()) data as exported via export().stringify()
+     * @param {*} loadTypes Boolean when false then types will not be imported, only model specification will be imported. When true both are imported.
+     * @param {*} forceSpecification.specificationId String When provided specification id from modelSpecification will be overwritten with given value
+     * @param {*} forceSpecification.versionId String When provided version id from modelSpecification will be overwritten with given value
+     * @param {*} forceSpecification.name String When provided name from modelSpecification will be overwritten with given value
      */
-    import(modelSpecification, loadTypes = true) {
+    import(modelSpecification, loadTypes = true, forceSpecification) {
         //JSONIFY
         var specificationObject = JSON.parse(modelSpecification);
+        // handle force overwrite
+        if(forceSpecification && forceSpecification.specificationId)
+            specificationObject.id = forceSpecification.specificationId
+        if(forceSpecification && forceSpecification.versionId)
+            specificationObject.version = forceSpecification.versionId    
+        if(forceSpecification && forceSpecification.name)
+            specificationObject.name = forceSpecification.name        
+        // perform import of specification
         this.flow.import(specificationObject);
-        // types will be rebuilt when requested
+        // types will be rebuilt/imported when requested
         if(loadTypes){
             var typesArray = []
             Object.entries(specificationObject.types).forEach(entry => {
