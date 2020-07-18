@@ -107,6 +107,11 @@ describe('Flowblocks', () => {
                 call = s6.getCall(0);
                 return expect(call.args[0].name).eq(NAME);
             })
+            it('flowblocks version is aligned after import',()=>{
+                flowblocks.import('{"cells":[],"name":"'+NAME+'","id":"'+SPEC_ID+'","created":1586522483773,"exported":1586522848569,"version":'+VER_ID+',"types":{}}', true, {specificationId: SPEC_OVERWRITE_ID, versionId: VER_OVERWRITE_ID});                                
+                
+                return expect(flowblocks.version).eq(VER_OVERWRITE_ID);
+            })
 
         })
     })

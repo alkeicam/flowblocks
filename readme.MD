@@ -20,6 +20,8 @@
         - [block.setConfigurables(configurablesArray)](#blocksetconfigurablesconfigurablesarray)
 ## General info
 
+
+
 ## Building blocks
 
 ### TypeDefinition
@@ -185,6 +187,22 @@ block.setConfigurables(configurables);
 |Kind| Parameter | Type | Description |
 | :--- | :--- | :--- | :--- |
 |Argument| `configurablesArray` | `array<{i, v}>` | **Required** Configurables array|
+
+## Events
+
+### Model lifecycle events
+
+#### flowblocks:save-ok
+> Emmited when model is saved (either via creation or update). Updated values are returned
+
+| Parameters | Description |
+| :--- | :--- |
+| datatype | type of the entity|
+| specificationId | id of the saved entity |
+| specificationVersion | version of the saved entity  |
+| specificationData | data of the saved enitty |
+
+
 
 
 

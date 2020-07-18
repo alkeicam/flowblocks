@@ -260,6 +260,8 @@ class Flowblocks {
             specificationObject.name = forceSpecification.name        
         // perform import of specification
         this.flow.import(specificationObject);
+        // make sure that flowblocks version holder is aligned with imported
+        this.version = specificationObject.version;
         // types will be rebuilt/imported when requested
         if(loadTypes){
             var typesArray = []
