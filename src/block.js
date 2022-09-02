@@ -405,7 +405,11 @@ class Block {
                 this._basePortsValidation();   
                 this._baseConfigurablesValidation();                
             },
-
+            /**
+             * Reads block configurable with given name and returns it in its proper data type
+             * @param {*} name Name of the configurable to be returned
+             * @returns Configurable value (casted to the type) or undefined when no such configurable found
+             */
             getConfigurable(name){
                 var item = undefined;                
                 Object.entries(this.get('configurables')).forEach(entry=>{
@@ -748,6 +752,9 @@ class Block {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
             Split: this.createSplitElement,
+            Split3: this.createSplit3Element,
+            Split4: this.createSplit4Element,
+            Split5: this.createSplit5Element,
             Join: this.createJoinElement,
             End: this.createSinkElement,
             Mixer: this.createMixerElement
@@ -813,6 +820,33 @@ class Block {
         var options = this._createBaseOptions();
         options.inPorts = ['in1']
         options.outPorts = ['out1', 'out2']
+    
+        var newBlock = new this.Model(options);                
+        return newBlock;
+    }
+
+    createSplit3Element(name) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1']
+        options.outPorts = ['out1', 'out2', 'out3']
+    
+        var newBlock = new this.Model(options);                
+        return newBlock;
+    }
+
+    createSplit4Element(name) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1']
+        options.outPorts = ['out1', 'out2', 'out3', 'out4']
+    
+        var newBlock = new this.Model(options);                
+        return newBlock;
+    }
+
+    createSplit5Element(name) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1']
+        options.outPorts = ['out1', 'out2', 'out3', 'out4', 'out5']
     
         var newBlock = new this.Model(options);                
         return newBlock;
