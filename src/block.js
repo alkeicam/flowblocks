@@ -284,6 +284,7 @@ class Block {
                 }
 
             },
+            
             /**
              * Resets block configurables values.
              * Validation is applied to check if all configurables meet validation criteria.
@@ -297,7 +298,7 @@ class Block {
                 // redraw and recalculate status
                 this._recalculateStatus();
             },   
-                 
+
             /**
              * Sets block configurable to given value. If necessary updates existing value.
              * @param {*} name name/id of the configurable
