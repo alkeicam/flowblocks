@@ -29,7 +29,7 @@ class Block {
             errors: [], // array of block errors that are the cause for the ERROR status of the block
             configurables: [], // configurable values {i: id, v: value}
             _validationFunction: undefined, // validation function
-            _configurablesDefinitions: [], // array of configurables definitions
+            _configurablesDefinitions: [], // array of configurables definitions: (id:string, label: string, placeholder:string, type:string, required:boolean)
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
             _styles: DEFAULTS.STYLES,
@@ -291,6 +291,10 @@ class Block {
              */
             setConfigurables(configurables){
                 this.set('configurables', configurables);
+                // treat name in a special way - block name is populated from the name configurable
+                const name = this.getConfigurable("name")
+                this.set("name", name);
+                // redraw and recalculate status
                 this._recalculateStatus();
             },        
             /**
@@ -309,14 +313,44 @@ class Block {
                     })
                     this.setConfigurables(configurables);
                 }else{
+                    
+                    // also add default configurablesDefinition
+                    this.addConfigurableDefinition({
+                        id: name, 
+                        label: name, 
+                        placeholder:"",
+                        type: 'TEXT', 
+                        required: true
+                    })                    
+
                     // no configurable found, adding new
                     var configurables = this.get('configurables');
                     configurables.push({
                         i: name,
                         v: value
                     })
-                    this.setConfigurables(configurables);
+                    this.setConfigurables(configurables);                    
                 }                
+            },
+
+            /**
+             * Adds or replaces configurable definition entry for given definition.id             
+             * @param {*} definition configurable definition (id:string, label: string, placeholder:string, type:string, required:boolean)
+             */
+            addConfigurableDefinition(definition){
+                const configurablesDefinitions = this.get("_configurablesDefinitions");
+
+                //(id:string, label: string, placeholder:string, type:string, required:boolean)
+                const configurableConfiguration = configurablesDefinitions.find((item)=>{return item.id == definition.id})
+                if(configurableConfiguration){
+                    // entry exists so replace 
+                    configurablesDefinitions.map((item)=>{
+                        return item.id == definition.id?definition:item;
+                    })
+                }else{
+                    configurablesDefinitions.push(definition);
+                }
+                this.set("_configurablesDefinitions", configurablesDefinitions);
             },
 
             /**
