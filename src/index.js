@@ -341,7 +341,7 @@ class Flowblocks {
     /**
      * Creates new Flowblocks block on the diagram using provided type.
      * @param {*} typeName Name of the registered type that will be used for the Block (see registerType)
-     * @param {*} label Label visible on the Flowblocks diagram
+     * @param {*} label Label visible on the Flowblocks diagram, also copied to "name" configurable
      * @param {*} blockId Business id of the block
      * @param {*} position (optional) Starting position of Block
      * @param {*} size (optional) Size of the Block
@@ -350,7 +350,8 @@ class Flowblocks {
         var typeDefinition = this._registeredTypes[typeName];
         if(typeDefinition){
             var newBlock = block.createBlank(blockId, typeDefinition.name, typeDefinition.template, typeDefinition.statusDefinition, typeDefinition.style, typeDefinition.validation, typeDefinition.configurables);            
-            newBlock.set('name',label);            
+            // newBlock.set('name',label);       
+            newBlock.setConfigurable("name", label);     
             if(blockId){                
                 var duplicateElement = this.flow._blocks.find(el=>{
                     return el.get('blockId') == blockId
