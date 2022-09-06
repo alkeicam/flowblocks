@@ -296,7 +296,8 @@ class Block {
                 this.set("name", name);
                 // redraw and recalculate status
                 this._recalculateStatus();
-            },        
+            },   
+                 
             /**
              * Sets block configurable to given value. If necessary updates existing value.
              * @param {*} name name/id of the configurable
