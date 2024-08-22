@@ -168,9 +168,12 @@ class Flow {
 
     /**
      * Imports flowblocks graph
+     * When ty
      * @param {*} graphJson 
+     * @param {Object} types - when provided, each cell validation will be first searched in types definition, when not found validation from cell itself
+     * will be used 
      */
-    import(graphJson){
+    import(graphJson, typesForValidation /* object holding each type */){
         this.removeAllBlocks();
         this.graph.fromJSON(graphJson);
         // now build _blocks array
@@ -178,7 +181,9 @@ class Flow {
         cells.forEach(cell=>{
             if(cell.isElement()){
                 // reinstantiate custom validation functions
-                cell._reApplyValidation();
+                // here goes the change - validation will be reapplied from types provided instead of validation sitting already on block/cell
+                const typeName = cell.get("_type");
+                cell._reApplyValidation(typesForValidation&&typesForValidation[typeName]&&typesForValidation[typeName].validation?typesForValidation[typeName].validation:undefined);
                 this.addBlock(cell, true);
                 // reinitialize custom validations
             }                

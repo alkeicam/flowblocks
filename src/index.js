@@ -140,6 +140,32 @@ class Flowblocks {
             s: codeSource ? codeSource : codeFunction
         }
     }
+
+    _parseType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
+        // handle validation functions preprocessing
+        var validations = this._prepareTypeValidation(validationFunction, validationFunctionSrc);
+        const type = {
+            name: typeName,
+            // statusDefinition: statusDefinition,
+            template: templateName,
+            style: defaultStyle,
+            icon: icon,
+            configurables: typeConfigurableArray,
+            category: typeCategory,
+            validation: validations.f,
+            validationSrc: validations.s
+        }
+        return type
+    }
+
+    _parseTypes(typeFromSpecification){
+        const types = {};
+        typeFromSpecification.forEach(type=>{
+            types[type.typeName] = this._parseType(type.typeName, type.templateName, type.icon, type.defaultStyle, type.typeConfigurableArray, type.typeCategory, type.validationFunction, type.validationFunctionSrc);            
+        })        
+        return types
+    }
+
     /**
      * Registers new type definition in Flowblocks so one can create new Blocks with given type
      * @param {*} typeName Name of the type (used when creating Blocks)
@@ -153,18 +179,19 @@ class Flowblocks {
      */
     registerType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc){
         // handle validation functions preprocessing
-        var validations = this._prepareTypeValidation(validationFunction, validationFunctionSrc);
-        this._registeredTypes[typeName] = {
-            name: typeName,
-            // statusDefinition: statusDefinition,
-            template: templateName,
-            style: defaultStyle,
-            icon: icon,
-            configurables: typeConfigurableArray,
-            category: typeCategory,
-            validation: validations.f,
-            validationSrc: validations.s
-        }        
+        // var validations = this._prepareTypeValidation(validationFunction, validationFunctionSrc);
+        this._registeredTypes[typeName] = this._parseType(typeName, templateName, icon, defaultStyle, typeConfigurableArray, typeCategory, validationFunction, validationFunctionSrc);
+        // {
+        //     name: typeName,
+        //     // statusDefinition: statusDefinition,
+        //     template: templateName,
+        //     style: defaultStyle,
+        //     icon: icon,
+        //     configurables: typeConfigurableArray,
+        //     category: typeCategory,
+        //     validation: validations.f,
+        //     validationSrc: validations.s
+        // }        
         return this._registeredTypes[typeName];
     }
     /**
@@ -248,7 +275,7 @@ class Flowblocks {
      * @param {*} forceSpecification.versionId String When provided version id from modelSpecification will be overwritten with given value
      * @param {*} forceSpecification.name String When provided name from modelSpecification will be overwritten with given value
      */
-    import(modelSpecification, loadTypes = true, forceSpecification) {
+    import(modelSpecification, loadTypes = true, forceSpecification, load) {
         //JSONIFY
         var specificationObject = JSON.parse(modelSpecification);
         // handle force overwrite
@@ -258,21 +285,25 @@ class Flowblocks {
             specificationObject.version = forceSpecification.versionId    
         if(forceSpecification && forceSpecification.name)
             specificationObject.name = forceSpecification.name        
-        // perform import of specification
-        this.flow.import(specificationObject);
+
+        var typesArrayFromImportedSpecs = []
+        Object.entries(specificationObject.types).forEach(entry => {
+            let key = entry[0];
+            let value = entry[1];
+            typesArrayFromImportedSpecs.push(value);
+        });
+
+        // perform import of specification, when type load is requested cell validations will be loaded from imported specification
+        // otherwise provided that somebody registered types already already registered types validation will be used OR
+        // validation from cell attributes will be used
+        this.flow.import(specificationObject, loadTypes?this._parseTypes(typesArrayFromImportedSpecs):this._registeredTypes);
         // make sure that flowblocks version holder is aligned with imported
         this.version = specificationObject.version;
         // types will be rebuilt/imported when requested
-        if(loadTypes){
-            var typesArray = []
-            Object.entries(specificationObject.types).forEach(entry => {
-                let key = entry[0];
-                let value = entry[1];
-                typesArray.push(value);
-            });
-            this.registerTypes(typesArray);
+        if(loadTypes){            
+            this.registerTypes(typesArrayFromImportedSpecs);
             // now notify toolbar that it should be reinitialized
-            this.rebuildToolbar(typesArray);        
+            this.rebuildToolbar(typesArrayFromImportedSpecs);        
         }        
     }
 

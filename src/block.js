@@ -200,7 +200,11 @@ class Block {
              * Used during import, reinstantiates and binds custom validation 
              * functions to blocks
              */
-            _reApplyValidation(){
+            _reApplyValidation(validationFunctionFromTypes){
+                if(validationFunctionFromTypes){
+                    this.set('_validationFunction', validationFunctionFromTypes);
+                    return;
+                }
                 if(this.get('_validationSource')){                  
                     this.set('_validationFunction', new Function("return " + this.get('_validationSource'))()); 
                 }
@@ -518,6 +522,7 @@ class Block {
                 // connection.blockData = blockData;
 
                 if(this.get('_validationFunction')){
+                    // todo if new types definition is provided use the new definition for validation instead of the saved one
                     var errorsArray = this.get('_validationFunction').call(self, blockData);                    
                     errorsArray.forEach(error=>{
                         this.get('errors').push({
