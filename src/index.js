@@ -287,11 +287,14 @@ class Flowblocks {
             specificationObject.name = forceSpecification.name        
 
         var typesArrayFromImportedSpecs = []
-        Object.entries(specificationObject.types).forEach(entry => {
-            let key = entry[0];
-            let value = entry[1];
-            typesArrayFromImportedSpecs.push(value);
-        });
+        if(loadTypes){
+            Object.entries(specificationObject.types).forEach(entry => {
+                let key = entry[0];
+                let value = entry[1];
+                typesArrayFromImportedSpecs.push(value);
+            });
+        }
+        
 
         // perform import of specification, when type load is requested cell validations will be loaded from imported specification
         // otherwise provided that somebody registered types already already registered types validation will be used OR
