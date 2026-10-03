@@ -38,6 +38,12 @@ class EventsDict {
             FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES: "flowblocks:import-json-no-types", // json model specification data, // json model specification data , force specification object force.specificationId - specification id to be used during import, force.versionId - version id to be used during import , force.name - name to be used during import                      
             FLOWBLOCKS_IMPORT_SUCCESS: "flowblocks:import-ok", // model name, model id, version
             FLOWBLOCKS_CREATE_SUCCESS: "flowblocks:create-ok", // model name, model id, version
+            // emited (debounced) when diagram contents changed (blocks, links, positions, configurables), not emited during import and for silent/ghost operations
+            DIAGRAM_CHANGED: "flowblocks:diagram-changed", // {changes: number of coalesced changes, dirty: true}
+            // emited when user clicks block marker (left gutter of the block)
+            BLOCK_MARKER_CLICK: "flowblocks:block-marker-click", // blockId, block, evt
+            // emited when read only mode changes
+            READONLY_CHANGED: "flowblocks:readonly-changed", // true|false
         }
     }
 

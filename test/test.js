@@ -374,4 +374,455 @@ describe('Flowblocks', () => {
         })
         
     })        
+
+    describe('Modeler tools (LLD-012 §12)', () => {
+        const EVENTS = require('../src/events-dict').EVENTS;
+        let fb;
+        let paperDiv;
+        const TYPES = [
+            { name: 'Start', template: 'Start', icon: 'agave', style: 'cream', category: 'core', configurables: [] },
+            { name: 'Step', template: 'PassThrough', icon: 'agave', style: 'cream', category: 'core', configurables: [{ id: 'code', label: 'Code', type: 'TEXT', required: false }] },
+            { name: 'End', template: 'End', icon: 'agave', style: 'cream', category: 'core', configurables: [] }
+        ];
+        const wait = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+        const connect = (source, target) => {
+            const link = new joint.dia.Link({ source: { id: source.id, port: 'out1' }, target: { id: target.id, port: 'in1' } });
+            fb.flow.graph.addCell(link);
+            const linkView = link.findView(fb.flow.paper);
+            const targetView = target.findView(fb.flow.paper);
+            const magnet = targetView.el.querySelector('[port="in1"]');
+            fb.flow.paper.trigger('link:connect', linkView, {}, targetView, magnet, 'target');
+            return link;
+        };
+        const buildDiagram = () => {
+            const s = fb.createBlock('Start', 'start', 'S1', { x: 10, y: 10 });
+            const a = fb.createBlock('Step', 'step a', 'A1', { x: 200, y: 10 });
+            const e = fb.createBlock('End', 'end', 'E1', { x: 400, y: 10 });
+            const l1 = connect(s, a);
+            const l2 = connect(a, e);
+            return { s, a, e, l1, l2 };
+        };
+
+        beforeEach(() => {
+            paperDiv = document.createElement('div');
+            paperDiv.id = 'fb-test-paper';
+            document.body.appendChild(paperDiv);
+            fb = flowblocks.create();
+            fb.createFlow('fb-test-paper', 'Test', 'T1');
+            fb.registerTypes(TYPES);
+        });
+        afterEach(() => {
+            fb.markClean();
+            paperDiv.remove();
+        });
+
+        describe('FB-T1 FB-00 connection events', () => {
+            it('FB-T1 link:connect emits CONNECTION_ADDED (not CONNECTION_REMOVED)', () => {
+                const added = sinon.spy();
+                const removed = sinon.spy();
+                fb.on(EVENTS.CONNECTION_ADDED, added);
+                fb.on(EVENTS.CONNECTION_REMOVED, removed);
+                const s = fb.createBlock('Start', 'start', 'S1');
+                const a = fb.createBlock('Step', 'a', 'A1');
+                connect(s, a);
+                expect(added.callCount).eq(1);
+                expect(added.getCall(0).args[1]).eq('out1');
+                expect(added.getCall(0).args[3]).eq('in1');
+                return expect(removed.callCount).eq(0);
+            })
+        })
+
+        describe('FB-T2 FB-01 diagram-changed and dirty flag', () => {
+            it('FB-T2 new flow is clean', () => {
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T2 block add marks dirty and emits single debounced event', async () => {
+                const changed = sinon.spy();
+                fb.on(EVENTS.DIAGRAM_CHANGED, changed);
+                const b = fb.createBlock('Step', 'a', 'A1');
+                b.set('position', { x: 50, y: 60 });
+                b.set('position', { x: 70, y: 60 });
+                expect(fb.isDirty()).true;
+                expect(changed.callCount).eq(0);
+                await wait(200);
+                expect(changed.callCount).eq(1);
+                return expect(changed.getCall(0).args[0].changes).gte(3);
+            })
+            it('FB-T2 configurables change marks dirty', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                fb.markClean();
+                fb.notify(EVENTS.BLOCK_DETAILS_SAVE, 'A1', [{ i: 'name', v: 'a' }, { i: 'code', v: 'X' }]);
+                return expect(fb.isDirty()).true;
+            })
+            it('FB-T2 markClean resets dirty flag and cancels pending event', async () => {
+                const changed = sinon.spy();
+                fb.on(EVENTS.DIAGRAM_CHANGED, changed);
+                fb.createBlock('Step', 'a', 'A1');
+                fb.markClean();
+                await wait(200);
+                expect(changed.callCount).eq(0);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T2 import is muted and leaves diagram clean', async () => {
+                buildDiagram();
+                const json = JSON.stringify(fb.export());
+                fb.markClean();
+                const changed = sinon.spy();
+                fb.on(EVENTS.DIAGRAM_CHANGED, changed);
+                fb.import(json, false);
+                await wait(200);
+                expect(fb.flow._blocks.length).eq(3);
+                expect(changed.callCount).eq(0);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T2 operations flagged {silent: true} / {fbSilent: true} are muted', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                fb.markClean();
+                b.set('position', { x: 1, y: 1 }, { silent: true });
+                b.set('position', { x: 2, y: 2 }, { fbSilent: true });
+                return expect(fb.isDirty()).false;
+            })
+        })
+
+        describe('FB-T3 FB-02 getDiagram', () => {
+            it('FB-T3 returns deep copy with cells', () => {
+                const d = buildDiagram();
+                const diagram = fb.getDiagram();
+                diagram.cells[0].position.x = 9999;
+                expect(diagram.cells.length).eq(5);
+                return expect(d.s.get('position').x).not.eq(9999);
+            })
+            it('FB-T3 strips requested attributes', () => {
+                buildDiagram();
+                const diagram = fb.getDiagram({ strip: ['attrs', '_style', '_validationSource'] });
+                const withStripped = diagram.cells.filter(c => c.attrs !== undefined || c._style !== undefined || c._validationSource !== undefined);
+                expect(withStripped.length).eq(0);
+                return expect(diagram.cells.find(c => c.blockId == 'A1').configurables).to.be.an('array');
+            })
+            it('FB-T3 has no export() side effects (version, exported)', () => {
+                buildDiagram();
+                const exportedBefore = fb.flow.graph.get('exported');
+                const versionBefore = fb.flow.graph.get('version');
+                fb.getDiagram();
+                expect(fb.flow.graph.get('exported')).eq(exportedBefore);
+                expect(fb.flow.graph.get('version')).eq(versionBefore);
+                return expect(fb.getDiagram().types).undefined;
+            })
+            it('FB-T3 types attached on request', () => {
+                return expect(Object.keys(fb.getDiagram({ types: true }).types)).to.include('Step');
+            })
+        })
+
+        describe('FB-T5 FB-04 read only', () => {
+            it('FB-T5 paper is not interactive in read only mode', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                const view = b.findView(fb.flow.paper);
+                expect(view.can('elementMove')).true;
+                fb.setReadOnly(true);
+                expect(view.can('elementMove')).false;
+                expect(view.can('addLinkFromMagnet')).false;
+                expect(fb.flow.paper.el.classList.contains('fb-readonly')).true;
+                fb.setReadOnly(false);
+                return expect(view.can('elementMove')).true;
+            })
+            it('FB-T5 Remove tool is not shown in read only mode', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                const view = b.findView(fb.flow.paper);
+                const showTools = sinon.spy(view, 'showTools');
+                fb.setReadOnly(true);
+                fb.flow.paper.trigger('element:mouseenter', view, {});
+                fb.setReadOnly(false);
+                fb.flow.paper.trigger('element:mouseenter', view, {});
+                return expect(showTools.callCount).eq(1);
+            })
+            it('FB-T5 UI create / save / import requests are ignored in read only mode', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                fb.setReadOnly(true);
+                fb.notify(EVENTS.BLOCK_CREATE, 'B2', 'Step', 'b', { x: 1, y: 1 });
+                fb.notify(EVENTS.BLOCK_DETAILS_SAVE, 'A1', [{ i: 'name', v: 'changed' }]);
+                fb.notify(EVENTS.FLOWBLOCKS_IMPORT_JSON_SKIP_TYPES, JSON.stringify({ cells: [], types: {} }));
+                fb.setReadOnly(false);
+                expect(fb.flow._blocks.length).eq(1);
+                return expect(b.get('name')).eq('a');
+            })
+            it('FB-T5 readonly-changed event is emited', () => {
+                const spy = sinon.spy();
+                fb.on(EVENTS.READONLY_CHANGED, spy);
+                fb.setReadOnly(true);
+                fb.setReadOnly(false);
+                return expect(spy.args.map(a => a[0])).deep.eq([true, false]);
+            })
+        })
+
+        describe('FB-T6 FB-05 block test ids', () => {
+            it('FB-T6 block element has data-testid, data-block-id, data-block-type', () => {
+                fb.createBlock('Step', 'my step', 'A1');
+                const el = paperDiv.querySelector('[data-block-id="A1"]');
+                expect(el.getAttribute('data-testid')).eq('flowblocks.block');
+                expect(el.getAttribute('data-block-type')).eq('Step');
+                return expect(el.getAttribute('data-name')).eq('my step');
+            })
+            it('FB-T6 test id prefix is configurable', () => {
+                fb.setTestIdPrefix('rule-editor');
+                fb.createBlock('Step', 'my step', 'A1');
+                const el = paperDiv.querySelector('[data-block-id="A1"]');
+                fb.setTestIdPrefix(undefined);
+                return expect(el.getAttribute('data-testid')).eq('rule-editor.block');
+            })
+            it('FB-T6 data-name follows block name changes', () => {
+                fb.createBlock('Step', 'my step', 'A1');
+                fb.notify(EVENTS.BLOCK_DETAILS_SAVE, 'A1', [{ i: 'name', v: 'renamed' }]);
+                return expect(paperDiv.querySelector('[data-block-id="A1"]').getAttribute('data-name')).eq('renamed');
+            })
+        })
+
+        describe('FB-T7 FB-07 highlights', () => {
+            it('FB-T7 highlight adds fb-hl-<state> class to block (by blockId) and link (by id)', () => {
+                const d = buildDiagram();
+                fb.highlight({ blocks: [{ id: 'A1', state: 'current' }, { id: d.s.id, state: 'visited' }], links: [{ id: d.l1.id, state: 'ok' }] });
+                expect(d.a.findView(fb.flow.paper).el.classList.contains('fb-hl-current')).true;
+                expect(d.s.findView(fb.flow.paper).el.classList.contains('fb-hl-visited')).true;
+                return expect(d.l1.findView(fb.flow.paper).el.classList.contains('fb-hl-ok')).true;
+            })
+            it('FB-T7 highlight is not serialized and does not mark dirty', async () => {
+                buildDiagram();
+                fb.markClean();
+                const changed = sinon.spy();
+                fb.on(EVENTS.DIAGRAM_CHANGED, changed);
+                const before = JSON.stringify(fb.getDiagram());
+                fb.highlight({ blocks: [{ id: 'A1', state: 'error' }, { id: 'E1', state: 'timeout' }] });
+                expect(JSON.stringify(fb.getDiagram())).eq(before);
+                expect(JSON.stringify(fb.export())).not.contain('fb-hl-');
+                await wait(200);
+                expect(changed.callCount).eq(0);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T7 state change replaces previous class, clearHighlights removes all', () => {
+                const d = buildDiagram();
+                fb.highlight({ blocks: [{ id: 'A1', state: 'current' }] });
+                fb.highlight({ blocks: [{ id: 'A1', state: 'ok' }] });
+                const el = d.a.findView(fb.flow.paper).el;
+                expect(el.classList.contains('fb-hl-current')).false;
+                expect(el.classList.contains('fb-hl-ok')).true;
+                fb.clearHighlights();
+                return expect(el.getAttribute('class')).not.contain('fb-hl-');
+            })
+            it('FB-T7 highlights are re-applied after import', () => {
+                buildDiagram();
+                fb.highlight({ blocks: [{ id: 'A1', state: 'error' }] });
+                fb.import(JSON.stringify(fb.export()), false);
+                const el = paperDiv.querySelector('[data-block-id="A1"]');
+                const highlighted = el.classList.contains('fb-hl-error');
+                fb.clearHighlights();
+                return expect(highlighted).true;
+            })
+        })
+
+        describe('FB-T8 FB-08 markers', () => {
+            it('FB-T8 marker element is in block markup (left gutter)', () => {
+                const b = fb.createBlock('Step', 'a', 'A1');
+                const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
+                expect(marker).not.null;
+                return expect(Number(b.attr('.fb-marker/cx'))).lt(0);
+            })
+            it('FB-T8 setMarker sets kind class and tooltip, null removes it', () => {
+                fb.createBlock('Step', 'a', 'A1');
+                fb.setMarker('A1', 'breakpoint-cond', 'x > 1');
+                const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
+                expect(marker.classList.contains('fb-marker-breakpoint-cond')).true;
+                expect(marker.querySelector('title').textContent).eq('x > 1');
+                fb.setMarker('A1', null);
+                expect(marker.classList.contains('fb-marker-breakpoint-cond')).false;
+                return expect(marker.querySelector('title')).null;
+            })
+            it('FB-T8 marker is not serialized and does not mark dirty', () => {
+                fb.createBlock('Step', 'a', 'A1');
+                fb.markClean();
+                fb.setMarker('A1', 'breakpoint');
+                expect(JSON.stringify(fb.export())).not.contain('fb-marker-breakpoint');
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T8 click on marker emits flowblocks:block-marker-click(blockId)', () => {
+                fb.createBlock('Step', 'a', 'A1');
+                const spy = sinon.spy();
+                fb.on(EVENTS.BLOCK_MARKER_CLICK, spy);
+                const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
+                marker.dispatchEvent(new window.MouseEvent('mousedown', { bubbles: true, clientX: 1, clientY: 1, button: 0 }));
+                expect(spy.callCount).eq(1);
+                return expect(spy.getCall(0).args[0]).eq('A1');
+            })
+            it('FB-T8 markers survive import', () => {
+                buildDiagram();
+                fb.setMarker('A1', 'breakpoint');
+                fb.import(JSON.stringify(fb.export()), false);
+                const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
+                const marked = marker.classList.contains('fb-marker-breakpoint');
+                fb.clearMarkers();
+                return expect(marked).true;
+            })
+            it('FB-T8 unsupported marker kind is rejected', () => {
+                return expect(() => fb.flow.setMarker('A1', 'bogus')).to.throw();
+            })
+        })
+
+        describe('FB-T9 FB-09a toolbar sections', () => {
+            it('FB-T9 rebuildToolbar passes sections to toolbar reset', () => {
+                const spy = sinon.spy();
+                fb.on(EVENTS.TOOLBAR_RESET, spy);
+                const sections = [{ id: 'core', label: 'Core', order: 1 }];
+                fb.rebuildToolbar(TYPES, sections);
+                expect(spy.getCall(0).args[1]).eq(sections);
+                return expect(fb.getSections()).eq(sections);
+            })
+            it('FB-T9 rebuildToolbar without sections keeps legacy single argument', () => {
+                const spy = sinon.spy();
+                fb.on(EVENTS.TOOLBAR_RESET, spy);
+                fb.rebuildToolbar(TYPES);
+                return expect(spy.getCall(0).args.length).eq(1);
+            })
+            it('FB-T9 type section is registered', () => {
+                const t = fb.registerTypes([{ name: 'KRS', template: 'PassThrough', category: 'Integrations', section: 'registries', configurables: [] }]);
+                return expect(fb.getDefinition('KRS').section).eq('registries');
+            })
+        })
+
+        describe('FB-T11 FB-09c declarative validation', () => {
+            const RULES_TYPE = {
+                name: 'Decision', template: 'Split', category: 'core', configurables: [
+                    { id: 'name', label: 'Name', type: 'TEXT', required: false },
+                    { id: 'variableName', label: 'Variable', type: 'IDENT', required: false }
+                ],
+                rules: {
+                    successors: { out1: { types: ['End'], min: 1, max: 1 }, out2: { min: 0 } },
+                    required: ['variableName'],
+                    patterns: { variableName: { re: '^[A-Za-z_][A-Za-z0-9_]*$', msg: 'Not an identifier' } }
+                }
+            };
+            beforeEach(() => {
+                fb.registerTypes([RULES_TYPE]);
+            });
+            const codes = (b) => b.getStatus().errors.map(e => e.code + ':' + e.cId);
+            it('FB-T11 required and pattern rules', () => {
+                const b = fb.createBlock('Decision', 'd', 'D1');
+                expect(codes(b)).to.include('FIELD_REQUIRED:variableName');
+                b.setConfigurables([{ i: 'name', v: 'd' }, { i: 'variableName', v: '1abc' }]);
+                expect(codes(b)).to.include('FIELD_PATTERN:variableName');
+                expect(b.getStatus().errors.find(e => e.code == 'FIELD_PATTERN').msg).eq('Not an identifier');
+                b.setConfigurables([{ i: 'name', v: 'd' }, { i: 'variableName', v: 'abc' }]);
+                return expect(codes(b).filter(c => c.indexOf('FIELD_') == 0).length).eq(0);
+            })
+            it('FB-T11 successor min 0 makes port optional, types restrict successors', () => {
+                const s = fb.createBlock('Start', 's', 'S1');
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                const a = fb.createBlock('Step', 'a', 'A1');
+                connect(s, d);
+                d.setConfigurables([{ i: 'name', v: 'd' }, { i: 'variableName', v: 'abc' }]);
+                expect(codes(d)).to.include('PORT_NOT_CONNECTED:out1');
+                expect(codes(d)).not.to.include('PORT_NOT_CONNECTED:out2');
+                connect(d, a);
+                expect(codes(d)).to.include('SUCCESSOR_TYPE:out1');
+                return expect(d.getStatus().valid).false;
+            })
+            it('FB-T11 valid when all rules pass', () => {
+                const s = fb.createBlock('Start', 's', 'S1');
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                const e = fb.createBlock('End', 'e', 'E1');
+                connect(s, d);
+                connect(d, e);
+                d.setConfigurables([{ i: 'name', v: 'd' }, { i: 'variableName', v: 'abc' }]);
+                return expect(d.getStatus().valid).true;
+            })
+            it('FB-T11 rules types do not use new Function (no validation source)', () => {
+                const spy = sinon.spy(global, 'Function');
+                const b = fb.createBlock('Decision', 'd', 'D1');
+                fb.import(JSON.stringify(fb.export()), false);
+                spy.restore();
+                expect(fb.getDefinition('Decision').validationSrc).undefined;
+                expect(b.get('_validationSource')).undefined;
+                expect(fb.getBlock('D1').get('_validationRules').required).deep.eq(['variableName']);
+                return expect(spy.callCount).eq(0);
+            })
+            it('FB-T11 validationFunction has precedence over rules (existing path unchanged)', () => {
+                fb.registerTypes([Object.assign({}, RULES_TYPE, { name: 'DecisionFn', validationFunction: function (blockData) { return [{ code: 'CUSTOM', cId: 'x', msg: 'custom' }]; } })]);
+                const b = fb.createBlock('DecisionFn', 'd', 'D2');
+                expect(codes(b)).to.include('CUSTOM:x');
+                return expect(codes(b)).not.to.include('FIELD_REQUIRED:variableName');
+            })
+            it('FB-T11 RegExp patterns are normalized for serialization', () => {
+                fb.registerTypes([Object.assign({}, RULES_TYPE, { name: 'DecisionRe', rules: { patterns: { variableName: { re: /^a+$/i, msg: 'only a' } } } })]);
+                const b = fb.createBlock('DecisionRe', 'd', 'D3');
+                b.setConfigurables([{ i: 'name', v: 'd' }, { i: 'variableName', v: 'AAb' }]);
+                expect(b.get('_validationRules').patterns.variableName).deep.eq({ re: '^a+$', flags: 'i', msg: 'only a' });
+                return expect(codes(b)).to.include('FIELD_PATTERN:variableName');
+            })
+        })
+
+        describe('FB-T13 FB-10b diff overlay', () => {
+            let removedCell;
+            beforeEach(() => {
+                const d = buildDiagram();
+                removedCell = JSON.parse(JSON.stringify(d.e.toJSON()));
+                removedCell.id = 'old-cell';
+                removedCell.blockId = 'OLD1';
+                fb.markClean();
+            });
+            it('FB-T13 added/changed highlighted, removed presented as ghost', () => {
+                fb.showDiff({ added: ['A1'], changed: ['S1'], removed: [removedCell] });
+                expect(paperDiv.querySelector('[data-block-id="A1"]').classList.contains('fb-hl-added')).true;
+                expect(paperDiv.querySelector('[data-block-id="S1"]').classList.contains('fb-hl-changed')).true;
+                const ghost = paperDiv.querySelector('[data-block-id="OLD1"]');
+                expect(ghost.classList.contains('fb-ghost')).true;
+                expect(ghost.getAttribute('data-testid')).eq('flowblocks.block-ghost');
+                return expect(fb.flow.getGhosts()[0].get('ghost')).true;
+            })
+            it('FB-T13 ghosts are excluded from export, getDiagram, validation and dirty tracking', async () => {
+                const changed = sinon.spy();
+                fb.on(EVENTS.DIAGRAM_CHANGED, changed);
+                fb.showDiff({ removed: [removedCell] });
+                expect(fb.export().cells.find(c => c.ghost)).undefined;
+                expect(fb.getDiagram().cells.length).eq(5);
+                expect(fb.flow._blocks.length).eq(3);
+                expect(fb.getBlock('OLD1')).undefined;
+                await wait(200);
+                expect(changed.callCount).eq(0);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T13 ghosts are not interactive', () => {
+                fb.showDiff({ removed: [removedCell] });
+                const view = fb.flow.getGhosts()[0].findView(fb.flow.paper);
+                return expect(view.can('elementMove')).false;
+            })
+            it('FB-T13 ghost id clash with existing cell is resolved', () => {
+                const clash = JSON.parse(JSON.stringify(removedCell));
+                clash.id = fb.getBlock('A1').id;
+                fb.showDiff({ removed: [clash] });
+                return expect(fb.flow.getGhosts()[0].id).eq('ghost-' + clash.id);
+            })
+            it('FB-T13 clearDiff removes ghosts and diff highlights, keeps other highlights', () => {
+                fb.highlight({ blocks: [{ id: 'E1', state: 'error' }] });
+                fb.showDiff({ added: ['A1'], removed: [removedCell] });
+                fb.clearDiff();
+                expect(fb.flow.graph.getCells().find(c => c.get('ghost'))).undefined;
+                expect(paperDiv.querySelector('[data-block-id="A1"]').classList.contains('fb-hl-added')).false;
+                expect(paperDiv.querySelector('[data-block-id="E1"]').classList.contains('fb-hl-error')).true;
+                fb.clearHighlights();
+                return expect(fb.isDirty()).false;
+            })
+        })
+
+        describe('FB-T14 regression', () => {
+            it('FB-T14 export still contains types and bumps exported timestamp', () => {
+                buildDiagram();
+                const json = fb.export();
+                expect(json.types.Step.name).eq('Step');
+                return expect(json.exported).to.be.a('number');
+            })
+            it('FB-T14 import with types restores validation function from source', () => {
+                fb.registerTypes([{ name: 'Fn', template: 'PassThrough', category: 'core', configurables: [], validationFunction: function (blockData) { return [{ code: 'FN', cId: 'f', msg: 'fn' }]; } }]);
+                fb.createBlock('Fn', 'f', 'F1');
+                fb.import(JSON.stringify(fb.export()), true);
+                return expect(fb.getBlock('F1').getStatus().errors.map(e => e.code)).to.include('FN');
+            })
+        })
+    })
 })

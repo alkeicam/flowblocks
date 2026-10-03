@@ -2,6 +2,38 @@ const jointjs = require("jointjs")
 const DEFAULTS = require('./defaults')
 const fromstring = require('from-string');
 
+/**
+ * Normalizes declarative validation rules so they can be serialized (RegExp objects are converted to source strings).
+ * @param {*} rules 
+ */
+function normalizeRules(rules) {
+    var normalized = {};
+    if (rules.successors) {
+        normalized.successors = JSON.parse(JSON.stringify(rules.successors));
+    }
+    if (Array.isArray(rules.required)) {
+        normalized.required = rules.required.slice();
+    }
+    if (rules.patterns) {
+        normalized.patterns = {};
+        Object.keys(rules.patterns).forEach(fieldId => {
+            var pattern = rules.patterns[fieldId];
+            if (pattern instanceof RegExp) {
+                normalized.patterns[fieldId] = { re: pattern.source, flags: pattern.flags };
+            } else if (typeof pattern === 'string') {
+                normalized.patterns[fieldId] = { re: pattern };
+            } else if (pattern) {
+                normalized.patterns[fieldId] = {
+                    re: pattern.re instanceof RegExp ? pattern.re.source : pattern.re,
+                    flags: pattern.re instanceof RegExp ? pattern.re.flags : pattern.flags,
+                    msg: pattern.msg
+                };
+            }
+        });
+    }
+    return normalized;
+}
+
 class Block {
     constructor(options) {
         this.options = {
@@ -29,6 +61,7 @@ class Block {
             errors: [], // array of block errors that are the cause for the ERROR status of the block
             configurables: [], // configurable values {i: id, v: value}
             _validationFunction: undefined, // validation function
+            _validationRules: undefined, // declarative validation rules {successors: {out1: {types: [], min, max}}, required: [fieldIds], patterns: {fieldId: {re, msg}}}, used when no validation function
             _configurablesDefinitions: [], // array of configurables definitions: (id:string, label: string, placeholder:string, type:string, required:boolean)
             _style: undefined,
             _defaultStyle: DEFAULTS.STYLE,
@@ -105,6 +138,10 @@ class Block {
                     'text-anchor': 'start',
                     'fill': 'black',
                     'y-alignment': 'middle'
+                },
+                // marker (i.e. breakpoint) in the left gutter of the block, state is presentation only (see flow.setMarker)
+                '.fb-marker': {
+                    'r': 5
                 }
 
                 // label: {
@@ -128,6 +165,7 @@ class Block {
                 '<text class="fb-status-text"></text>',
                 '<rect class="fb-validation-rect"/>',
                 '<text class="fb-type-label-text"></text>',                
+                '<circle class="fb-marker" event="element:fb-marker:pointerdown"/>',
                 '</g>'
             ].join(''),
 
@@ -197,12 +235,29 @@ class Block {
                 this.set('_validationSource', validationFunction.toString());                
             },
             /**
+             * Sets declarative validation rules (used when block has no validation function).
+             * Rules are plain data so they are serialized together with the block.
+             * @param {*} rules {successors: {portId: {types: [type names], min, max}}, required: [field ids], patterns: {fieldId: {re: string|RegExp, msg}}}
+             */
+            applyValidationRules(rules){
+                if(!rules) return;
+                this.set('_validationRules', normalizeRules(rules));
+            },
+            /**
              * Used during import, reinstantiates and binds custom validation 
              * functions to blocks
              */
-            _reApplyValidation(validationFunctionFromTypes){
+            _reApplyValidation(validationFunctionFromTypes, validationRulesFromTypes){
                 if(validationFunctionFromTypes){
                     this.set('_validationFunction', validationFunctionFromTypes);
+                    return;
+                }
+                // declarative validation - no function is instantiated from source code (no new Function)
+                if(validationRulesFromTypes){
+                    this.applyValidationRules(validationRulesFromTypes);
+                    return;
+                }
+                if(this.get('_validationRules') && !this.get('_validationSource')){
                     return;
                 }
                 if(this.get('_validationSource')){                  
@@ -411,6 +466,14 @@ class Block {
              */
             _basePortsValidation(){
                 var freePorts = this.freePorts();
+                // declarative rules may mark port as optional (successors.<port>.min == 0)
+                var rules = this.get('_validationFunction') ? undefined : this.get('_validationRules');
+                if (rules && rules.successors) {
+                    freePorts = freePorts.filter(port=>{
+                        var successorRule = rules.successors[port.id];
+                        return !(successorRule && successorRule.min === 0);
+                    });
+                }
 
                 if (freePorts.length > 0){                    
                     freePorts.forEach(port=>{
@@ -531,6 +594,76 @@ class Block {
                             msg: error.msg
                         })
                     })
+                } else if(this.get('_validationRules')){
+                    this._declarativeValidation(this.get('_validationRules'));
+                }
+            },
+
+            /**
+             * Declarative validation (FB-09c) - evaluated when block has no validation function.
+             * Error codes: SUCCESSOR_MIN, SUCCESSOR_MAX, SUCCESSOR_TYPE, FIELD_REQUIRED, FIELD_PATTERN
+             * @param {*} rules normalized rules (see applyValidationRules)
+             */
+            _declarativeValidation(rules){
+                var self = this;
+                var errors = this.get('errors');
+                var connections = this.get('_portConnections') || [];
+                if (rules.successors) {
+                    Object.keys(rules.successors).forEach(portId=>{
+                        var rule = rules.successors[portId] || {};
+                        var portConnections = connections.filter(connection=>connection.port == portId);
+                        if (rule.min !== undefined && rule.min !== null && portConnections.length < rule.min && rule.min > 0) {
+                            // not connected ports are already reported by base ports validation
+                            var reported = errors.find(error=>error.code == 'PORT_NOT_CONNECTED' && error.cId == portId);
+                            if (!reported) {
+                                errors.push({ code: 'SUCCESSOR_MIN', cId: portId, msg: 'Port ['+portId+'] requires at least '+rule.min+' connection(s)' });
+                            }
+                        }
+                        if (rule.max !== undefined && rule.max !== null && portConnections.length > rule.max) {
+                            errors.push({ code: 'SUCCESSOR_MAX', cId: portId, msg: 'Port ['+portId+'] allows at most '+rule.max+' connection(s)' });
+                        }
+                        if (Array.isArray(rule.types) && rule.types.length > 0) {
+                            portConnections.forEach(connection=>{
+                                if (rule.types.indexOf(connection.type) == -1) {
+                                    errors.push({ code: 'SUCCESSOR_TYPE', cId: portId, msg: 'Port ['+portId+'] can not be connected to block of type ['+connection.type+'], allowed: '+rule.types.join(', ') });
+                                }
+                            });
+                        }
+                    });
+                }
+                var rawValue = function(fieldId){
+                    var configurable = (self.get('configurables') || []).find(item=>item.i == fieldId);
+                    return configurable ? configurable.v : undefined;
+                };
+                var isEmpty = function(value){
+                    return value === undefined || value === null || (typeof value === 'string' && (value.trim() === '' || value === 'undefined'));
+                };
+                if (Array.isArray(rules.required)) {
+                    rules.required.forEach(fieldId=>{
+                        if (isEmpty(rawValue(fieldId))) {
+                            var reported = errors.find(error=>error.code == 'FIELD_REQUIRED' && error.cId == fieldId);
+                            if (!reported) {
+                                errors.push({ code: 'FIELD_REQUIRED', cId: fieldId, msg: 'Field ['+fieldId+'] is required' });
+                            }
+                        }
+                    });
+                }
+                if (rules.patterns) {
+                    Object.keys(rules.patterns).forEach(fieldId=>{
+                        var pattern = rules.patterns[fieldId];
+                        var value = rawValue(fieldId);
+                        if (!pattern || isEmpty(value)) return;
+                        var re;
+                        try {
+                            re = new RegExp(pattern.re, pattern.flags || '');
+                        } catch (e) {
+                            console.warn('Invalid validation pattern for field '+fieldId, e);
+                            return;
+                        }
+                        if (!re.test(String(value))) {
+                            errors.push({ code: 'FIELD_PATTERN', cId: fieldId, msg: pattern.msg ? pattern.msg : 'Field ['+fieldId+'] has invalid format' });
+                        }
+                    });
                 }
             },
 
@@ -766,6 +899,18 @@ class Block {
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
                 self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);  
                 self._recalculateTypeLabel('.fb-type-label',field.type, field, offsetY);              
+                self._recalculateMarker('.fb-marker', field, 0.2);
+            },
+
+            /**
+             * Layout of the marker - left gutter of the block, vertically centered on the label bar
+             * (in ports are presented in the middle of the left edge)
+             */
+            _recalculateMarker: function(classSelector, baseSize, labelHeight){
+                var r = Math.max(4, Math.round(Math.min(baseSize.width, baseSize.height) * 0.07));
+                this.attr(classSelector + '/r', r);
+                this.attr(classSelector + '/cx', -(r + 4));
+                this.attr(classSelector + '/cy', (labelHeight * baseSize.height) / 2);
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 
@@ -782,13 +927,29 @@ class Block {
                 this.listenTo(this.model, 'flowblocks-block-update', function () {
                     this.update();
                     this.resize();
+                    this._fbDecorate();
                 });
+            },
+
+            render: function () {
+                jointjs.dia.ElementView.prototype.render.apply(this, arguments);
+                this._fbDecorate();
+                return this;
+            },
+
+            /**
+             * Applies presentation only decorations (test ids, markers, highlights) provided by the flow
+             */
+            _fbDecorate: function () {
+                if (this.paper && typeof this.paper.fbDecorateView === 'function') {
+                    this.paper.fbDecorateView(this);
+                }
             }
         });
         this.View = jointjs.shapes.flowblocks.BlockView;
     }
 
-    createBlank(blockId, typeName, template, statusDefinition, style, validation, configurablesDefinitionArray) {
+    createBlank(blockId, typeName, template, statusDefinition, style, validation, configurablesDefinitionArray, validationRules) {
         var factories = {
             PassThrough: this.createPassThroughElement,
             Start: this.createStartElement,
@@ -808,6 +969,9 @@ class Block {
             block.set('_template', template);
             block.set('_configurablesDefinitions', configurablesDefinitionArray);
             block.applyValidation(validation);
+            // declarative validation is used only when there is no validation function
+            if (!validation && validationRules)
+                block.applyValidationRules(validationRules);
             // apply style
             block.style(style);
             // calculate initial status of block 

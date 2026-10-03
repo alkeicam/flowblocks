@@ -206,3 +206,43 @@ block.setConfigurables(configurables);
 
 
 
+
+#### flowblocks:diagram-changed
+> Emmited (debounced 150 ms) when diagram contents change (blocks/links added or removed, position, size, vertices, link ends, configurables). Not emmited during `import()`, for operations flagged `{silent: true}` / `{fbSilent: true}` and for ghost cells (diff overlay).
+
+| Parameters | Description |
+| :--- | :--- |
+| info | `{changes: number of coalesced changes, dirty: true}` |
+
+#### flowblocks:block-marker-click
+> Emmited when user clicks block marker (left gutter of the block). Parameters: `blockId, block, event`.
+
+#### flowblocks:readonly-changed
+> Emmited when read only mode changes. Parameters: `readOnly` (boolean).
+
+## Modeler tools (1.4.0)
+
+| Method | Description |
+| :--- | :--- |
+| `isDirty()` / `markClean()` | diagram modified since creation, import or last `markClean()` |
+| `getDiagram({strip: ['attrs','_style','_validationSource'], types: false})` | deep copy of graph JSON without `export()` side effects (no `version`/`exported` change), ghost cells excluded |
+| `setReadOnly(bool)` / `isReadOnly()` | paper not interactive, no Remove tool, UI create / save / import requests ignored (programmatic `import()` works) |
+| `setTestIdPrefix(prefix)` | prefix of generated `data-testid` (default `flowblocks`): blocks get `data-testid="<prefix>.block"`, `data-block-id`, `data-block-type`, `data-name` |
+| `highlight({blocks: [{id, state}], links: [{id, state}]}, {replace})` / `clearHighlights([ids])` | `id` - blockId or cell id, `state` - `ok, error, timeout, current, visited, added, removed, changed`; CSS class `fb-hl-<state>` via `joint.highlighters` - not serialized, not dirty, re-applied after import |
+| `setMarker(blockId, kind, tooltip)` / `getMarkers()` / `clearMarkers()` | `kind` - `breakpoint, breakpoint-cond, breakpoint-disabled` or `null`; CSS class `fb-marker-<kind>` - not serialized |
+| `rebuildToolbar(types, sections)` | `sections` - `[{id, label, order, icon, collapsed}]`, type is presented in section `type.section` (or `type.category`) |
+| `showDiff({added: [blockId], changed: [blockId], removed: [serializedCell]})` / `clearDiff()` | diff overlay on the current (candidate) diagram; removed blocks are non interactive ghost cells (`ghost: true`) excluded from export, `getDiagram()`, validation and dirty tracking |
+
+Declarative validation - type definition may define `rules` (used only when there is no `validationFunction`, no `new Function` is used for such types):
+
+```javascript
+{
+    name: 'Decision', template: 'Split', category: 'core', section: 'core', configurables: [...],
+    rules: {
+        successors: { out1: { types: ['End'], min: 1, max: 1 }, out2: { min: 0 } }, // min: 0 - port may stay unconnected
+        required: ['variableName'],
+        patterns: { variableName: { re: '^[A-Za-z_][A-Za-z0-9_]*$', msg: 'Not an identifier' } }
+    }
+}
+```
+Error codes: `SUCCESSOR_MIN`, `SUCCESSOR_MAX`, `SUCCESSOR_TYPE`, `FIELD_REQUIRED`, `FIELD_PATTERN`.
