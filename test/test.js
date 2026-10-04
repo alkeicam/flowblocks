@@ -416,6 +416,27 @@ describe('Flowblocks', () => {
             paperDiv.remove();
         });
 
+        describe('FB-T13 diagramy bez _style (generowane poza edytorem, np. szablony ADI)', () => {
+            const spec = () => ({
+                name: 'tpl', id: 'tpl', version: 1, created: 1, cells: [
+                    { type: 'flowblocks.Block', id: 'c1', blockId: 'b-1', name: 'start', _type: 'Start', _template: 'Start', position: { x: 0, y: 0 }, size: { width: 90, height: 90 }, inPorts: [], outPorts: ['out1'], configurables: [{ i: 'name', v: 'start' }], _portConnections: [{ port: 'out1', id: 'c2', targetPort: 'in1', linkId: 'l1' }] },
+                    { type: 'flowblocks.Block', id: 'c2', blockId: 'b-2', name: 'end', _type: 'End', _template: 'End', position: { x: 200, y: 0 }, size: { width: 90, height: 90 }, inPorts: ['in1'], outPorts: [], configurables: [{ i: 'name', v: 'end' }], _portConnections: [] },
+                    { type: 'link', id: 'l1', source: { id: 'c1', port: 'out1' }, target: { id: 'c2', port: 'in1' } }
+                ]
+            });
+            it('FB-T13 ponowny import do tej samej instancji (przełączanie modeli w podglądzie) nie kończy się błędem', () => {
+                fb.import(JSON.stringify(spec()), false);
+                expect(() => fb.import(JSON.stringify(spec()), false)).not.throw();
+                return expect(fb.getDiagram().cells.length).eq(3);
+            });
+            it('FB-T13 kolor stanu walidacji z domyślnego stylu, bez zapisu _style do modelu', () => {
+                fb.import(JSON.stringify(spec()), false);
+                fb.import(JSON.stringify(spec()), false);
+                const cell = fb.getDiagram().cells.find(c => c.blockId === 'b-2');
+                return expect(cell._style).undefined;
+            });
+        });
+
         describe('FB-T1 FB-00 connection events', () => {
             it('FB-T1 link:connect emits CONNECTION_ADDED (not CONNECTION_REMOVED)', () => {
                 const added = sinon.spy();
@@ -623,7 +644,19 @@ describe('Flowblocks', () => {
                 const b = fb.createBlock('Step', 'a', 'A1');
                 const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
                 expect(marker).not.null;
-                return expect(Number(b.attr('.fb-marker/cx'))).lt(0);
+                expect(Number(marker.getAttribute('cx'))).lt(0);
+                expect(Number(marker.getAttribute('r'))).gt(0);
+                // geometry is presentation only - not in model attrs (diagram saved by 1.4 = diagram saved by 1.3)
+                return expect(b.attr('.fb-marker')).undefined;
+            })
+            it('FB-T8 marker layout follows block resize (view only)', () => {
+                const b = fb.createBlock('Step', 'a', 'A1', { x: 0, y: 0 }, { width: 100, height: 100 });
+                const marker = paperDiv.querySelector('[data-block-id="A1"] .fb-marker');
+                const before = Number(marker.getAttribute('r'));
+                b.set('size', { width: 300, height: 300 });
+                expect(Number(marker.getAttribute('r'))).gt(before);
+                expect(Number(marker.getAttribute('cy'))).eq(30);
+                return expect(b.attr('.fb-marker')).undefined;
             })
             it('FB-T8 setMarker sets kind class and tooltip, null removes it', () => {
                 fb.createBlock('Step', 'a', 'A1');
@@ -639,7 +672,7 @@ describe('Flowblocks', () => {
                 fb.createBlock('Step', 'a', 'A1');
                 fb.markClean();
                 fb.setMarker('A1', 'breakpoint');
-                expect(JSON.stringify(fb.export())).not.contain('fb-marker-breakpoint');
+                expect(JSON.stringify(fb.export())).not.contain('fb-marker');
                 return expect(fb.isDirty()).false;
             })
             it('FB-T8 click on marker emits flowblocks:block-marker-click(blockId)', () => {

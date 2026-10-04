@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>flowblocks smoke</title>
+<link rel="stylesheet" href="/node_modules/smoke-jointjs/dist/joint.min.css">
+<style>body { margin: 0; } #paper { width: 1300px; height: 850px; }</style>
+</head>
+<body>
+<div id="paper"></div>
+<script src="/node_modules/smoke-jquery/dist/jquery.min.js"></script>
+<script src="/node_modules/smoke-lodash/lodash.min.js"></script>
+<script src="/node_modules/smoke-backbone/backbone-min.js"></script>
+<script src="/node_modules/smoke-jointjs/dist/joint.min.js"></script>
+<script src="/dist/flowblocks.js"></script>
+<script>
+// Instancja flowblocks na papierze #paper (jak w designerze), zapis zdarzeń do window.events
+window.events = [];
+window.setup = function (types) {
+    var fb = flowblocks.create();
+    fb.setTestIdPrefix('smoke');
+    fb.createFlow('paper', 'Smoke', 'SMOKE');
+    ['flowblocks:connection-added', 'flowblocks:connection-removed', 'flowblocks:diagram-changed', 'flowblocks:block-marker-click',
+     'flowblocks:readonly-changed', 'flowblocks:block-dblclick'].forEach(function (name) {
+        fb.on(name, function () {
+            var args = Array.prototype.slice.call(arguments).map(function (a) { try { return a && a.attributes ? '[cell]' : JSON.parse(JSON.stringify(a)); } catch (e) { return '[object]'; } });
+            window.events.push({name: name, args: args});
+        });
+    });
+    if (types) fb.registerTypes(types);
+    window.fb = fb;
+    return true;
+};
+window.smokeReady = true;
+</script>
+</body>
+</html>
