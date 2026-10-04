@@ -138,11 +138,10 @@ class Block {
                     'text-anchor': 'start',
                     'fill': 'black',
                     'y-alignment': 'middle'
-                },
-                // marker (i.e. breakpoint) in the left gutter of the block, state is presentation only (see flow.setMarker)
-                '.fb-marker': {
-                    'r': 5
                 }
+                // marker (i.e. breakpoint) in the left gutter of the block (.fb-marker) is NOT part of model attrs -
+                // geometry and state are presentation only and are applied by the view (BlockView._fbLayoutMarker,
+                // flow.setMarker), so diagrams saved with this version are identical to the ones saved by 1.3
 
                 // label: {
                 //     fill: '#ffa500'
@@ -284,6 +283,19 @@ class Block {
                     returnStyle = style;
                 }
                 return returnStyle;
+            },
+
+            /**
+             * Style definition used for the validation state colors. Cells saved without _style (i.e. diagrams generated
+             * outside of the editor) fall back to the default style definition - nothing is written to the model.
+             */
+            _statusStyle(){
+                var current = this.get('_style');
+                if(current && typeof current === 'object') return current;
+                var styles = this.get('_styles') || {};
+                var defaultName = String(this.get('_defaultStyle') || DEFAULTS.STYLE).toLocaleLowerCase();
+                var builtIn = DEFAULTS.STYLES || {};
+                return styles[defaultName] || builtIn[defaultName] || builtIn[String(DEFAULTS.STYLE).toLocaleLowerCase()] || {};
             },
 
             _getPortGroup(groupType){
@@ -686,14 +698,15 @@ class Block {
 
                 // console.log('Errors from validation ', this.get('blockId'), this.get('errors'));
                 
+                var statusStyle = this._statusStyle();
                 if(this.get('errors').length>0){
                     this.set('status', 'ERROR');
-                    this.attr('.fb-validation-rect/fill', this.get('_style').validationERRORColor)
+                    this.attr('.fb-validation-rect/fill', statusStyle.validationERRORColor)
                     this.set('statusMsg', 'INVALID');
                 } else {
                     this.set('errors',[])// reset errors array
                     this.set('status', 'OK');                    
-                    this.attr('.fb-validation-rect/fill', this.get('_style').validationOKColor)
+                    this.attr('.fb-validation-rect/fill', statusStyle.validationOKColor)
                     this.set('statusMsg', 'OK');
                 }                
 
@@ -899,18 +912,6 @@ class Block {
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
                 self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);  
                 self._recalculateTypeLabel('.fb-type-label',field.type, field, offsetY);              
-                self._recalculateMarker('.fb-marker', field, 0.2);
-            },
-
-            /**
-             * Layout of the marker - left gutter of the block, vertically centered on the label bar
-             * (in ports are presented in the middle of the left edge)
-             */
-            _recalculateMarker: function(classSelector, baseSize, labelHeight){
-                var r = Math.max(4, Math.round(Math.min(baseSize.width, baseSize.height) * 0.07));
-                this.attr(classSelector + '/r', r);
-                this.attr(classSelector + '/cx', -(r + 4));
-                this.attr(classSelector + '/cy', (labelHeight * baseSize.height) / 2);
             }
         }, {
             // static props - object that contains properties to be assigned on the subtype constructor. 
@@ -927,14 +928,30 @@ class Block {
                 this.listenTo(this.model, 'flowblocks-block-update', function () {
                     this.update();
                     this.resize();
+                    this._fbLayoutMarker();
                     this._fbDecorate();
                 });
             },
 
             render: function () {
                 jointjs.dia.ElementView.prototype.render.apply(this, arguments);
+                this._fbLayoutMarker();
                 this._fbDecorate();
                 return this;
+            },
+
+            /**
+             * Layout of the marker - left gutter of the block, vertically centered on the label bar (in ports are
+             * presented in the middle of the left edge). Applied to the DOM only (never to model attrs - not serialized).
+             */
+            _fbLayoutMarker: function () {
+                var el = this.el && this.el.querySelector ? this.el.querySelector('.fb-marker') : undefined;
+                var size = this.model.get('size');
+                if (!el || !size) return;
+                var r = Math.max(4, Math.round(Math.min(size.width, size.height) * 0.07));
+                el.setAttribute('r', r);
+                el.setAttribute('cx', -(r + 4));
+                el.setAttribute('cy', (0.2 * size.height) / 2);
             },
 
             /**
