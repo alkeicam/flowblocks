@@ -53,6 +53,15 @@ function run(cmd, args, {allowFail = false} = {}) {
 function out(cmd, args) {
     try { return execFileSync(cmd, args, {cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']}).trim(); } catch (e) { return null; }
 }
+/**
+ * `git status --porcelain` → [{code, file}]. Bez trim: wiersz zaczyna się dwuznakowym kodem (np. „ M”) – obcięcie spacji
+ * pierwszego wiersza psuło ścieżkę („ist/…” zamiast „dist/…”) i plik wypadał z commitu wydania (2.3.3: dist poza commitem).
+ */
+function gitStatus(extra = []) {
+    let raw;
+    try { raw = execFileSync('git', ['status', '--porcelain', ...extra], {cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe']}); } catch (e) { return []; }
+    return raw.split('\n').filter(l => l.length > 3).map(l => ({code: l.slice(0, 2), file: l.slice(3).replace(/^"|"$/g, '')}));
+}
 const ask = (q) => new Promise((res) => { const rl = readline.createInterface({input: process.stdin, output: process.stdout}); rl.question(q, (a) => { rl.close(); res(a); }); });
 const confirm = async (q) => YES || /^(t|tak|y|yes)$/i.test((await ask(`${q} [t/N] `)).trim());
 
@@ -87,10 +96,10 @@ const latestOf = (name) => published(name).filter(parseV).sort(cmpV).pop();
     if (out('git', ['rev-parse', '--is-inside-work-tree']) !== 'true') die('to nie jest repozytorium git');
     const branch = out('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
     if (!branch || branch === 'HEAD') die('odłączony HEAD – przełącz się na gałąź');
-    const tracked = (out('git', ['status', '--porcelain', '--untracked-files=no']) || '').split('\n').filter(Boolean);
+    const tracked = gitStatus(['--untracked-files=no']);
     if (tracked.length) {
         log(c.y('Zmiany w plikach śledzonych – wejdą do commitu wydania:'));
-        tracked.forEach(l => log(`   ${l}`));
+        tracked.forEach(t => log(`   ${t.code} ${t.file}`));
         if (!DRY && !(await confirm('Kontynuować?'))) die('przerwane – najpierw zacommituj albo cofnij zmiany', 1);
     }
 
@@ -148,10 +157,9 @@ const latestOf = (name) => published(name).filter(parseV).sort(cmpV).pop();
     else run('npm', ['run', 'test:browser']);
 
     // 5. commit i tag
-    const changed = (out('git', ['status', '--porcelain', '--untracked-files=all']) || '').split('\n').filter(Boolean)
-        .map(l => l.slice(3).replace(/^"|"$/g, ''))
+    const changed = gitStatus(['--untracked-files=all']).map(x => x.file)
         .filter(f => !/(^|\/)\.DS_Store$/.test(f) && !/^(node_modules|coverage|\.nyc_output)\//.test(f) && f !== 'package-lock.json'
-            && (/^(dist|src|test|tools)\//.test(f) || f === 'package.json' || tracked.some(t => t.slice(3) === f)));
+            && (/^(dist|src|test|tools)\//.test(f) || f === 'package.json' || tracked.some(t => t.file === f)));
     log(c.b('\nDo commitu wydania:'));
     changed.forEach(f => log(`   ${f}`));
     if (DRY) {
@@ -162,6 +170,9 @@ const latestOf = (name) => published(name).filter(parseV).sort(cmpV).pop();
     run('git', ['add', '--', ...changed]);
     const msg = `${version}${edits.length ? `: ${edits.map(e => `${e.dep} ${e.to}`).join(', ')}` : ''}`;
     run('git', ['commit', '-q', '-m', msg]);
+    // po commicie drzewo musi być czyste w plikach paczki (inaczej release-train zobaczy zmianę po tagu) – stop przed tagiem
+    const left = gitStatus(['--untracked-files=all']).map(x => x.file).filter(f => /^(dist|src)\//.test(f) || f === 'package.json');
+    if (left.length) die(`po commicie zostały niezacommitowane pliki paczki: ${left.join(', ')} – sprawdź i dodaj je do commitu (git commit --amend), potem uruchom ponownie`);
     run('git', ['tag', '-a', `v${version}`, '-m', version]);
 
     // 6. paczka → publikacja → push
