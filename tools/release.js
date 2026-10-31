@@ -15,7 +15,8 @@
  *  2. zależności z rodziny flowblocks (dependencies `flowblocks-ui-toolbar`, `flowblocks`; devDependencies – aliasy
  *     `npm:flowblocks@…` / `npm:flowblocks-ui-toolbar@…` do testów smoke): zakres / wersja podbijane do najnowszej
  *     opublikowanej (to, czego wymaga release-train – dolna granica zakresu = wydana wersja zależności);
- *  3. wersja w package.json – PRZED budową (dist zawiera wersję; dawny `remote-publish-*` budował przed `npm version`);
+ *  3. wersja w package.json (i w src/version.js, gdy jest) – PRZED budową (dist zawiera wersję; dawny `remote-publish-*`
+ *     budował przed `npm version`);
  *  4. npm install → packem (dist) → npm test → test:browser;
  *  5. commit „<wersja>” (package.json, dist, zmienione pliki śledzone; bez .DS_Store), tag v<wersja>;
  *  6. npm pack → npm publish tej paczki (dokładnie przetestowane pliki) → git push gałęzi i tagu → npm view.
@@ -130,6 +131,14 @@ const latestOf = (name) => published(name).filter(parseV).sort(cmpV).pop();
         o.version = version;
         for (const e of edits) o[e.sect][e.dep] = e.to;
     });
+    // wersja w kodzie (designer: src/version.js – bundel nie zawiera package.json), gdy plik istnieje
+    const VERSION_FILE = path.join(ROOT, 'src', 'version.js');
+    if (fs.existsSync(VERSION_FILE)) {
+        const src = fs.readFileSync(VERSION_FILE, 'utf8');
+        const next = src.replace(/module\.exports\s*=\s*'[^']*';/, `module.exports = '${version}';`);
+        if (next === src && !src.includes(`'${version}'`)) die('src/version.js: brak przypisania module.exports = \'x.y.z\'; – nie umiem ustawić wersji');
+        fs.writeFileSync(VERSION_FILE, next);
+    }
 
     // 4. budowa i testy (dist z nową wersją)
     run('npm', ['install']);
