@@ -220,8 +220,10 @@ class Flow {
      * @param {*} graphJson 
      * @param {Object} types - when provided, each cell validation will be first searched in types definition, when not found validation from cell itself
      * will be used 
+     * @param {boolean} trustedTypes types are registered by the application (FB-13: status of blocks validated by a function of
+     * such a type is recalculated on import; functions of types stored in the diagram are not run)
      */
-    import(graphJson, typesForValidation /* object holding each type */){
+    import(graphJson, typesForValidation /* object holding each type */, trustedTypes){
         // diagram changes during import are not reported (FB-01)
         this._muted++;
         try{
@@ -241,8 +243,9 @@ class Flow {
                     cell._reApplyValidation(typeDefinition&&typeDefinition.validation?typeDefinition.validation:undefined, typeDefinition&&typeDefinition.rules?typeDefinition.rules:undefined);
                     this.addBlock(cell, true);
                     // status stored in the diagram is not trusted (diagram created by API, rules changed since save) - recalculated
-                    // for blocks of a known type validated declaratively (no code from the diagram is run on import)
-                    if (typeDefinition && !typeDefinition.validation) toRevalidate.push(cell);
+                    // for blocks of a known type: registered by the application (any validation) or validated declaratively
+                    // (no code stored in the diagram is run on import)
+                    if (typeDefinition && (trustedTypes || !typeDefinition.validation)) toRevalidate.push(cell);
                 }                
             })
             // FB-13: connections of blocks follow the links of the diagram (diagrams generated outside the designer may have

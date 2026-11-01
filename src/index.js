@@ -324,7 +324,8 @@ class Flowblocks {
         // perform import of specification, when type load is requested cell validations will be loaded from imported specification
         // otherwise provided that somebody registered types already already registered types validation will be used OR
         // validation from cell attributes will be used
-        this.flow.import(specificationObject, loadTypes?this._parseTypes(typesArrayFromImportedSpecs):this._registeredTypes);
+        // registered types are the application's (trusted validation functions); types stored in the imported specification are not
+        this.flow.import(specificationObject, loadTypes?this._parseTypes(typesArrayFromImportedSpecs):this._registeredTypes, !loadTypes);
         // make sure that flowblocks version holder is aligned with imported
         this.version = specificationObject.version;
         // types will be rebuilt/imported when requested

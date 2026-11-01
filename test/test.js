@@ -880,7 +880,7 @@ describe('Flowblocks', () => {
                 fb.import(JSON.stringify(fb.export()), false);
                 return expect(JSON.stringify(fb.export().cells)).eq(once);
             })
-            it('FB-T38 import nie uruchamia funkcji walidacji (typ z funkcją, typ nieznany) – status bez zmian; diagram po imporcie czysty', () => {
+            it('FB-T38 import: funkcja walidacji typu zarejestrowanego (aplikacji) przeliczona; typy z importowanej specyfikacji i typ nieznany – bez uruchamiania kodu, status bez zmian; diagram czysty', () => {
                 const calls = { n: 0 };
                 global.__fbT38 = calls;
                 const fn = function (blockData) { global.__fbT38.n++; return [{ code: 'FN', cId: 'f', msg: 'fn' }]; };
@@ -891,12 +891,19 @@ describe('Flowblocks', () => {
                 const unknown = Object.assign(JSON.parse(JSON.stringify(json.cells[0])), { id: 'u1', blockId: 'U1', _type: 'Unknown', status: 'OK' });
                 delete unknown._validationSource;
                 json.cells.push(unknown);
+                // typy zarejestrowane (import bez typów, jak w adi-gui) – funkcja aplikacji uruchomiona, status przeliczony
                 calls.n = 0;
                 fb.import(JSON.stringify(json), false);
+                expect(calls.n).gt(0);
+                expect(fb.getBlock('F1').getStatus().errors.map(e => e.code)).to.include('FN');
+                expect(fb.getBlock('U1').getStatus().valid).true;
+                expect(fb.isDirty()).false;
+                // typy z importowanej specyfikacji (loadTypes) – kod z diagramu nie jest uruchamiany przy imporcie
+                calls.n = 0;
+                fb.import(JSON.stringify(json), true);
                 delete global.__fbT38;
                 expect(calls.n).eq(0);
-                expect([fb.getBlock('F1').getStatus().valid, fb.getBlock('U1').getStatus().valid]).deep.eq([true, true]);
-                return expect(fb.isDirty()).false;
+                return expect(fb.getBlock('F1').getStatus().valid).true;
             })
             it('FB-T38 revalidate(): przelicza klocki typów zarejestrowanych (zmienione reguły), nieznany typ bez zmian; wynik jak validate(); bez oznaczenia zmiany', async () => {
                 const { d } = stale('OK', []);
