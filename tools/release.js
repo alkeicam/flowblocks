@@ -160,16 +160,24 @@ const latestOf = (name) => published(name).filter(parseV).sort(cmpV).pop();
     const changed = gitStatus(['--untracked-files=all']).map(x => x.file)
         .filter(f => !/(^|\/)\.DS_Store$/.test(f) && !/^(node_modules|coverage|\.nyc_output)\//.test(f) && f !== 'package-lock.json'
             && (/^(dist|src|test|tools)\//.test(f) || f === 'package.json' || tracked.some(t => t.file === f)));
-    log(c.b('\nDo commitu wydania:'));
-    changed.forEach(f => log(`   ${f}`));
+    // wersja i paczka już zacommitowane (np. ręczny commit po --dry-run, ponowne uruchomienie po przerwaniu) – bez nowego
+    // commitu, tag na bieżącym commicie (drzewo czyste: package.json w HEAD ma już wersję docelową)
+    const reuseHead = changed.length === 0;
+    if (reuseHead) log(c.y(`\nBrak zmian do commitu – package.json i dist z wersją ${version} są już w HEAD (${out('git', ['log', '-1', '--format=%h %s'])}); tag na tym commicie.`));
+    else {
+        log(c.b('\nDo commitu wydania:'));
+        changed.forEach(f => log(`   ${f}`));
+    }
     if (DRY) {
         log(c.y(`\nPróba zakończona: testy zielone. Bez commitu i publikacji – package.json i dist zostały zmienione lokalnie (wersja ${version}).`));
         return;
     }
-    if (!(await confirm(`\nCommit „${version}”, tag v${version}, npm publish i push?`))) die('przerwane przed commitem – package.json i dist zmienione lokalnie');
-    run('git', ['add', '--', ...changed]);
-    const msg = `${version}${edits.length ? `: ${edits.map(e => `${e.dep} ${e.to}`).join(', ')}` : ''}`;
-    run('git', ['commit', '-q', '-m', msg]);
+    if (!(await confirm(`\n${reuseHead ? '' : `Commit „${version}”, `}tag v${version}, npm publish i push?`))) die('przerwane przed commitem – package.json i dist zmienione lokalnie');
+    if (!reuseHead) {
+        run('git', ['add', '--', ...changed]);
+        const msg = `${version}${edits.length ? `: ${edits.map(e => `${e.dep} ${e.to}`).join(', ')}` : ''}`;
+        run('git', ['commit', '-q', '-m', msg]);
+    }
     // po commicie drzewo musi być czyste w plikach paczki (inaczej release-train zobaczy zmianę po tagu) – stop przed tagiem
     const left = gitStatus(['--untracked-files=all']).map(x => x.file).filter(f => /^(dist|src)\//.test(f) || f === 'package.json');
     if (left.length) die(`po commicie zostały niezacommitowane pliki paczki: ${left.join(', ')} – sprawdź i dodaj je do commitu (git commit --amend), potem uruchom ponownie`);
