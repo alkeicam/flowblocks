@@ -873,12 +873,28 @@ describe('Flowblocks', () => {
                 fb.import(JSON.stringify(json), false);
                 expect(fb.validate()).deep.eq({ valid: true, errorBlocks: [] });
                 const a = fb.getBlock('A1').get('_portConnections');
-                expect(a.map(x => [x.port, x.bId, x.type]).sort()).deep.eq([['in1', 'S1', 'Start'], ['out1', undefined, undefined]]);
+                expect(a.map(x => [x.port, x.bId, x.type]).sort()).deep.eq([['in1', 'S1', 'Start'], ['out1', 'E1', 'End']]);
                 expect(fb.isDirty()).false;
                 // ponowny import eksportu – bez zmian (stabilność)
                 const once = JSON.stringify(fb.export().cells);
                 fb.import(JSON.stringify(fb.export()), false);
                 return expect(JSON.stringify(fb.export().cells)).eq(once);
+            })
+            it('FB-T38 szablon: funkcja walidacji następników (typ zarejestrowany) widzi typ następnika uzupełniony przy imporcie', () => {
+                fb.registerTypes([{ name: 'Gate', template: 'PassThrough', category: 'core', configurables: [],
+                    validationFunction: function (blockData) { var c = Object.values(blockData.connections).filter(x => x.port == 'out1'); return c.length && c.every(x => x.type == 'End') ? [] : [{ code: 'E_GATE', cId: 'out1', msg: 'Gate must be followed by End' }]; } }]);
+                const s = fb.createBlock('Start', 's', 'S1');
+                const g = fb.createBlock('Gate', 'g', 'G1');
+                const e = fb.createBlock('End', 'e', 'E1');
+                connect(s, g);
+                connect(g, e);
+                const json = fb.export();
+                json.cells.filter(c => c.type !== 'link').forEach(c => {
+                    delete c.status; delete c.statusMsg; delete c.errors;
+                    c._portConnections = c._portConnections.filter(x => x.port.indexOf('out') === 0).map(x => ({ port: x.port, id: x.id, targetPort: 'in1', linkId: x.linkId }));
+                });
+                fb.import(JSON.stringify(json), false);
+                return expect(fb.validate()).deep.eq({ valid: true, errorBlocks: [] });
             })
             it('FB-T38 import: funkcja walidacji typu zarejestrowanego (aplikacji) przeliczona; typy z importowanej specyfikacji i typ nieznany – bez uruchamiania kodu, status bez zmian; diagram czysty', () => {
                 const calls = { n: 0 };

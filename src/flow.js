@@ -741,8 +741,9 @@ class Flow {
     }
 
     /**
-     * Adds missing port connection records of links (FB-13): each link between two blocks is recorded on both blocks
-     * ({port, id, bId, type, targetPort, linkId} - as when the link is connected in the designer). Existing records are kept.
+     * Completes port connection records (FB-13): records without block id / type of the connected block get them, each link
+     * between two blocks is recorded on both blocks ({port, id, bId, type, targetPort, linkId} - as when the link is connected
+     * in the designer). Existing records are kept.
      */
     _syncPortConnections() {
         var byId = {};
@@ -753,6 +754,16 @@ class Flow {
             var exists = connections.some(c => c.port == port && c.id == other.id && (!c.linkId || c.linkId == linkId));
             if (!exists) connections.push({ port: port, id: other.id, bId: other.get('blockId'), type: other.get('_type'), targetPort: otherPort, linkId: linkId });
         };
+        // records without the connected block data (diagrams generated outside the designer: {port, id, targetPort, linkId}) -
+        // block id and type of the connected block are filled in (validation of successor types reads them)
+        this._blocks.forEach(block => {
+            (block.get('_portConnections') || []).forEach(c => {
+                var other = c && byId[c.id];
+                if (!other) return;
+                if (c.bId === undefined) c.bId = other.get('blockId');
+                if (c.type === undefined) c.type = other.get('_type');
+            });
+        });
         this.graph.getLinks().forEach(link => {
             var source = link.get('source') || {};
             var target = link.get('target') || {};
