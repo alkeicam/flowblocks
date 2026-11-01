@@ -197,6 +197,7 @@ class Block {
                     "element.set('icon', 'https://cdn.jsdelivr.net/npm/flowblocks-icons@1.0.8/i/vase.svg');",
                     "element.style({titleBarColor: '#FADB50'});",
                     "element.getStatus();",
+                    "element.revalidate();",
                     "element.freePorts();",
 
                 ];
@@ -210,6 +211,16 @@ class Block {
                     valid: this.get('status') == 'OK',
                     errors: this.get('errors')
                 }
+            },
+
+            /**
+             * Recalculates status of the block with its current validation (ports, required fields, declarative rules or
+             * validation function) - e.g. a block of a diagram created outside the designer (stored status is not trusted).
+             * @returns status of the block (see getStatus)
+             */
+            revalidate(){
+                this._recalculateStatus();
+                return this.getStatus();
             },
 
             /**

@@ -604,6 +604,17 @@ class Flowblocks {
      * 
      * @returns Object containing status and eventuall list of errors of this Flowblocks instance. {valid: true|false, errorBlocks: [{ blockId: , errors: [{code: , cId:, msg:}]}]}
      */
+    /**
+     * Recalculates status of every block of a registered type and validates the flow (FB-13) - use before save: status
+     * stored in an imported diagram (created by API, saved with other validation rules) may be outdated.
+     * @returns see validate()
+     */
+    revalidate(){
+        if(this.flow)
+            return this.flow.revalidate(this._registeredTypes);
+        return this.validate();
+    }
+
     validate(){
         if(this.flow)
             return this.flow.validate();

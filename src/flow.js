@@ -231,6 +231,7 @@ class Flow {
             this.graph.fromJSON(graphJson);
             // now build _blocks array
             var cells = this.graph.getCells();
+            var toRevalidate = [];
             cells.forEach(cell=>{
                 if(cell.isElement()){
                     // reinstantiate custom validation functions
@@ -239,9 +240,15 @@ class Flow {
                     const typeDefinition = typesForValidation&&typesForValidation[typeName] ? typesForValidation[typeName] : undefined;
                     cell._reApplyValidation(typeDefinition&&typeDefinition.validation?typeDefinition.validation:undefined, typeDefinition&&typeDefinition.rules?typeDefinition.rules:undefined);
                     this.addBlock(cell, true);
-                    // reinitialize custom validations
+                    // status stored in the diagram is not trusted (diagram created by API, rules changed since save) - recalculated
+                    // for blocks of a known type validated declaratively (no code from the diagram is run on import)
+                    if (typeDefinition && !typeDefinition.validation) toRevalidate.push(cell);
                 }                
             })
+            // FB-13: connections of blocks follow the links of the diagram (diagrams generated outside the designer may have
+            // only the source side), then the status is recalculated
+            this._syncPortConnections();
+            toRevalidate.forEach(block => this._revalidateBlock(block));
         }finally{
             this._muted--;
         }
@@ -728,6 +735,59 @@ class Flow {
         this.paper.on('cell:pointerup blank:pointerup', function (cellView, event) {
             pzController.disablePan();
         });
+    }
+
+    /**
+     * Adds missing port connection records of links (FB-13): each link between two blocks is recorded on both blocks
+     * ({port, id, bId, type, targetPort, linkId} - as when the link is connected in the designer). Existing records are kept.
+     */
+    _syncPortConnections() {
+        var byId = {};
+        this._blocks.forEach(block => { byId[block.id] = block; });
+        var record = (block, port, other, otherPort, linkId) => {
+            var connections = block.get('_portConnections');
+            if (!Array.isArray(connections)) { connections = []; block.set('_portConnections', connections); }
+            var exists = connections.some(c => c.port == port && c.id == other.id && (!c.linkId || c.linkId == linkId));
+            if (!exists) connections.push({ port: port, id: other.id, bId: other.get('blockId'), type: other.get('_type'), targetPort: otherPort, linkId: linkId });
+        };
+        this.graph.getLinks().forEach(link => {
+            var source = link.get('source') || {};
+            var target = link.get('target') || {};
+            var sourceBlock = byId[source.id], targetBlock = byId[target.id];
+            if (!sourceBlock || !targetBlock || !source.port || !target.port) return;
+            record(sourceBlock, source.port, targetBlock, target.port, link.id);
+            record(targetBlock, target.port, sourceBlock, source.port, link.id);
+        });
+    }
+
+    /** Recalculates block status; an error thrown by a validation function makes the block invalid (VALIDATION_ERROR). */
+    _revalidateBlock(block) {
+        try {
+            block.revalidate();
+        } catch (error) {
+            console.error('Block validation failed', block.get('blockId'), error);
+            block.set('status', 'ERROR');
+            block.set('statusMsg', 'INVALID');
+            block.set('errors', [{ code: 'VALIDATION_ERROR', cId: block.get('blockId'), msg: 'Step validation failed' }]);
+        }
+    }
+
+    /**
+     * Recalculates status of blocks of the given types (FB-13) and validates the flow. Blocks of types not given (unknown
+     * types - validation carried by the diagram itself) keep their status.
+     * @param {Object} types type definitions by type name (registered types)
+     * @returns see validate()
+     */
+    revalidate(types) {
+        this._muted++;
+        try {
+            this._blocks.forEach(block => {
+                if (types && types[block.get('_type')]) this._revalidateBlock(block);
+            });
+        } finally {
+            this._muted--;
+        }
+        return this.validate();
     }
 
     validate() {

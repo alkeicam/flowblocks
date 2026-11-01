@@ -179,14 +179,17 @@ describe('FB-SMOKE-CORE flowblocks w przeglądarce (dist)', function () {
                 delete d.types;
                 window.fb.import(JSON.stringify(d), false);
                 const rendered = document.querySelectorAll('#paper [data-testid="smoke.block"]').length;
+                // FB-13: wejścia połączone linkami są połączone także w szablonach zapisanych tylko po stronie źródła
+                const inPortErrors = window.fb.revalidate().errorBlocks.reduce((n, x) => n + x.errors.filter(e => e.code === 'PORT_NOT_CONNECTED' && /^in/.test(e.cId)).length, 0);
                 const once = window.fb.getDiagram();
                 window.fb.import(JSON.stringify(once), false);
                 const twice = window.fb.getDiagram();
                 return {rendered, blocks: spec.cells.filter(c => c.type === 'flowblocks.Block').length,
                     links: spec.cells.filter(c => c.type === 'link').length, outLinks: twice.cells.filter(c => c.type === 'link').length,
-                    stable: JSON.stringify(once) === JSON.stringify(twice)};
+                    stable: JSON.stringify(once) === JSON.stringify(twice), inPortErrors};
             }, item.spec);
             expect(r.rendered, item.name).eq(r.blocks);
+            expect(r.inPortErrors, item.name).eq(0);
             expect(r.outLinks, item.name).eq(r.links);
             expect(r.stable, `${item.name}: export(import(export)) stabilny`).true;
         }

@@ -843,6 +843,89 @@ describe('Flowblocks', () => {
             })
         })
 
+        describe('FB-T38 FB-13 ponowna walidacja (status zapisany w diagramie nie jest wiarygodny)', () => {
+            /** Diagram jak z API: komórki bez przeliczonego statusu (status / errors podane jawnie). */
+            const stale = (status, errors) => {
+                const d = buildDiagram();
+                const json = fb.export();
+                json.cells.filter(c => c.type !== 'link').forEach(c => { c.status = status; c.statusMsg = status; c.errors = errors; });
+                return { d, json };
+            };
+            it('FB-T38 import przelicza status klocków typów zarejestrowanych: zapisany ERROR bez błędów → OK, zapisany OK przy wolnym porcie → ERROR', () => {
+                const { json } = stale('ERROR', []);
+                fb.import(JSON.stringify(json), false);
+                expect(['S1', 'A1', 'E1'].map(id => fb.getBlock(id).getStatus().valid)).deep.eq([true, true, true]);
+                expect(fb.validate()).deep.eq({ valid: true, errorBlocks: [] });
+                const lone = JSON.parse(JSON.stringify(json));
+                lone.cells = lone.cells.filter(c => c.type !== 'link' && c.blockId === 'A1').map(c => Object.assign(c, { status: 'OK', statusMsg: 'OK', errors: [], _portConnections: [] }));
+                fb.import(JSON.stringify(lone), false);
+                const st = fb.validate();
+                expect(st.valid).false;
+                return expect(st.errorBlocks[0].errors.map(e => e.code)).to.include('PORT_NOT_CONNECTED');
+            })
+            it('FB-T38 diagram z API / szablon: połączenia tylko po stronie źródła + linki, bez statusu – po imporcie wpisy wejść z linków, klocki poprawne', () => {
+                buildDiagram();
+                const json = fb.export();
+                json.cells.filter(c => c.type !== 'link').forEach(c => {
+                    delete c.status; delete c.statusMsg; delete c.errors;
+                    c._portConnections = c._portConnections.filter(x => x.port.indexOf('out') === 0).map(x => ({ port: x.port, id: x.id, targetPort: 'in1', linkId: x.linkId }));
+                });
+                fb.import(JSON.stringify(json), false);
+                expect(fb.validate()).deep.eq({ valid: true, errorBlocks: [] });
+                const a = fb.getBlock('A1').get('_portConnections');
+                expect(a.map(x => [x.port, x.bId, x.type]).sort()).deep.eq([['in1', 'S1', 'Start'], ['out1', undefined, undefined]]);
+                expect(fb.isDirty()).false;
+                // ponowny import eksportu – bez zmian (stabilność)
+                const once = JSON.stringify(fb.export().cells);
+                fb.import(JSON.stringify(fb.export()), false);
+                return expect(JSON.stringify(fb.export().cells)).eq(once);
+            })
+            it('FB-T38 import nie uruchamia funkcji walidacji (typ z funkcją, typ nieznany) – status bez zmian; diagram po imporcie czysty', () => {
+                const calls = { n: 0 };
+                global.__fbT38 = calls;
+                const fn = function (blockData) { global.__fbT38.n++; return [{ code: 'FN', cId: 'f', msg: 'fn' }]; };
+                fb.registerTypes([{ name: 'Fn', template: 'PassThrough', category: 'core', configurables: [], validationFunction: fn }]);
+                fb.createBlock('Fn', 'f', 'F1');
+                const json = fb.export();
+                json.cells.forEach(c => { c.status = 'OK'; c.errors = []; });
+                const unknown = Object.assign(JSON.parse(JSON.stringify(json.cells[0])), { id: 'u1', blockId: 'U1', _type: 'Unknown', status: 'OK' });
+                delete unknown._validationSource;
+                json.cells.push(unknown);
+                calls.n = 0;
+                fb.import(JSON.stringify(json), false);
+                delete global.__fbT38;
+                expect(calls.n).eq(0);
+                expect([fb.getBlock('F1').getStatus().valid, fb.getBlock('U1').getStatus().valid]).deep.eq([true, true]);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T38 revalidate(): przelicza klocki typów zarejestrowanych (zmienione reguły), nieznany typ bez zmian; wynik jak validate(); bez oznaczenia zmiany', async () => {
+                const { d } = stale('OK', []);
+                fb.markClean();
+                fb.registerTypes([{ name: 'Step', template: 'PassThrough', category: 'core', configurables: [{ id: 'code', label: 'Code', type: 'TEXT', required: false }], rules: { required: ['code'] } }]);
+                // reguły typu działają na klocku po ponownym zastosowaniu (jak przy imporcie z typami zarejestrowanymi)
+                d.a._reApplyValidation(undefined, fb.getDefinition('Step').rules);
+                expect(d.a.getStatus().valid).true;
+                const r = fb.revalidate();
+                expect(r.valid).false;
+                expect(r.errorBlocks.map(b => [b.blockId, b.errors.map(e => e.code + ':' + e.cId)])).deep.eq([['A1', ['FIELD_REQUIRED:code']]]);
+                expect(r).deep.eq(fb.validate());
+                expect(d.a.revalidate()).deep.eq(d.a.getStatus());
+                await wait(200);
+                return expect(fb.isDirty()).false;
+            })
+            it('FB-T38 błąd funkcji walidacji przy revalidate – klocek nieprawidłowy (VALIDATION_ERROR), błąd w konsoli', () => {
+                fb.registerTypes([{ name: 'Boom', template: 'PassThrough', category: 'core', configurables: [], validationFunction: function () { return []; } }]);
+                const b = fb.createBlock('Boom', 'b', 'B1');
+                b.set('_validationFunction', () => { throw new Error('boom'); });
+                const err = sinon.stub(console, 'error');
+                try {
+                    const r = fb.revalidate();
+                    expect(err.calledWithMatch('Block validation failed', 'B1')).true;
+                    return expect(r.errorBlocks.find(x => x.blockId === 'B1').errors.map(e => e.code)).deep.eq(['VALIDATION_ERROR']);
+                } finally { err.restore(); }
+            })
+        })
+
         describe('FB-T14 regression', () => {
             it('FB-T14 export still contains types and bumps exported timestamp', () => {
                 buildDiagram();
