@@ -194,4 +194,56 @@ describe('FB-SMOKE-CORE flowblocks w przeglądarce (dist)', function () {
             expect(r.stable, `${item.name}: export(import(export)) stabilny`).true;
         }
     });
+
+    // FB-15: dopasowanie widoku na prawdziwej geometrii SVG i svg-pan-zoom (ta sama wersja co w flowblocks-designer);
+    // bez pliku biblioteki (repozytorium designera obok) – pominięcie
+    const SPZ = path.join(ROOT, '..', 'flowblocks-designer', 'dist', 'resources', 'js', 'svg-pan-zoom.min.js');
+    async function panZoom() {
+        await page.addScriptTag({path: SPZ});
+        await page.evaluate(() => window.fb.enablePanAndZoom(window.svgPanZoom));
+    }
+    // svg-pan-zoom zmienia transformację w requestAnimationFrame – odczyt po dwóch klatkach
+    const geometry = () => page.evaluate(async () => {
+        await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+        const svg = document.querySelector('#paper svg').getBoundingClientRect();
+        const rects = [...document.querySelectorAll('#paper [data-testid="smoke.block"]')].map(e => e.getBoundingClientRect());
+        const box = {left: Math.min(...rects.map(r => r.left)), top: Math.min(...rects.map(r => r.top)),
+            right: Math.max(...rects.map(r => r.right)), bottom: Math.max(...rects.map(r => r.bottom))};
+        return {svg: {left: svg.left, top: svg.top, right: svg.right, bottom: svg.bottom, width: svg.width, height: svg.height}, box, blockWidth: rects[0].width};
+    });
+    const inside = (g) => g.box.left >= g.svg.left - 1 && g.box.top >= g.svg.top - 1 && g.box.right <= g.svg.right + 1 && g.box.bottom <= g.svg.bottom + 1;
+
+    it('FB-SMOKE-CORE-FIT1 duży diagram poza widokiem – fitToView: cały w obszarze, wyśrodkowany, wypełnia go', async function () {
+        if (!fs.existsSync(SPZ)) this.skip();
+        await page.evaluate(() => {
+            window.fb.createBlock('Start', 'start', 'S1', {x: 2600, y: 1800});
+            window.fb.createBlock('Step', 'step', 'A1', {x: 4200, y: 1800});
+            window.fb.createBlock('End', 'end', 'E1', {x: 5800, y: 2400});
+        });
+        await panZoom();
+        expect(inside(await geometry()), 'przed dopasowaniem diagram poza obszarem').false;
+        expect(await page.evaluate(() => window.fb.fitToView())).true;
+        const g = await geometry();
+        expect(inside(g), JSON.stringify(g)).true;
+        const fill = Math.max((g.box.right - g.box.left) / g.svg.width, (g.box.bottom - g.box.top) / g.svg.height);
+        expect(fill).gt(0.8);
+        const cx = (g.box.left + g.box.right) / 2 - (g.svg.left + g.svg.right) / 2, cy = (g.box.top + g.box.bottom) / 2 - (g.svg.top + g.svg.bottom) / 2;
+        expect(Math.abs(cx)).lt(g.svg.width * 0.05);
+        expect(Math.abs(cy)).lt(g.svg.height * 0.05);
+    });
+
+    it('FB-SMOKE-CORE-FIT2 mały diagram nie jest powiększany (maxZoom 1), RESET po przesunięciu przywraca dopasowany widok', async function () {
+        if (!fs.existsSync(SPZ)) this.skip();
+        await threeBlocks();
+        await panZoom();
+        const natural = (await geometry()).blockWidth;
+        expect(await page.evaluate(() => window.fb.fitToView())).true;
+        const g = await geometry();
+        expect(inside(g)).true;
+        expect(g.blockWidth).closeTo(natural, 1);
+        await page.evaluate(() => window.svgPanZoom(document.querySelector('[joint-selector=svg]')).pan({x: -5000, y: -5000}));
+        expect(inside(await geometry())).false;
+        await page.locator('#svg-pan-zoom-reset-pan-zoom').click();
+        expect(inside(await geometry())).true;
+    });
 });

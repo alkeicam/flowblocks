@@ -601,6 +601,15 @@ class Flowblocks {
         }
     }
     /**
+     * Fits the whole diagram into the visible area and centers it (FB-15) - after import or when the container was moved
+     * or resized. Requires enablePanAndZoom.
+     * @param {{maxZoom?: number, padding?: number}} [opts] see Flow.fitToView
+     * @returns {boolean} true when fitted
+     */
+    fitToView(opts){
+        return !!(this.flow && this.flow.fitToView && this.flow.fitToView(opts));
+    }
+    /**
      * Validates Flowblocks flow and data
      * 
      * @returns Object containing status and eventuall list of errors of this Flowblocks instance. {valid: true|false, errorBlocks: [{ blockId: , errors: [{code: , cId:, msg:}]}]}

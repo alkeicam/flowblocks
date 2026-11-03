@@ -720,6 +720,7 @@ class Flow {
     }
 
     enablePanAndZoom(panAndZoom) {
+        var self = this;
         var pzController = panAndZoom(document.querySelector('[joint-selector=svg]'), {
             fit: false,
             panEnabled: false,
@@ -728,6 +729,13 @@ class Flow {
             dblClickZoomEnabled: false,
             minZoom: 0.3
         });
+        this._panZoom = pzController;
+        // FB-15: RESET control (and reset()) fits the whole diagram into the view instead of returning to the initial
+        // position (top left corner of the paper - a small diagram was tiny, a moved container showed an empty area)
+        pzController.reset = function () {
+            self.fitToView();
+            return pzController;
+        };
 
         //Enable pan when a blank area is click (held) on
         this.paper.on('blank:pointerdown', function (evt, x, y) {
@@ -738,6 +746,39 @@ class Flow {
         this.paper.on('cell:pointerup blank:pointerup', function (cellView, event) {
             pzController.disablePan();
         });
+    }
+
+    /**
+     * Fits the whole diagram into the visible area and centers it (FB-15). Sizes of the visible area are read again, so it
+     * also works after the container was moved or resized. Requires enablePanAndZoom.
+     * @param {{maxZoom?: number, padding?: number}} [opts] maxZoom - largest scale (default 1: a small diagram is not
+     *  enlarged), padding - share of the width / height kept free on each side (0..0.45, default 0.05)
+     * @returns {boolean} true when fitted; false without pan and zoom, with a hidden area or an empty diagram
+     */
+    fitToView(opts) {
+        var pz = this._panZoom;
+        if (!pz) return false;
+        var o = opts || {};
+        var maxZoom = typeof o.maxZoom == 'number' && o.maxZoom > 0 ? o.maxZoom : 1;
+        var padding = typeof o.padding == 'number' && o.padding >= 0 && o.padding <= 0.45 ? o.padding : 0.05;
+        try {
+            pz.resize();
+            pz.updateBBox();
+            var sizes = pz.getSizes();
+            var vb = sizes && sizes.viewBox;
+            if (!sizes || !(sizes.width > 0) || !(sizes.height > 0) || !vb || !(vb.width > 0) || !(vb.height > 0) || !(sizes.realZoom > 0)) return false;
+            var target = Math.min(maxZoom, Math.min(sizes.width / vb.width, sizes.height / vb.height) * (1 - 2 * padding));
+            var factor = target / sizes.realZoom;
+            // minZoom of svg-pan-zoom is relative to the initial zoom - a large diagram may need more zoom out than allowed
+            var relative = pz.getZoom() * factor;
+            if (pz.setMinZoom && relative < 0.3) pz.setMinZoom(relative * 0.9);
+            pz.zoomBy(factor);
+            pz.center();
+            return true;
+        } catch (error) {
+            // hidden svg (getBBox not available) - nothing to fit
+            return false;
+        }
     }
 
     /**

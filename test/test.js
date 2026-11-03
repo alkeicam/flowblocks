@@ -639,6 +639,63 @@ describe('Flowblocks', () => {
             })
         })
 
+        describe('FB-T39 FB-15 fit to view', () => {
+            // svg-pan-zoom is not available in jsdom - a fake controller with the used part of its public API
+            const fakePanZoom = (sizes, zoom) => {
+                const c = { calls: [], z: zoom || 1 };
+                const rec = (name, fn) => function () { c.calls.push([name].concat([].slice.call(arguments))); return fn ? fn.apply(c, arguments) : c; };
+                Object.assign(c, {
+                    enablePan: rec('enablePan'), disablePan: rec('disablePan'), resize: rec('resize'), updateBBox: rec('updateBBox'),
+                    getSizes: () => sizes, getZoom: () => c.z, zoomBy: rec('zoomBy', function (f) { c.z *= f; return c; }), center: rec('center'),
+                    setMinZoom: rec('setMinZoom'), reset: rec('reset')
+                });
+                return c;
+            };
+            const enable = (pz) => { fb.enablePanAndZoom(() => pz); return pz; };
+            afterEach(() => { delete fb.flow._panZoom; });
+            it('FB-T39 without pan and zoom fitToView returns false', () => {
+                delete fb.flow._panZoom;
+                return expect(fb.fitToView()).false;
+            })
+            it('FB-T39 small diagram is centered and not enlarged above maxZoom (default 1)', () => {
+                buildDiagram();
+                const pz = enable(fakePanZoom({ width: 800, height: 400, realZoom: 1, viewBox: { x: 0, y: 0, width: 200, height: 100 } }));
+                expect(fb.fitToView()).true;
+                const names = pz.calls.map(x => x[0]);
+                expect(names.slice(0, 2)).deep.eq(['resize', 'updateBBox']);
+                expect(pz.calls.find(x => x[0] == 'zoomBy')[1]).closeTo(1, 1e-9);
+                return expect(names[names.length - 1]).eq('center');
+            })
+            it('FB-T39 large diagram is zoomed out to fit with padding, minZoom lowered when needed', () => {
+                buildDiagram();
+                const pz = enable(fakePanZoom({ width: 800, height: 400, realZoom: 1, viewBox: { x: 0, y: 0, width: 4000, height: 1000 } }));
+                expect(fb.fitToView()).true;
+                expect(pz.calls.find(x => x[0] == 'zoomBy')[1]).closeTo(0.18, 1e-9);
+                return expect(pz.calls.find(x => x[0] == 'setMinZoom')[1]).closeTo(0.162, 1e-9);
+            })
+            it('FB-T39 options maxZoom and padding, current real zoom taken into account', () => {
+                buildDiagram();
+                const pz = enable(fakePanZoom({ width: 800, height: 400, realZoom: 0.5, viewBox: { x: 0, y: 0, width: 200, height: 100 } }));
+                expect(fb.fitToView({ maxZoom: 2, padding: 0 })).true;
+                return expect(pz.calls.find(x => x[0] == 'zoomBy')[1]).closeTo(4, 1e-9);
+            })
+            it('FB-T39 hidden area or empty diagram - nothing is changed', () => {
+                buildDiagram();
+                const pz = enable(fakePanZoom({ width: 0, height: 0, realZoom: 1, viewBox: { x: 0, y: 0, width: 200, height: 100 } }));
+                expect(fb.fitToView()).false;
+                const pz2 = enable(fakePanZoom({ width: 800, height: 400, realZoom: 1, viewBox: { x: 0, y: 0, width: 0, height: 0 } }));
+                expect(fb.fitToView()).false;
+                return expect(pz.calls.concat(pz2.calls).some(x => x[0] == 'zoomBy')).false;
+            })
+            it('FB-T39 RESET control (reset) fits the diagram instead of returning to the initial position', () => {
+                buildDiagram();
+                const pz = enable(fakePanZoom({ width: 800, height: 400, realZoom: 1, viewBox: { x: 0, y: 0, width: 1600, height: 400 } }));
+                const ret = pz.reset();
+                expect(ret).eq(pz);
+                return expect(pz.calls.find(x => x[0] == 'zoomBy')[1]).closeTo(0.45, 1e-9);
+            })
+        })
+
         describe('FB-T8 FB-08 markers', () => {
             it('FB-T8 marker element is in block markup (left gutter)', () => {
                 const b = fb.createBlock('Step', 'a', 'A1');
