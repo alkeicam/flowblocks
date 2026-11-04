@@ -112,7 +112,28 @@ class Flowblocks {
     registerTypes(typesArray){
         typesArray.forEach(theType=>{
             this.registerType(theType.name, theType.template, theType.icon, theType.style, theType.configurables, theType.category, theType.validationFunction, theType.validationSrc, theType.rules, theType.section);
+            this.setTypePresentation(theType.name, theType);
         })
+    }
+
+    /**
+     * Presentation of blocks of the type (FB-16) - applied by the view only, never stored in the diagram (export unchanged):
+     *  - portLabels: {in1: 'Input', out1: 'OK', out2: 'Timeout', ...} - texts of port labels (default: port id; a single
+     *    input port without a label shows no label),
+     *  - displayLabel: text under the block instead of the type name (e.g. 'KRS: Odpis aktualny').
+     * @param {*} typeName type name
+     * @param {*} presentation {portLabels?, displayLabel?}; other properties are ignored
+     */
+    setTypePresentation(typeName, presentation){
+        if(typeName === undefined || typeName === null) return;
+        var p = presentation || {};
+        var out = {};
+        if(p.portLabels && typeof p.portLabels === 'object'){
+            out.portLabels = {};
+            Object.keys(p.portLabels).forEach(k=>{ if(typeof p.portLabels[k] === 'string') out.portLabels[k] = p.portLabels[k]; });
+        }
+        if(typeof p.displayLabel === 'string' && p.displayLabel) out.displayLabel = p.displayLabel;
+        if(Flow.setTypePresentation) Flow.setTypePresentation(String(typeName), Object.keys(out).length ? out : undefined);
     }
 
     /**

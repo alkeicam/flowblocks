@@ -946,9 +946,17 @@ class Block {
 
             render: function () {
                 jointjs.dia.ElementView.prototype.render.apply(this, arguments);
+                this._fbRendered = true;
                 this._fbLayoutMarker();
                 this._fbDecorate();
                 return this;
+            },
+
+            /** FB-16: attribute updates (e.g. name, style) re-apply the presentation (shortened title, port labels). */
+            update: function () {
+                var r = jointjs.dia.ElementView.prototype.update.apply(this, arguments);
+                if (this._fbRendered) this._fbDecorate();
+                return r;
             },
 
             /**

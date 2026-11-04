@@ -696,6 +696,48 @@ describe('Flowblocks', () => {
             })
         })
 
+        describe('FB-T41 FB-16 presentation of blocks (port labels, title, label under the block)', () => {
+            const SPLIT = { name: 'Conn', template: 'Split4', icon: 'agave', style: 'cream', category: 'core', configurables: [],
+                portLabels: { out1: 'OK', out2: 'Timeout', out3: 'Error', out4: 'Unavailable' }, displayLabel: 'KRS: Odpis aktualny' };
+            const labelsOf = (cell) => Array.from(cell.findView(fb.flow.paper).el.querySelectorAll('.port-label')).map(l => l.getAttribute('data-port-label'));
+            it('FB-T41 port labels from the type, single input without a label; other types keep port ids', () => {
+                fb.registerTypes([SPLIT]);
+                const c = fb.createBlock('Conn', 'KRS – odpis aktualny', 'C1', { x: 10, y: 10 });
+                expect(labelsOf(c)).deep.eq(['', 'OK', 'Timeout', 'Error', 'Unavailable']);
+                const d = buildDiagram();
+                return expect(labelsOf(d.a)).deep.eq(['', 'out1']);
+            })
+            it('FB-T41 label under the block from displayLabel, full title kept in <title>; port circles sized to spacing', () => {
+                fb.registerTypes([SPLIT]);
+                const c = fb.createBlock('Conn', 'KRS – odpis aktualny z bardzo długą nazwą', 'C1', { x: 10, y: 10 });
+                const el = c.findView(fb.flow.paper).el;
+                expect(el.querySelector('.fb-type-label-text').getAttribute('data-full-text')).eq('KRS: Odpis aktualny');
+                expect(el.querySelector('.fb-label-text title').textContent).eq('KRS – odpis aktualny z bardzo długą nazwą');
+                const r = Number(el.querySelector('.port-body').getAttribute('r'));
+                return expect(r).within(4, 9);
+            })
+            it('FB-T41 presentation is not stored: export and getDiagram unchanged, no dirty mark; renamed block re-decorated', async () => {
+                fb.registerTypes([Object.assign({}, SPLIT, { portLabels: undefined, displayLabel: undefined })]);
+                const plain = fb.createBlock('Conn', 'one', 'C1', { x: 10, y: 10 });
+                const before = JSON.stringify(fb.getDiagram().cells.find(c => c.id === plain.id));
+                fb.markClean();
+                fb.registerTypes([SPLIT]);
+                plain.findView(fb.flow.paper).update();
+                expect(labelsOf(plain)[1]).eq('OK');
+                expect(JSON.stringify(fb.getDiagram().cells.find(c => c.id === plain.id))).eq(before);
+                expect(JSON.stringify(fb.export())).not.contain('Unavailable');
+                expect(fb.isDirty()).false;
+                plain.set('name', 'two');
+                await wait(10);
+                return expect(plain.findView(fb.flow.paper).el.querySelector('.fb-label-text title').textContent).eq('two');
+            })
+            it('FB-T41 highlight state warning', () => {
+                const d = buildDiagram();
+                fb.highlight({ blocks: [{ id: 'A1', state: 'warning' }] });
+                return expect(d.a.findView(fb.flow.paper).el.classList.contains('fb-hl-warning')).true;
+            })
+        })
+
         describe('FB-T8 FB-08 markers', () => {
             it('FB-T8 marker element is in block markup (left gutter)', () => {
                 const b = fb.createBlock('Step', 'a', 'A1');

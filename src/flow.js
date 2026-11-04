@@ -7,7 +7,7 @@ const STYLES = require('./styles');
 /**
  * Highlight states supported by highlight() (FB-07). Each state is presented by CSS class fb-hl-<state>
  */
-const HIGHLIGHT_STATES = ['ok', 'error', 'timeout', 'current', 'visited', 'added', 'removed', 'changed'];
+const HIGHLIGHT_STATES = ['ok', 'error', 'timeout', 'current', 'visited', 'added', 'removed', 'changed', 'warning'];
 /**
  * Marker kinds supported by setMarker() (FB-08). Each kind is presented by CSS class fb-marker-<kind>
  */
@@ -636,9 +636,86 @@ class Flow {
             el.setAttribute('data-ghost', 'true');
         }
         this._applyMarker(view);
+        this._applyPresentation(view);
         var highlight = this._highlights[model.get('blockId')] || this._highlights[model.id];
         if (highlight) this._applyHighlight(model, highlight.state);
         else if (ghost) this._applyHighlight(model, 'removed');
+    }
+
+    /** Presentation of blocks of a type (FB-16) - see Flowblocks.setTypePresentation. Kept across flows (types are global). */
+    setTypePresentation(typeName, presentation){
+        if(!this._typePresentation) this._typePresentation = {};
+        if(presentation) this._typePresentation[typeName] = presentation;
+        else delete this._typePresentation[typeName];
+    }
+
+    /**
+     * FB-16: presentation of a block view (DOM only - nothing is written to the model, export unchanged):
+     *  - port labels from the type presentation (OK / Timeout / Error...), a single input port without a label,
+     *  - port circles sized to the spacing of ports (4 or 5 outputs do not overlap),
+     *  - block title shortened with an ellipsis to the width of the title bar, full text in <title>,
+     *  - text under the block: display label of the type (or the type name) shortened to 1.6 x width, full text in <title>.
+     */
+    _applyPresentation(view){
+        var model = view.model;
+        var el = view.el;
+        if (!el || !el.querySelectorAll || !model || !model.get) return;
+        var pres = (this._typePresentation || {})[model.get('_type')] || {};
+        var labels = pres.portLabels || {};
+        var size = model.get('size') || {};
+        var ports = typeof model.getPorts === 'function' ? model.getPorts() : [];
+        var count = { in: 0, out: 0 };
+        ports.forEach(p => { if (count[p.group] !== undefined) count[p.group]++; });
+        var maxPorts = Math.max(count.in, count.out, 1);
+        // spacing of ports along the height of the block (devs layout spreads ports evenly)
+        var spacing = (size.height || 70) / (maxPorts + 1);
+        var r = Math.max(4, Math.min(9, Math.floor(spacing * 0.32)));
+        var fontSize = Math.max(8, Math.min(11, Math.floor(spacing * 0.45)));
+        Array.prototype.forEach.call(el.querySelectorAll('.joint-port'), portEl => {
+            var body = portEl.querySelector('.port-body');
+            var label = portEl.querySelector('.port-label');
+            var portId = body ? body.getAttribute('port') : undefined;
+            if (body) body.setAttribute('r', r);
+            if (!label || !portId) return;
+            var group = (ports.find(p => p.id == portId) || {}).group;
+            var text = labels[portId] !== undefined ? labels[portId] : (group === 'in' && count.in <= 1 ? '' : portId);
+            if (label.textContent !== text) label.textContent = text;
+            label.setAttribute('font-size', fontSize);
+            label.setAttribute('data-port-label', text);
+        });
+        this._fitText(el.querySelector('.fb-label-text'), model.get('name'), (size.width || 70) * 0.92);
+        var typeText = pres.displayLabel || model.get('_type') || '';
+        this._fitText(el.querySelector('.fb-type-label-text'), typeText, (size.width || 70) * 1.6);
+    }
+
+    /** Shortens the text of an SVG text element to maxWidth (ellipsis) and keeps the full text in a <title> child. */
+    _fitText(textEl, fullText, maxWidth){
+        if (!textEl) return;
+        var full = fullText === undefined || fullText === null ? '' : String(fullText);
+        var doc = textEl.ownerDocument;
+        var title = textEl.querySelector('title');
+        if (!title && doc) { title = doc.createElementNS('http://www.w3.org/2000/svg', 'title'); }
+        var setText = (t) => {
+            // the text node only (the <title> child is kept)
+            Array.prototype.slice.call(textEl.childNodes).forEach(n => { if (n !== title) textEl.removeChild(n); });
+            textEl.insertBefore(doc.createTextNode(t), title && title.parentNode === textEl ? title : null);
+        };
+        setText(full);
+        if (title) { title.textContent = full; if (title.parentNode !== textEl) textEl.appendChild(title); }
+        textEl.setAttribute('data-full-text', full);
+        // measuring needs a rendering browser (jsdom has no getComputedTextLength) - otherwise the full text stays
+        if (typeof textEl.getComputedTextLength !== 'function' || !(maxWidth > 0)) return;
+        var length;
+        try { length = textEl.getComputedTextLength(); } catch (e) { return; }
+        if (!(length > maxWidth) || full.length < 2) return;
+        var lo = 0, hi = full.length;
+        while (lo < hi) {
+            var mid = Math.ceil((lo + hi) / 2);
+            setText(full.slice(0, mid) + '…');
+            var w; try { w = textEl.getComputedTextLength(); } catch (e) { w = 0; }
+            if (w <= maxWidth) lo = mid; else hi = mid - 1;
+        }
+        setText(full.slice(0, Math.max(1, lo)) + '…');
     }
 
     /**

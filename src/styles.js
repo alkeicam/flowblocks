@@ -20,6 +20,9 @@ const CSS = [
     '.joint-element.fb-hl-added > .rotatable { filter: drop-shadow(0 0 6px #55efc4); }',
     '.joint-element.fb-hl-changed .fb-icon-rect, .joint-element.fb-hl-changed .fb-label-rect, .joint-element.fb-hl-changed .fb-status-rect { stroke: #fdcb6e; }',
     '.joint-element.fb-hl-changed > .rotatable { filter: drop-shadow(0 0 6px #fdcb6e); }',
+    // FB-16: warning (e.g. block of a connector that is not connected)
+    '.joint-element.fb-hl-warning .fb-icon-rect, .joint-element.fb-hl-warning .fb-label-rect, .joint-element.fb-hl-warning .fb-status-rect { stroke: #e67e22; stroke-dasharray: 4 2; }',
+    '.joint-element.fb-hl-warning > .rotatable { filter: drop-shadow(0 0 5px #e67e22); }',
     '.joint-element.fb-hl-removed { opacity: 0.4; }',
     '.joint-element.fb-hl-removed .fb-icon-rect, .joint-element.fb-hl-removed .fb-label-rect, .joint-element.fb-hl-removed .fb-status-rect { stroke: #d63031; stroke-dasharray: 4 4; }',
     /* FB-07 highlights - links */

@@ -246,4 +246,29 @@ describe('FB-SMOKE-CORE flowblocks w przeglądarce (dist)', function () {
         await page.locator('#svg-pan-zoom-reset-pan-zoom').click();
         expect(inside(await geometry())).true;
     });
+
+    it('FB-SMOKE-CORE-PORTS1 (FB-16) klocek z 5 wyjściami: etykiety z typu, porty bez nakładania; długi tytuł skrócony do paska, pełny w <title>', async () => {
+        const r = await page.evaluate(() => {
+            window.fb.registerTypes([{name: 'Five', template: 'Split5', icon: '/test/browser/icon.svg', style: 'cream', category: 'core', configurables: [],
+                portLabels: {out1: 'OK', out2: 'Not found', out3: 'Timeout', out4: 'Error', out5: 'Unavailable'}, displayLabel: 'Registry: Very long operation name of the connector'}]);
+            const b = window.fb.createBlock('Five', 'KRS – odpis aktualny z bardzo długim tytułem klocka', 'F1', {x: 200, y: 100});
+            const el = b.findView(window.fb.flow.paper).el;
+            const outs = [...el.querySelectorAll('.joint-port .port-body')].map(c => c.getBoundingClientRect()).filter((x, i, a) => true);
+            const bodies = [...el.querySelectorAll('.joint-port')].map(p => ({id: p.querySelector('.port-body').getAttribute('port'), box: p.querySelector('.port-body').getBoundingClientRect(),
+                label: p.querySelector('.port-label').textContent}));
+            const out = bodies.filter(x => /^out/.test(x.id)).sort((a, b) => a.box.top - b.box.top);
+            let overlap = false;
+            for (let i = 1; i < out.length; i++) if (out[i].box.top < out[i - 1].box.bottom + 2) overlap = true;
+            const title = el.querySelector('.fb-label-text');
+            const bar = el.querySelector('.fb-label-rect').getBoundingClientRect();
+            return {labels: out.map(x => x.label), overlap, titleText: title.textContent, titleFull: title.querySelector('title').textContent,
+                titleW: title.getBoundingClientRect().width, barW: bar.width, under: el.querySelector('.fb-type-label-text').textContent};
+        });
+        expect(r.labels).deep.eq(['OK', 'Not found', 'Timeout', 'Error', 'Unavailable']);
+        expect(r.overlap, 'porty wyjść nie nachodzą na siebie').false;
+        expect(r.titleText.endsWith('…') || r.titleText.includes('…'), r.titleText).true;
+        expect(r.titleW).lte(r.barW + 1);
+        expect(r.titleFull).eq('KRS – odpis aktualny z bardzo długim tytułem klocka');
+        expect(r.under.startsWith('Registry:')).true;
+    });
 });
