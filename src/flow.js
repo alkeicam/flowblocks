@@ -241,6 +241,8 @@ class Flow {
                     const typeName = cell.get("_type");
                     const typeDefinition = typesForValidation&&typesForValidation[typeName] ? typesForValidation[typeName] : undefined;
                     cell._reApplyValidation(typeDefinition&&typeDefinition.validation?typeDefinition.validation:undefined, typeDefinition&&typeDefinition.rules?typeDefinition.rules:undefined);
+                    // FB-17: diagrams saved before 1.5 - blocks with many ports get the height for their ports (presentation)
+                    if (typeof cell.fitPortsHeight === 'function') cell.fitPortsHeight();
                     this.addBlock(cell, true);
                     // status stored in the diagram is not trusted (diagram created by API, rules changed since save) - recalculated
                     // for blocks of a known type: registered by the application (any validation) or validated declaratively

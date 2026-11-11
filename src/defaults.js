@@ -4,6 +4,12 @@ class Defaults {
                 width: 70,
                 height: 70
             },
+            // FB-17: minimal vertical spacing of ports - blocks with more than PORTS_FIXED outputs (or inputs) grow in height
+            // (height = max(SIZE.height, PORT_SPACING x (ports + 1))), up to MAX_OUT_PORTS outputs; up to 5 ports the block
+            // keeps 70 px (diagrams saved by 1.4 unchanged - FB-COMPAT)
+            this.PORT_SPACING = 18,
+            this.PORTS_FIXED = 5,
+            this.MAX_OUT_PORTS = 8,
             this.LABEL = {
                 FONT: {
                     SIZE: 0.15,

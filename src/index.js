@@ -56,7 +56,12 @@ class Flowblocks {
             // no UI driven modifications in read only mode
             if(self._readOnly) return;
             var block = self.getBlock(blockId); 
-            block.setConfigurables(configurables);           
+            // FB-17: refused change (e.g. a connected output removed by a smaller number of outputs) - reported, block unchanged
+            try {
+                block.setConfigurables(configurables);
+            } catch (err) {
+                self.emitter.emit(EVENTS_DICT.EVENTS.FLOWBLOCKS_DONE_ERROR, 'Block configuration', err && err.message ? err.message : String(err));
+            }
             // block.set('configurables', configurables);
         })   
 

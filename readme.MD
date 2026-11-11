@@ -50,6 +50,7 @@ Types allow to specify all attributes and block behaviour, they are like a templ
 | `End` | Types that use this template have only one input port named `in1`. These are always used as an output/end blocks in diagrams |
 | `PassThrough` | Types that use this template have single input port named `in1` and a single output port `out1`. |
 | `Split` | Types that use this template have single input port named `in1` and a two output ports named `out1`, `out2`. |
+| `Split3` … `Split8` | Single input port `in1` and 3 … 8 output ports `out1` … `outN` (`Split6` … `Split8` since 1.5). Blocks with more than 5 ports in a group are taller – ports keep at least 18 px of spacing (1.5, FB-17). |
 | `Join` | Types that use this template have two input port named `in1`, `in2` and a single output port `out1`. |
 | `Mixer` | Types that use this template have two input port named `in1`, `in2` and a two output ports named `out1`, `out2`. |
 
@@ -174,6 +175,15 @@ block.setConfigurable('units',7);
 | :--- | :--- | :--- | :--- |
 |Argument| `name` | `string` | **Required** Name of the configurable |
 |Argument| `value` | `any` | **Required** Value of the configurable |
+
+#### block.setOutPorts(n) (1.5)
+> Sets the number of output ports of a block (`out1` … `outN`, 1 … 8) – e.g. a parallel block with N branches. Connections of the remaining ports are kept; removing a connected port throws an error with `code: 'PORT_CONNECTED'` and `ports`. The template of a split block follows the number of ports (`Split`, `Split3` … `Split8`) and the height of the block is adjusted to its ports.
+```javascript
+block.setOutPorts(8);
+```
+
+#### block.fitPortsHeight(shrink) (1.5)
+> Adjusts the height of the block to its ports (taller when more than 5 ports in a group; lower only with `shrink`). Called on block creation and on import.
 
 #### block.setConfigurables(configurablesArray)
 > Sets/updates configurables. Revalidation is performed.

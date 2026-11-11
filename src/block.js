@@ -373,6 +373,14 @@ class Block {
              * @param {*} configurables Array of configurables values {i: name/id of the configurable, v: values (string)}             
              */
             setConfigurables(configurables){
+                // FB-17: a NUMBER configurable marked `outPorts: true` sets the number of outputs (e.g. Parallel branches) -
+                // applied first, so a refused change (connected output) leaves the block unchanged
+                var portsDef = (this.get('_configurablesDefinitions') || []).find(d => d && d.outPorts === true);
+                if (portsDef) {
+                    var item = (configurables || []).find(c => c && c.i == portsDef.id);
+                    var n = item && item.v !== undefined && item.v !== null && item.v !== '' ? Number(item.v) : Number(portsDef.default);
+                    if (Number.isInteger(n) && n >= 1) this.setOutPorts(n);
+                }
                 this.set('configurables', configurables);
                 // treat name in a special way - block name is populated from the name configurable
                 const name = this.getConfigurable("name")
@@ -435,6 +443,61 @@ class Block {
                     configurablesDefinitions.push(definition);
                 }
                 this.set("_configurablesDefinitions", configurablesDefinitions);
+            },
+
+            /**
+             * FB-17: height of the block for its ports - more than PORTS_FIXED ports in a group (in / out) makes the block
+             * taller, so ports keep at least PORT_SPACING px of spacing (port circles and labels do not overlap).
+             * @returns {number} required height
+             */
+            requiredHeight() {
+                var count = { in: 0, out: 0 };
+                this.getPorts().forEach(p => { if (count[p.group] !== undefined) count[p.group]++; });
+                var n = Math.max(count.in, count.out);
+                var base = DEFAULTS.SIZE.height;
+                return n > DEFAULTS.PORTS_FIXED ? Math.max(base, DEFAULTS.PORT_SPACING * (n + 1)) : base;
+            },
+
+            /**
+             * FB-17: adjusts the height of the block to its ports (width unchanged). A block is made taller when its ports
+             * need it; it is made lower only with `shrink` (ports removed by setOutPorts) - diagrams with blocks resized
+             * on purpose keep their size on import.
+             * @param {boolean} [shrink] @returns {boolean} changed
+             */
+            fitPortsHeight(shrink) {
+                var size = this.get('size') || {};
+                var h = this.requiredHeight();
+                if (h === size.height || (h < size.height && !shrink)) return false;
+                this.resize(size.width || DEFAULTS.SIZE.width, h);
+                return true;
+            },
+
+            /**
+             * FB-17: number of output ports of a split block (out1..outN, 1..MAX_OUT_PORTS) - e.g. Parallel with N branches.
+             * Connections of the remaining ports are kept; removing a connected port is refused.
+             * @param {number} n
+             * @throws {Error} code PORT_CONNECTED (with ports) / PORT_COUNT
+             */
+            setOutPorts(n) {
+                n = Number(n);
+                if (!Number.isInteger(n) || n < 1 || n > DEFAULTS.MAX_OUT_PORTS) {
+                    var e = new Error('Number of outputs must be 1..' + DEFAULTS.MAX_OUT_PORTS); e.code = 'PORT_COUNT'; throw e;
+                }
+                var next = [];
+                for (var i = 1; i <= n; i++) next.push('out' + i);
+                var current = this.get('outPorts') || [];
+                var removed = current.filter(p => next.indexOf(p) < 0);
+                var busy = (this.get('_portConnections') || []).filter(c => removed.indexOf(c.port) >= 0).map(c => c.port);
+                if (busy.length) {
+                    var err = new Error('Connected outputs can not be removed: ' + busy.join(', ')); err.code = 'PORT_CONNECTED'; err.ports = busy; throw err;
+                }
+                if (current.length === n && current.every((p, k) => p === next[k])) return false;
+                this.set('outPorts', next);
+                var tpl = this.get('_template');
+                if (/^Split\d?$/.test(tpl || '') && (this.get('inPorts') || []).length === 1) this.set('_template', n === 2 ? 'Split' : 'Split' + n);
+                this.fitPortsHeight(true);
+                this._recalculateStatus();
+                return true;
             },
 
             /**
@@ -908,9 +971,14 @@ class Block {
             _updateMyModel: function () {
                 var self = this;
                 var offsetY = 0;
+                var size = this.get('size');
+                // FB-17: a block taller than wide (many ports) keeps the proportions of a square block - title bar, status
+                // bar, fonts and icon are sized to the width, the icon section takes the remaining height
+                var unit = size.height > size.width ? size.width : size.height;
+                var iconPart = size.height - 0.4 * unit;
                 var field = {
-                    width: this.get('size').width,
-                    height: this.get('size').height,
+                    width: size.width,
+                    height: unit,
                     icon: this.get('icon'),
                     name: this.get('debug') ? this.get('name') + '[' + this.get('blockId') + ']' : this.get('name'),
                     statusMessage: this.get('statusMsg'),
@@ -918,7 +986,10 @@ class Block {
                     type: this.get('_type')
                 }
                 offsetY += self._recalculateRectWithLabel('.fb-label', field.name, 0.2, 0.6, field, offsetY);
-                offsetY += self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
+                // square block - the same arithmetic as 1.4 (saved diagrams identical); tall block - icon section stretched
+                offsetY += size.height > size.width
+                    ? self._recalculateRectWithIcon('.fb-icon', field.icon, iconPart / unit, 0.48 * unit / iconPart, field, offsetY)
+                    : self._recalculateRectWithIcon('.fb-icon', field.icon, 0.6, 0.8, field, offsetY);
                 var previousOffsetY = offsetY;
                 offsetY += self._recalculateRectWithLabel('.fb-status', field.statusMessage, 0.2, 0.3, field, offsetY);                
                 self._recalculateValidationRect('.fb-validation', 0.2, 0.15, field, previousOffsetY);  
@@ -993,6 +1064,9 @@ class Block {
             Split3: this.createSplit3Element,
             Split4: this.createSplit4Element,
             Split5: this.createSplit5Element,
+            Split6: function () { return this.createSplitNElement(6); },
+            Split7: function () { return this.createSplitNElement(7); },
+            Split8: function () { return this.createSplitNElement(8); },
             Join: this.createJoinElement,
             End: this.createSinkElement,
             Mixer: this.createMixerElement
@@ -1010,6 +1084,8 @@ class Block {
                 block.applyValidationRules(validationRules);
             // apply style
             block.style(style);
+            // FB-17: blocks with many ports are taller
+            block.fitPortsHeight();
             // calculate initial status of block 
             block._recalculateStatus();
 
@@ -1091,6 +1167,18 @@ class Block {
     
         var newBlock = new this.Model(options);                
         return newBlock;
+    }
+
+    /**
+     * FB-17: element with a single input and N outputs (2..MAX_OUT_PORTS) - templates Split6..Split8 (Split..Split5 kept)
+     * @param {number} n
+     */
+    createSplitNElement(n) {
+        var options = this._createBaseOptions();
+        options.inPorts = ['in1'];
+        options.outPorts = [];
+        for (var i = 1; i <= n; i++) options.outPorts.push('out' + i);
+        return new this.Model(options);
     }
 
     /**

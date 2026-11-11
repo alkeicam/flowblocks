@@ -738,6 +738,86 @@ describe('Flowblocks', () => {
             })
         })
 
+        describe('FB-T42 FB-17 blocks with many outputs (Split6..Split8, setOutPorts, height for ports)', () => {
+            const PAR = { name: 'Par', template: 'Split3', icon: 'agave', style: 'cream', category: 'core', configurables: [] };
+            const outY = (cell) => cell.getPorts().filter(p => p.group === 'out').map(p => cell.getPortsPositions('out')[p.id].y).sort((a, b) => a - b);
+            const minGap = (ys) => ys.slice(1).reduce((m, y, i) => Math.min(m, y - ys[i]), Infinity);
+            it('FB-T42 templates Split2..Split8: blocks up to 5 outputs keep 70 px (1.4 diagrams unchanged), more outputs - spacing of ports >= 18 px', () => {
+                const tpls = ['Split', 'Split3', 'Split4', 'Split5', 'Split6', 'Split7', 'Split8'];
+                fb.registerTypes(tpls.map(t => Object.assign({}, PAR, { name: 'T' + t, template: t })));
+                tpls.forEach((t, k) => {
+                    const n = k + 2;
+                    const c = fb.createBlock('T' + t, t, 'B' + n, { x: 10, y: 10 });
+                    expect(c.getPorts().filter(p => p.group === 'out').length).eq(n);
+                    expect(c.get('size').height).eq(n > 5 ? 18 * (n + 1) : 70);
+                    expect(minGap(outY(c))).gte(n > 5 ? 18 : 11);
+                });
+                const el = fb.getBlock('B8').findView(fb.flow.paper).el;
+                // port circles and labels sized to the spacing (no overlap: 2 r < spacing)
+                return expect(2 * Number(el.querySelector('.port-body').getAttribute('r'))).lt(18);
+            })
+            it('FB-T42 tall block keeps the proportions of a square block (title bar and status bar sized to the width)', () => {
+                fb.registerTypes([Object.assign({}, PAR, { template: 'Split8' })]);
+                const c = fb.createBlock('Par', 'p', 'P8', { x: 10, y: 10 });
+                expect(c.attr('.fb-label-rect/height')).closeTo(14, 1e-9);
+                expect(c.attr('.fb-status-rect/height')).closeTo(14, 1e-9);
+                return expect(c.attr('.fb-icon-rect/height')).closeTo(162 - 28, 1e-9);
+            })
+            it('FB-T42 setOutPorts: grows and shrinks the block, keeps connections, refuses to remove a connected output', () => {
+                fb.registerTypes([PAR, { name: 'Step', template: 'PassThrough', category: 'core', configurables: [] }]);
+                const p = fb.createBlock('Par', 'p', 'P1', { x: 10, y: 10 });
+                const s = fb.createBlock('Step', 's', 'S1', { x: 200, y: 10 });
+                const link = new joint.dia.Link({ source: { id: p.id, port: 'out2' }, target: { id: s.id, port: 'in1' } });
+                fb.flow.graph.addCell(link);
+                const sv = s.findView(fb.flow.paper);
+                fb.flow.paper.trigger('link:connect', link.findView(fb.flow.paper), {}, sv, sv.el.querySelector('[port="in1"]'), 'target');
+                expect(p.setOutPorts(8)).true;
+                expect(p.get('_template')).eq('Split8');
+                expect(p.get('size').height).eq(162);
+                expect(p.get('_portConnections').map(c => c.port)).deep.eq(['out2']);
+                expect(() => p.setOutPorts(1)).throw(/out2/);
+                expect(p.setOutPorts(2)).true;
+                expect(p.get('_template')).eq('Split');
+                expect(p.get('size').height).eq(70);
+                expect(p.setOutPorts(2)).false;
+                expect(() => p.setOutPorts(9)).throw(/1\.\.8/);
+                return expect(() => p.setOutPorts('x')).throw(/1\.\.8/);
+            })
+            it('FB-T42 configurable with outPorts: true sets the number of outputs on save; refused change reported, block unchanged', () => {
+                fb.registerTypes([Object.assign({}, PAR, { configurables: [{ id: 'name', label: 'Name', type: 'TEXT', required: true },
+                    { id: 'branches', label: 'Branches', type: 'NUMBER', required: true, default: 3, outPorts: true }] }),
+                    { name: 'Step', template: 'PassThrough', category: 'core', configurables: [] }]);
+                const p = fb.createBlock('Par', 'p', 'P1', { x: 10, y: 10 });
+                fb.notify(EVENTS.BLOCK_DETAILS_SAVE, 'P1', [{ i: 'name', v: 'p' }, { i: 'branches', v: '7' }]);
+                expect(p.getPorts().filter(x => x.group === 'out').length).eq(7);
+                expect(p.get('size').height).eq(144);
+                const s1 = fb.createBlock('Step', 's', 'S1', { x: 300, y: 10 });
+                const link = new joint.dia.Link({ source: { id: p.id, port: 'out6' }, target: { id: s1.id, port: 'in1' } });
+                fb.flow.graph.addCell(link);
+                const sv = s1.findView(fb.flow.paper);
+                fb.flow.paper.trigger('link:connect', link.findView(fb.flow.paper), {}, sv, sv.el.querySelector('[port="in1"]'), 'target');
+                const errors = [];
+                fb.on(EVENTS.FLOWBLOCKS_DONE_ERROR, (op, msg) => errors.push(msg));
+                fb.notify(EVENTS.BLOCK_DETAILS_SAVE, 'P1', [{ i: 'name', v: 'renamed' }, { i: 'branches', v: '3' }]);
+                expect(errors[0]).contain('out6');
+                expect(p.get('name')).eq('p');
+                return expect(p.getPorts().filter(x => x.group === 'out').length).eq(7);
+            })
+            it('FB-T42 import: diagram (e.g. created by API) with a 70 px Split8 block gets the height for its ports, block resized on purpose keeps its size', () => {
+                fb.registerTypes([Object.assign({}, PAR, { template: 'Split8' }), Object.assign({}, PAR, { name: 'P5', template: 'Split5' }), { name: 'Step', template: 'PassThrough', category: 'core', configurables: [] }]);
+                const c = fb.createBlock('Par', 'p', 'P8', { x: 10, y: 10 });
+                const five = fb.createBlock('P5', 'p5', 'F5', { x: 10, y: 300 });
+                fb.createBlock('Step', 's', 'S9', { x: 300, y: 10 }, { width: 100, height: 200 });
+                const json = fb.export();
+                json.cells.find(x => x.id === c.id).size.height = 70;
+                fb.import(JSON.stringify(json), true);
+                expect(fb.getBlock('P8').get('size').height).eq(162);
+                expect(fb.getBlock('F5').get('size').height).eq(70);
+                expect(fb.getBlock('S9').get('size').height).eq(200);
+                return expect(fb.isDirty()).false;
+            })
+        })
+
         describe('FB-T8 FB-08 markers', () => {
             it('FB-T8 marker element is in block markup (left gutter)', () => {
                 const b = fb.createBlock('Step', 'a', 'A1');
