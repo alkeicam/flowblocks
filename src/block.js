@@ -1,6 +1,8 @@
 const jointjs = require("jointjs")
 const DEFAULTS = require('./defaults')
 const fromstring = require('from-string');
+const MESSAGES = require('./messages');
+const Flow = require('./flow');
 
 /**
  * Normalizes declarative validation rules so they can be serialized (RegExp objects are converted to source strings).
@@ -209,7 +211,8 @@ class Block {
             getStatus(){
                 return {
                     valid: this.get('status') == 'OK',
-                    errors: this.get('errors')
+                    errors: this.get('errors'),
+                    text: this._statusToString()
                 }
             },
 
@@ -537,14 +540,35 @@ class Block {
                     console.log('Connections[' + this.get('blockId') + ']: ', JSON.stringify(this.get('_portConnections')));
             },
 
+            /** FB-18: tooltip of the validation bar - "Ready." or the problems of the block, one per line. */
             _statusToString(){
-                var msg = 'Block validation state: '+this.get('status');
+                return MESSAGES.statusText(this.get('status') == 'OK' ? [] : this.get('errors'));
+            },
 
-                this.get('errors').forEach(error=>{
-                    msg += " | "+error.msg
-                })
+            /** FB-18: text of the status (as the tooltip of the block). */
+            getStatusText(){
+                return this._statusToString();
+            },
 
-                return msg;
+            /** FB-18: label of a field for messages - label of its definition, otherwise its id. */
+            _fieldLabel(fieldId){
+                var def = (this.get('_configurablesDefinitions') || []).find(d => d && d.id == fieldId);
+                return def && def.label ? String(def.label) : String(fieldId);
+            },
+
+            /**
+             * FB-18: port for messages - {group, port: label (type presentation; numbered when the block has several ports of
+             * the group and the port has no label), portIndex}.
+             */
+            _portInfo(portId){
+                var ports = typeof this.getPorts === 'function' ? this.getPorts() : [];
+                var p = ports.find(x => x.id == portId) || {};
+                var group = p.group || (/^in/.test(String(portId)) ? 'in' : 'out');
+                var many = ports.filter(x => x.group == group).length > 1;
+                var m = /(\d+)$/.exec(String(portId));
+                var labels = Block.portLabels(this.get('_type'));
+                var label = labels[portId] !== undefined && labels[portId] !== '' ? String(labels[portId]) : (many && m ? m[1] : undefined);
+                return { group: group, port: label, portIndex: many && m ? Number(m[1]) : undefined };
             },
 
             /**
@@ -563,10 +587,12 @@ class Block {
 
                 if (freePorts.length > 0){                    
                     freePorts.forEach(port=>{
+                        var info = this._portInfo(port.id);
                         this.get('errors').push({
                             code: 'PORT_NOT_CONNECTED',
                             cId: port.id,
-                            msg: 'Port ['+port.id+'] is not connected'
+                            msg: MESSAGES.text(info.group == 'in' ? 'PORT_INPUT' : 'PORT_OUTPUT', info),
+                            label: info.port
                         })
                     })                    
                 }
@@ -581,10 +607,12 @@ class Block {
                 }).forEach(requiredItem=>{
                     var actualConfigurable = self.getConfigurable(requiredItem.id);
                     if(!actualConfigurable){
+                        var field = self._fieldLabel(requiredItem.id);
                         this.get('errors').push({
                             code: 'FIELD_REQUIRED',
                             cId: requiredItem.id,
-                            msg: 'Field ['+requiredItem.id+'] is required'
+                            msg: MESSAGES.text('FIELD_REQUIRED', {field: field}),
+                            label: field
                         })
                     }
                 })
@@ -702,16 +730,21 @@ class Block {
                             // not connected ports are already reported by base ports validation
                             var reported = errors.find(error=>error.code == 'PORT_NOT_CONNECTED' && error.cId == portId);
                             if (!reported) {
-                                errors.push({ code: 'SUCCESSOR_MIN', cId: portId, msg: 'Port ['+portId+'] requires at least '+rule.min+' connection(s)' });
+                                var minInfo = Object.assign(self._portInfo(portId), { min: rule.min });
+                                errors.push({ code: 'SUCCESSOR_MIN', cId: portId, msg: MESSAGES.text('SUCCESSOR_MIN', minInfo), label: minInfo.port });
                             }
                         }
                         if (rule.max !== undefined && rule.max !== null && portConnections.length > rule.max) {
-                            errors.push({ code: 'SUCCESSOR_MAX', cId: portId, msg: 'Port ['+portId+'] allows at most '+rule.max+' connection(s)' });
+                            var maxInfo = Object.assign(self._portInfo(portId), { max: rule.max });
+                            errors.push({ code: 'SUCCESSOR_MAX', cId: portId, msg: MESSAGES.text('SUCCESSOR_MAX', maxInfo), label: maxInfo.port });
                         }
                         if (Array.isArray(rule.types) && rule.types.length > 0) {
+                            // FB-18: allowed steps by the names the user sees (type presentation); wildcard types are not listed
+                            var allowed = rule.types.filter(t => String(t).slice(-1) != '*').map(t => Block.typeName(t));
                             portConnections.forEach(connection=>{
                                 if (rule.types.indexOf(connection.type) == -1) {
-                                    errors.push({ code: 'SUCCESSOR_TYPE', cId: portId, msg: 'Port ['+portId+'] can not be connected to block of type ['+connection.type+'], allowed: '+rule.types.join(', ') });
+                                    var typeInfo = Object.assign(self._portInfo(portId), { type: Block.typeName(connection.type), allowed: allowed, allowedText: MESSAGES.allowedText(allowed) });
+                                    errors.push({ code: 'SUCCESSOR_TYPE', cId: portId, msg: MESSAGES.text('SUCCESSOR_TYPE', typeInfo), label: typeInfo.port, allowed: allowed });
                                 }
                             });
                         }
@@ -729,7 +762,7 @@ class Block {
                         if (isEmpty(rawValue(fieldId))) {
                             var reported = errors.find(error=>error.code == 'FIELD_REQUIRED' && error.cId == fieldId);
                             if (!reported) {
-                                errors.push({ code: 'FIELD_REQUIRED', cId: fieldId, msg: 'Field ['+fieldId+'] is required' });
+                                errors.push({ code: 'FIELD_REQUIRED', cId: fieldId, msg: MESSAGES.text('FIELD_REQUIRED', { field: self._fieldLabel(fieldId) }), label: self._fieldLabel(fieldId) });
                             }
                         }
                     });
@@ -747,7 +780,7 @@ class Block {
                             return;
                         }
                         if (!re.test(String(value))) {
-                            errors.push({ code: 'FIELD_PATTERN', cId: fieldId, msg: pattern.msg ? pattern.msg : 'Field ['+fieldId+'] has invalid format' });
+                            errors.push({ code: 'FIELD_PATTERN', cId: fieldId, msg: pattern.msg ? pattern.msg : MESSAGES.text('FIELD_PATTERN', { field: self._fieldLabel(fieldId) }), label: self._fieldLabel(fieldId) });
                         }
                     });
                 }
@@ -1054,6 +1087,18 @@ class Block {
             }
         });
         this.View = jointjs.shapes.flowblocks.BlockView;
+    }
+
+    /** FB-18: name of a type the user sees - display label of the type presentation (FB-16), otherwise the type name. */
+    static typeName(type){
+        var pres = (Flow && Flow._typePresentation || {})[type] || {};
+        return pres.displayLabel || String(type);
+    }
+
+    /** FB-18: port labels of a type (FB-16 presentation). */
+    static portLabels(type){
+        var pres = (Flow && Flow._typePresentation || {})[type] || {};
+        return pres.portLabels || {};
     }
 
     createBlank(blockId, typeName, template, statusDefinition, style, validation, configurablesDefinitionArray, validationRules) {

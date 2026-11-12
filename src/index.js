@@ -6,6 +6,7 @@ const EVENTS_DICT = require('./events-dict')
 const EventEmitter = require('events')
 
 const Api = require('./api')
+const MESSAGES = require('./messages')
 
 
 class Flowblocks {
@@ -19,13 +20,26 @@ class Flowblocks {
         this.flow = undefined        
         this.emitter = new EventEmitter();
         this.version = 0;
+        // FB-18: texts of block validation (see setMessages)
+        this.messages = MESSAGES;
+        if (this.options.messages) MESSAGES.setMessages(this.options.messages);
         this._initialize();
+    }
+
+    /**
+     * FB-18: texts of block validation and the designer (e.g. a translation) - {KEY: string | function(ctx)}; keys and
+     * context in src/messages.js. Missing / failing keys use the default English texts. Applies to all blocks (revalidate
+     * existing blocks to refresh their messages).
+     */
+    setMessages(messages){
+        MESSAGES.setMessages(messages);
     }
     /**
      * Creates new, clean Flowblocks instance
      */
-    create(){
-        return new Flowblocks({});
+    create(options){
+        // FB-18: options of the new instance (e.g. messages)
+        return new Flowblocks(options || {});
     }
 
     _initialize(){  

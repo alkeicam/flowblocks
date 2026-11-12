@@ -688,6 +688,38 @@ class Flow {
         this._fitText(el.querySelector('.fb-label-text'), model.get('name'), (size.width || 70) * 0.92);
         var typeText = pres.displayLabel || model.get('_type') || '';
         this._fitText(el.querySelector('.fb-type-label-text'), typeText, (size.width || 70) * 1.6);
+        this._applyValidationCount(el, model);
+    }
+
+    /**
+     * FB-18: number of problems on the red validation bar of the block ("9+" above 9; nothing when the block is valid).
+     * DOM only - the text is not part of the model (export unchanged).
+     */
+    _applyValidationCount(el, model){
+        var rect = el.querySelector('.fb-validation-rect');
+        if (!rect || !rect.parentNode) return;
+        var errors = model.get('status') == 'OK' ? [] : (model.get('errors') || []);
+        var text = el.querySelector('.fb-validation-count');
+        if (!errors.length) { if (text) text.parentNode.removeChild(text); return; }
+        if (!text) {
+            text = el.ownerDocument.createElementNS('http://www.w3.org/2000/svg', 'text');
+            text.setAttribute('class', 'fb-validation-count');
+            text.setAttribute('text-anchor', 'middle');
+            text.setAttribute('dominant-baseline', 'central');
+            text.setAttribute('fill', '#ffffff');
+            text.setAttribute('font-weight', 'bold');
+            text.setAttribute('pointer-events', 'none');
+            rect.parentNode.insertBefore(text, rect.nextSibling);
+        }
+        var w = Number(rect.getAttribute('width')) || 10, h = Number(rect.getAttribute('height')) || 14;
+        var value = errors.length > 9 ? '9+' : String(errors.length);
+        text.textContent = value;
+        text.setAttribute('data-count', String(errors.length));
+        text.setAttribute('x', String(w / 2));
+        text.setAttribute('y', String(h / 2));
+        text.setAttribute('font-size', String(Math.max(7, Math.min(11, Math.floor(Math.min(h * 0.75, w * (value.length > 1 ? 0.6 : 0.95)))))));
+        var transform = rect.getAttribute('transform');
+        if (transform) text.setAttribute('transform', transform); else text.removeAttribute('transform');
     }
 
     /** Shortens the text of an SVG text element to maxWidth (ellipsis) and keeps the full text in a <title> child. */

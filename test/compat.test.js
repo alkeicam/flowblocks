@@ -56,10 +56,29 @@ function differences(a, b, p = '', out = []) {
     return out;
 }
 
+/**
+ * FB-18: wynik walidacji zapisany w diagramie jest pochodny (liczony od nowa przy imporcie) – teksty błędów (`errors[].msg`,
+ * nowe pola `label` / `allowed`) i podpowiedź paska walidacji (`attrs['.fb-validation-rect'].title`) porównywane bez tekstu;
+ * kody błędów (`code`, `cId`) – bez zmian.
+ */
+function normalize(out) {
+    const o = JSON.parse(JSON.stringify(out === undefined ? null : out));
+    const cells = o && Array.isArray(o.cells) ? o.cells : (o && o.flow && Array.isArray(o.flow.cells) ? o.flow.cells : []);
+    const walk = (x) => {
+        if (!x || typeof x !== 'object') return;
+        if (Array.isArray(x)) { x.forEach(walk); return; }
+        if (Array.isArray(x.errors)) x.errors = x.errors.map(e => (e && typeof e === 'object' ? {code: e.code, cId: e.cId} : e));
+        if (x.attrs && x.attrs['.fb-validation-rect']) delete x.attrs['.fb-validation-rect'].title;
+        Object.keys(x).forEach(k => walk(x[k]));
+    };
+    walk(cells.length ? cells : o);
+    return o;
+}
+
 function expectSame(base, head, what) {
     expect(head.length, `${what}: liczba diagramów`).eq(base.length);
     base.forEach((b, i) => {
-        const d = differences(b.out, head[i].out);
+        const d = differences(normalize(b.out), normalize(head[i].out));
         expect(d, `${what} – ${b.name}:\n  ${d.join('\n  ')}`).deep.eq([]);
     });
 }

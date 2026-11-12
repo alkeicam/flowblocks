@@ -969,6 +969,85 @@ describe('Flowblocks', () => {
             })
         })
 
+        describe('FB-T43 FB-18 validation texts for the user (labels, ports, types), tooltip, count, setMessages', () => {
+            const MSG = require('../src/messages');
+            const DEC = { name: 'Decision', template: 'Split', icon: 'agave', style: 'cream', category: 'core', configurables: [
+                { id: 'variableName', label: 'Result variable', type: 'TEXT', required: true }],
+                rules: { successors: { out1: { types: ['End', 'Fin', 'A', 'B', 'C', 'D'], min: 1, max: 1 }, out2: { min: 0 } }, required: ['variableName'] } };
+            const JOIN = { name: 'Merge', template: 'Join', icon: 'agave', style: 'cream', category: 'core', configurables: [], portLabels: { in1: 'Left', in2: 'Right' } };
+            const link = (s, sp, t, tp) => {
+                const l = new joint.dia.Link({ source: { id: s.id, port: sp }, target: { id: t.id, port: tp } });
+                fb.flow.graph.addCell(l);
+                const tv = t.findView(fb.flow.paper);
+                fb.flow.paper.trigger('link:connect', l.findView(fb.flow.paper), {}, tv, tv.el.querySelector(`[port="${tp}"]`), 'target');
+                return l;
+            };
+            const msgs = (b) => b.getStatus().errors.map(e => e.msg);
+            afterEach(() => MSG.setMessages(undefined));
+            it('FB-T43 required field by its label, outputs numbered / labelled, inputs by label', () => {
+                fb.registerTypes([DEC, JOIN]);
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                expect(msgs(d)).to.include('Result variable is required.');
+                expect(msgs(d)).to.include('Connect output "1" to the next step.');
+                expect(msgs(d)).to.include('Connect a step to the input.');
+                expect(d.getStatus().errors.find(e => e.code == 'FIELD_REQUIRED')).to.include({ cId: 'variableName', label: 'Result variable' });
+                fb.registerTypes([Object.assign({}, DEC, { portLabels: { out1: 'Yes', out2: 'No' } })]);
+                expect(msgs(d.revalidate() && d)).to.include('Connect output "Yes" to the next step.');
+                const m = fb.createBlock('Merge', 'm', 'M1');
+                expect(msgs(m)).to.include.members(['Connect a step to input "Left".', 'Connect a step to input "Right".', 'Connect the output to the next step.']);
+                return expect(msgs(m).join(' ')).not.match(/\[|out1|in1/);
+            })
+            it('FB-T43 successor type – names from presentation, 4 + "and N more"; min / max', () => {
+                fb.registerTypes([DEC, Object.assign({}, TYPES[2], { displayLabel: 'Finish' })]);
+                const s = fb.createBlock('Start', 's', 'S1');
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                const a = fb.createBlock('Step', 'a', 'A1');
+                connect(s, d);
+                link(d, 'out1', a, 'in1');
+                const e = d.getStatus().errors.find(x => x.code == 'SUCCESSOR_TYPE');
+                expect(e.msg).eq('"Step" cannot follow this step. Connect output "1" to: Finish, Fin, A, B and 2 more.');
+                expect(e.allowed).deep.eq(['Finish', 'Fin', 'A', 'B', 'C', 'D']);
+                expect(MSG.allowedText(['A', 'B', 'C'])).eq('A, B or C');
+                expect(MSG.allowedText(['A'])).eq('A');
+                fb.registerTypes([Object.assign({}, DEC, { name: 'Two', rules: { successors: { out1: { min: 2 }, out2: { min: 0, max: 1 } } } })]);
+                const t = fb.createBlock('Two', 't', 'T1');
+                link(t, 'out1', a, 'in1');
+                link(t, 'out2', fb.createBlock('End', 'e1', 'E1'), 'in1');
+                link(t, 'out2', fb.createBlock('End', 'e2', 'E2'), 'in1');
+                expect(msgs(t)).to.include('Connect at least 2 steps to output "1".');
+                return expect(msgs(t)).to.include('Output "2" can lead to one step only – remove the extra connection.');
+            })
+            it('FB-T43 tooltip and getStatus().text; problem count on the red bar (DOM only, 9+), none when valid', () => {
+                fb.registerTypes([DEC]);
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                const n = d.getStatus().errors.length;
+                expect(d.getStatus().text.split('\n')[0]).eq(`${n} problems:`);
+                expect(d.getStatusText()).contain('• Result variable is required.');
+                expect(d.attr('.fb-validation-rect/title')).eq(d.getStatusText());
+                const count = d.findView(fb.flow.paper).el.querySelector('.fb-validation-count');
+                expect(count.textContent).eq(String(n));
+                expect(JSON.stringify(fb.getDiagram())).not.contain('fb-validation-count');
+                const ok = buildDiagram().a;
+                expect(ok.getStatusText()).eq('Ready.');
+                expect(ok.findView(fb.flow.paper).el.querySelector('.fb-validation-count')).eq(null);
+                d.set('errors', Array.from({ length: 12 }, (_, i) => ({ code: 'X', msg: `p${i}` })));
+                d.findView(fb.flow.paper).update();
+                return expect(d.findView(fb.flow.paper).el.querySelector('.fb-validation-count').textContent).eq('9+');
+            })
+            it('FB-T43 setMessages: override (string / function), failing or empty override – default; designer defaults', () => {
+                fb.setMessages({ FIELD_REQUIRED: (c) => `Uzupełnij pole ${c.field}.`, STATUS_OK: 'Gotowe.', PORT_OUTPUT: () => { throw new Error('x'); }, PORT_INPUT: () => '' });
+                fb.registerTypes([DEC]);
+                const d = fb.createBlock('Decision', 'd', 'D1');
+                expect(msgs(d)).to.include('Uzupełnij pole Result variable.');
+                expect(msgs(d)).to.include('Connect output "1" to the next step.');
+                expect(msgs(d)).to.include('Connect a step to the input.');
+                expect(fb.messages.text('STATUS_OK')).eq('Gotowe.');
+                expect(fb.messages.text('ROWS_ADD', {}, { ROWS_ADD: 'Add row' })).eq('Add row');
+                expect(fb.messages.text('UNKNOWN_KEY')).eq('UNKNOWN_KEY');
+                return expect(flowblocks.create({ messages: { STATUS_OK: 'OK!' } }).messages.text('STATUS_OK')).eq('OK!');
+            })
+        })
+
         describe('FB-T13 FB-10b diff overlay', () => {
             let removedCell;
             beforeEach(() => {

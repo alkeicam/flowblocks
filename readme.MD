@@ -257,3 +257,35 @@ Declarative validation - type definition may define `rules` (used only when ther
 }
 ```
 Error codes: `SUCCESSOR_MIN`, `SUCCESSOR_MAX`, `SUCCESSOR_TYPE`, `FIELD_REQUIRED`, `FIELD_PATTERN`.
+
+## Validation texts for the user (1.6.0, FB-18)
+
+Messages of block validation say **what to do**, with the names the user sees – the field label, the port label (type
+presentation `portLabels`) and the type name (`displayLabel`) – one sentence ending with a dot. Error codes (`code`, `cId`)
+are unchanged; errors get optional `label` (field / port) and `allowed` (names of allowed next steps).
+
+| Code | Message (default) |
+| :--- | :--- |
+| `FIELD_REQUIRED` | `Group by is required.` |
+| `FIELD_PATTERN` (rule without `msg`) | `Name: invalid format.` |
+| `PORT_NOT_CONNECTED` (output) | `Connect the output to the next step.` / `Connect output "Timeout" to the next step.` |
+| `PORT_NOT_CONNECTED` (input) | `Connect a step to input "Right".` / `Connect a step to the input.` |
+| `SUCCESSOR_MIN` / `SUCCESSOR_MAX` | `Connect at least 2 steps to the output.` / `The output can lead to one step only – remove the extra connection.` |
+| `SUCCESSOR_TYPE` | `"List" cannot follow this step. Connect the output to: Filter, Compute, Join, Top N and 4 more.` |
+
+The red validation bar of a block shows the **number of problems** (`9+` above 9; presentation only – not stored) and its
+tooltip lists them: `2 problems:` and `• …` per line (`Ready.` when valid). The same text: `block.getStatusText()`,
+`block.getStatus().text`.
+
+Texts can be replaced (e.g. a translation) – keys and context in `src/messages.js`:
+
+```javascript
+fb.setMessages({                       // or flowblocks.create({messages: {...}})
+    FIELD_REQUIRED: (c) => `Uzupełnij pole ${c.field}.`,
+    STATUS_OK: 'Gotowe.',
+    PANEL_TITLE: 'Aby zakończyć ten krok'   // used by flowblocks-designer
+});
+```
+
+A missing key, a function that throws or returns an empty value – the default text. `fb.messages.text(key, ctx, defaults)`
+is the resolver used by other components (flowblocks-designer).
